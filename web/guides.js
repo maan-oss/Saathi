@@ -282,7 +282,7 @@
     function tipsCard() {
       if (!G.tips.length) return;
       const c = el('details', 'g-card tips'); if (tipsOpen) c.open = true; c.addEventListener('toggle', () => { tipsOpen = c.open; });
-      c.append(el('summary', '', T('Watch out for')));
+      const sm = el('summary'); const ti = el('span', 'ti'); ti.append(ico('warn', 20)); sm.append(ti, el('span', 'tt', T('Watch out for'))); c.append(sm);
       const ul = el('ul', 'tp'); for (const t of G.tips) { const li = el('li'); li.append(ico('warn', 16), el('span', '', t)); ul.append(li); }
       c.append(ul); pane.append(c);
     }
