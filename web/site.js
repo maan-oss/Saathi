@@ -168,3 +168,56 @@
     d._a = a; a.onfinish = () => { d._a = null; d.style.overflow = ''; d.classList.remove('opening'); if (!opening) d.open = false; };
   });
 })();
+
+// ---- every official website name, anywhere on the page, becomes a real link ----------------------------------
+(() => {
+  'use strict';
+  const LANDING = {
+    'incometax.gov.in': 'https://www.incometax.gov.in/iec/foportal/', 'www.incometax.gov.in': 'https://www.incometax.gov.in/iec/foportal/',
+    'eportal.incometax.gov.in': 'https://eportal.incometax.gov.in/iec/foservices/',
+    'tinpan.proteantech.in': 'https://www.protean-tinpan.com/', 'proteantech.in': 'https://www.protean-tinpan.com/',
+    'pan.utiitsl.com': 'https://www.pan.utiitsl.com/', 'utiitsl.com': 'https://www.pan.utiitsl.com/', 'www.pan.utiitsl.com': 'https://www.pan.utiitsl.com/',
+    'sarathi.parivahan.gov.in': 'https://sarathi.parivahan.gov.in/sarathiservice/', 'parivahan.gov.in': 'https://parivahan.gov.in/',
+    'uidai.gov.in': 'https://uidai.gov.in/', 'myaadhaar.uidai.gov.in': 'https://myaadhaar.uidai.gov.in/', 'bookappointment.uidai.gov.in': 'https://bookappointment.uidai.gov.in/',
+    'passportindia.gov.in': 'https://www.passportindia.gov.in/', 'www.passportindia.gov.in': 'https://www.passportindia.gov.in/', 'portal2.passportindia.gov.in': 'https://portal2.passportindia.gov.in/',
+    'gst.gov.in': 'https://www.gst.gov.in/', 'www.gst.gov.in': 'https://www.gst.gov.in/', 'reg.gst.gov.in': 'https://reg.gst.gov.in/',
+    'voters.eci.gov.in': 'https://voters.eci.gov.in/', 'electoralsearch.eci.gov.in': 'https://electoralsearch.eci.gov.in/', 'services.india.gov.in': 'https://services.india.gov.in/',
+  };
+  const HOST = /\b((?:[a-z0-9-]+\.)+(?:gov\.in|nic\.in|proteantech\.in|utiitsl\.com|protean-tinpan\.com))(\/[^\s),;]*)?/gi;
+  const fix = (u) => {
+    const m = /^(?:https?:\/\/)?([a-z0-9.-]+\.[a-z]{2,})(\/[^\s]*)?/i.exec(String(u || '').trim());
+    if (!m) return null;
+    const host = m[1].toLowerCase(); const path = m[2] || '';
+    if (/incometax\.gov\.in$/.test(host) && /instant|e-?pan/i.test(path)) return 'https://eportal.incometax.gov.in/iec/foservices/#/pre-login/instant-e-pan';
+    if (LANDING[host]) return LANDING[host];
+    return 'https://' + host + '/';
+  };
+  const SKIP = new Set(['A', 'BUTTON', 'INPUT', 'TEXTAREA', 'SCRIPT', 'STYLE', 'SELECT', 'OPTION', 'CODE', 'TITLE']);
+  const skip = (n) => { for (let e = n.parentElement; e; e = e.parentElement) { if (SKIP.has(e.tagName) || e.isContentEditable || e.classList?.contains('no-link') || e.classList?.contains('bad')) return true; } return false; };
+  function linkText(node) {
+    const text = node.nodeValue; HOST.lastIndex = 0;
+    if (!HOST.test(text)) return; HOST.lastIndex = 0;
+    const frag = document.createDocumentFragment(); let last = 0;
+    for (const m of text.matchAll(HOST)) {
+      const shown = (m[1] + (m[2] || '')).replace(/[.!?:]+$/, '');
+      if (m.index > last) frag.append(text.slice(last, m.index));
+      const a = document.createElement('a'); a.className = 'ext-link'; a.textContent = shown; a.href = fix(shown); a.target = '_blank'; a.rel = 'noopener noreferrer';
+      frag.append(a); last = m.index + shown.length;
+    }
+    if (last < text.length) frag.append(text.slice(last));
+    node.replaceWith(frag);
+  }
+  function scan(root) {
+    if (!root || root.nodeType === 8) return;
+    if (root.nodeType === 3) { if (!skip(root)) linkText(root); return; }
+    if (root.nodeType !== 1 || SKIP.has(root.tagName)) return;
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); const list = [];
+    for (let n = w.nextNode(); n; n = w.nextNode()) if (n.nodeValue.length > 5 && n.nodeValue.includes('.') && !skip(n)) list.push(n);
+    list.forEach(linkText);
+  }
+  let queued = new Set(); let raf = 0;
+  const flush = () => { raf = 0; const q = queued; queued = new Set(); q.forEach((n) => { if (n.isConnected) scan(n); }); };
+  const mo = new MutationObserver((muts) => { for (const m of muts) { m.addedNodes.forEach((n) => queued.add(n)); if (m.type === 'characterData') queued.add(m.target); } if (!raf) raf = requestAnimationFrame(flush); });
+  const start = () => { scan(document.body); mo.observe(document.body, { childList: true, subtree: true, characterData: true }); };
+  if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+})();

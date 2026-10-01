@@ -332,3 +332,13 @@ details.tips .tp li svg{flex:none;margin-top:2px;color:var(--mut)}
 details.tips>summary::before{content:none!important;display:none!important}
 details.tips>summary .ti{flex:none;width:38px;height:38px;border-radius:12px;background:var(--ink);color:var(--bg);display:grid;place-items:center}
 details.tips>summary .ti svg{stroke:var(--bg);width:20px;height:20px}
+
+/* delete buttons: only a hover to red, no movement on press or hold */
+.sb-del{top:0;bottom:0;margin:auto 0;transform:none!important;height:30px;transition:opacity .15s,background-color .2s,color .2s}
+.sb-del:active,.sb-del:focus{transform:none!important;background:transparent}
+.sb-del:hover{background:var(--bad-bg);color:var(--bad)}
+.sb-del:hover:active{background:var(--bad-bg);color:var(--bad)}
+.sb-del svg{transition:transform .2s}
+.row-i.danger,.btn.danger{transition:background-color .2s,color .2s,border-color .2s}
+.row-i.danger:hover,.btn.danger:hover{background:var(--bad-bg);color:var(--bad);border-color:transparent}
+.row-i.danger:active,.btn.danger:active{transform:none}
