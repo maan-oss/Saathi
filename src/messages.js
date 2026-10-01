@@ -130,6 +130,7 @@ const M = {
       '🎉 That\'s it! {after}\n\nWant a human to look over your application? Tap *Talk to a human*.',
     at_first_step: 'You\'re already at the first step.',
     ask_question: 'Go ahead and ask your question. Type *menu* to go back.',
+    qa_blocked: 'I can only help with Indian government paperwork like PAN, Aadhaar, driving licence, passport, voter ID and GST. Ask me about one of those, or type *menu*.',
     qa_fail: 'I can\'t answer that right now. Please check the official website for your service, or type *agent* for a human.',
     qa_busy:
       'I\'m out of AI help for today, but the step-by-step guide still works. Type *menu*, or *agent* for a human.',
@@ -434,6 +435,7 @@ const M = {
       '🎉 बस इतना ही! {after}\n\nक्या कोई इंसान आपका आवेदन देखे? *इंसान से बात* दबाएँ।',
     at_first_step: 'आप पहले ही पहले स्टेप पर हैं।',
     ask_question: 'अपना सवाल पूछिए। वापस जाने के लिए *menu* लिखें।',
+    qa_blocked: 'मैं सिर्फ भारतीय सरकारी कागज़ात में मदद कर सकता हूँ, जैसे पैन, आधार, ड्राइविंग लाइसेंस, पासपोर्ट, वोटर आईडी और जीएसटी। इनमें से कुछ पूछिए, या *menu* लिखें।',
     qa_fail: 'मैं अभी इसका जवाब नहीं दे पा रहा। कृपया अपनी सेवा की सरकारी वेबसाइट देखें या इंसान के लिए *agent* लिखें।',
     qa_busy:
       'आज की AI मदद खत्म हो गई है, लेकिन स्टेप-बाय-स्टेप गाइड चलती रहेगी। *menu* लिखें, या इंसान के लिए *agent*।',

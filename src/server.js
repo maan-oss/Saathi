@@ -127,14 +127,15 @@ function readBody(req, res, cb) {
 }
 
 function validSignature(rawBody, header) {
-  if (!config.appSecret) return true; // dev only. Set APP_SECRET in production.
+  if (!config.appSecret) return !(process.env.VERCEL || process.env.NODE_ENV === 'production'); // open only on a dev machine
   if (!header || !header.startsWith('sha256=')) return false;
   const expected = crypto.createHmac('sha256', config.appSecret).update(rawBody).digest('hex');
   const got = header.slice(7);
   return got.length === expected.length && crypto.timingSafeEqual(Buffer.from(got), Buffer.from(expected));
 }
 
-const adminOk = (req, url) => Boolean(config.adminKey) && (url.searchParams.get('key') === config.adminKey || req.headers['x-admin-key'] === config.adminKey);
+const same = (a, b) => { const x = crypto.createHash('sha256').update(String(a || '')).digest(); const y = crypto.createHash('sha256').update(String(b || '')).digest(); return crypto.timingSafeEqual(x, y); };
+const adminOk = (req, url) => Boolean(config.adminKey) && (same(url.searchParams.get('key'), config.adminKey) || same(req.headers['x-admin-key'], config.adminKey));
 const jsonOut = (res, code, obj) => {
   res.statusCode = code;
   res.setHeader('content-type', 'application/json');
@@ -199,6 +200,7 @@ const web = createWeb({
 });
 
 const server = http.createServer((req, res) => {
+  res.setHeader('strict-transport-security', 'max-age=63072000; includeSubDomains; preload'); res.setHeader('x-content-type-options', 'nosniff'); res.setHeader('referrer-policy', 'no-referrer');
   const url = new URL(req.url, 'http://localhost');
 
   // The web app (page, files and /app/api/*). Everything else below is WhatsApp, payments and the operator's pages.
@@ -218,7 +220,7 @@ const server = http.createServer((req, res) => {
   }
 
   if (req.method === 'GET' && url.pathname === '/admin/stats') {
-    if (!config.adminKey || url.searchParams.get('key') !== config.adminKey) {
+    if (!adminOk(req, url)) {
       res.statusCode = 403;
       return void res.end('forbidden');
     }

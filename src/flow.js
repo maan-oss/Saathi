@@ -1,4 +1,5 @@
 import { t, tr } from './messages.js';
+import { inspectInput, inspectOutput, cleanInput, wrapUntrusted } from './shield.js';
 import { R } from './rich.js';
 import { STATE_NAMES } from './states.js';
 import { FIELDS, GENDER, normField, normAll, missingKeys, fieldDef, shown, fromExtraction } from './profile.js';
@@ -489,6 +490,9 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
     }
 
     async function answerQuestion(question) {
+      const shield = inspectInput(question);
+      if (shield.block) { say('qa_blocked'); return; }
+      question = shield.text;
       const inSteps = u.state === 'steps';
       const web = ctx.channel === 'web' && ctx.ai ? ctx : null;
       // Web: two kinds of message never need the AI, so they cost nothing and answer instantly.
@@ -542,7 +546,7 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
         if (!raw0) {
           const context = inSteps ? fillText(stepsFor()[u.step].en).replace(/\*/g, '') : '';
           const langName = L() === 'hi' ? 'Hindi (Devanagari)' : L() === 'en' ? 'simple English' : `${langDef(L())?.en || 'English'} (its own script)`;
-          let q = question.slice(0, MAX_QUESTION_CHARS);
+          let q = wrapUntrusted(question.slice(0, MAX_QUESTION_CHARS));
           if (web?.hist?.length) {
             // Only the last few turns, trimmed: every extra word is paid for again on every message.
             const past = web.hist.slice(-4).map((h) => `${h.r === 'a' ? 'Saathi' : 'Person'}: ${h.t.slice(0, h.r === 'a' ? 220 : 240)}`).join('\n');
@@ -556,6 +560,8 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
             QA_CACHE.set(ckey, { text: raw0, exp: Date.now() + 12 * 3600 * 1000 });
           }
         }
+        const out = inspectOutput(raw0);
+        if (!out.ok) { if (ckey) QA_CACHE.delete(ckey); say('qa_blocked'); return; }
         let answer = raw0;
         let acts = [];
         if (web) {

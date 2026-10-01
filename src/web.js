@@ -142,6 +142,10 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
     res.setHeader('referrer-policy', 'no-referrer');
     res.setHeader('permissions-policy', 'microphone=(self), camera=(self), geolocation=()');
     res.setHeader('x-frame-options', 'DENY');
+    res.setHeader('strict-transport-security', 'max-age=63072000; includeSubDomains; preload');
+    res.setHeader('cross-origin-opener-policy', 'same-origin');
+    res.setHeader('cross-origin-resource-policy', 'same-origin');
+    res.setHeader('x-permitted-cross-domain-policies', 'none');
     for (const [k, v] of Object.entries(extra)) res.setHeader(k, v);
   }
   const json = (res, code, obj) => {
