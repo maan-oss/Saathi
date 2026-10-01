@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Saathi साथी: help with Indian government paperwork</title>
+<meta name="description" content="Saathi walks you through PAN, Aadhaar, driving licence, passport, GST and more, in your language, on WhatsApp or the web. It keeps your documents in an encrypted locker, checks links for scams and never asks for your OTP.">
+<meta name="theme-color" content="#9DE8C0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B1F17" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Saathi: paperwork, minus the panic">
+<meta property="og:description" content="PAN, Aadhaar, licence, passport and more. Step by step, in your language. An encrypted locker for your documents. Checks links for scams. Never asks for your OTP.">
+<meta property="og:image" content="/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/logo.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="preload" href="/fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav" id="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="/" aria-label="Saathi home"><img src="/logo.svg" width="34" height="34" alt=""><span class="word">Saathi</span><span class="word-hi" lang="hi">साथी</span></a>
+    <nav class="links" aria-label="Main">
+      <a href="#need">What you need</a><a href="#check">Scam checker</a><a href="#locker">Locker</a><a href="#price">Price</a><a href="#faq">Questions</a>
+    </nav>
+    <a class="btn dark sm" href="/app" data-app>Open Saathi</a>
+  </div>
+</header>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-in">
+      <p class="pill reveal"><span class="live"></span>Free to try · No sign-up · No ads</p>
+      <h1 class="reveal d1">Paperwork,<br>minus the panic.</h1>
+      <p class="lede reveal d2">Step-by-step help for PAN, Aadhaar, licence, passport and GST, in your language. With a locker for your documents and a shield against scams.</p>
+      <div class="cta reveal d3">
+        <a class="btn dark lg" href="/app" data-app>Open Saathi in your browser<span class="arr" aria-hidden="true">→</span></a>
+        <a class="btn ghost lg" id="waBtn" href="#" hidden target="_blank" rel="noopener noreferrer">Chat on WhatsApp</a>
+      </div>
+    </div>
+
+    <!-- The "what do I need?" card: real fees, documents and official sites from the same data the bot uses -->
+    <div class="wrap need-wrap" id="need">
+      <div class="need reveal d2" aria-labelledby="needT">
+        <div class="need-h">
+          <h2 id="needT">What do I need for…</h2>
+          <span class="need-date" id="needDate"></span>
+        </div>
+        <div class="seg" id="seg" role="tablist" aria-label="Choose a service"></div>
+        <div class="need-body" id="needBody" aria-live="polite">
+          <div class="skeleton"><i></i><i></i><i></i></div>
+        </div>
+        <a class="btn lg full" id="needGo" href="/app" data-app>Guide me through it<span class="arr" aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST -->
+  <section class="trust" aria-label="What Saathi promises">
+    <div class="wrap trust-grid">
+      <div class="tr reveal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5L15.5 10"/></svg><b>Never asks for your OTP</b><span>Those stay with you, always.</span></div>
+      <div class="tr reveal d1"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2.5"/><path d="M8 10V7.5a4 4 0 018 0V10"/></svg><b>Encrypted locker</b><span>Hidden until you tap Unlock.</span></div>
+      <div class="tr reveal d2"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg><b>Your language</b><span>Hindi and English by hand, more on request.</span></div>
+      <div class="tr reveal d3"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg><b>Every fact sourced</b><span>Type “sources” to see where it came from.</span></div>
+    </div>
+  </section>
+
+  <!-- HOW -->
+  <section class="sec" id="how">
+    <div class="wrap">
+      <p class="kicker reveal">How it works</p>
+      <h2 class="reveal d1">You ask. Saathi prepares.<br>You finish.</h2>
+      <div class="steps">
+        <article class="step reveal"><span class="n">1</span><h3>Ask in your words</h3><p>Pick what you need, type it, or send a voice note.</p>
+          <div class="mini"><span class="chip on">New PAN card</span><span class="chip">Passport</span><span class="chip">Licence</span></div></article>
+        <article class="step reveal d1"><span class="n">2</span><h3>Get your sheet</h3><p>A few questions, then your details on a clean sheet with a copy button on every line.</p>
+          <div class="mini rows"><div><span>Full name</span><b>Asha Devi</b></div><div><span>PIN code</span><b>302001</b></div></div></article>
+        <article class="step reveal d2"><span class="n">3</span><h3>Finish on the official site</h3><p>You paste, you enter the OTP, you press submit. The final steps stay yours.</p>
+          <div class="mini"><span class="chip ok">incometax.gov.in ✓</span></div></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCAM CHECKER -->
+  <section class="sec white" id="check">
+    <div class="wrap check-grid">
+      <div>
+        <p class="kicker reveal">Scam checker</p>
+        <h2 class="reveal d1">Strange message?<br>Paste it here.</h2>
+        <p class="lede reveal d2">One simple rule does most of the work: Indian government services live on <b>.gov.in</b> and <b>.nic.in</b>, plus two official PAN partners. Anything else is called out. Nothing you paste is saved, and no link is ever opened.</p>
+      </div>
+      <div class="checker reveal d2">
+        <label for="chkIn" class="sr">Paste a link, SMS or offer</label>
+        <textarea id="chkIn" rows="3" maxlength="800" placeholder="Paste a link or the whole message…" spellcheck="false"></textarea>
+        <div class="try" aria-label="Try an example">
+          <button type="button" data-ex="Your PAN is blocked. Update now: pan-card-apply.xyz/kyc">Blocked PAN text</button>
+          <button type="button" data-ex="https://www.incometax.gov.in">Income tax site</button>
+          <button type="button" data-ex="Get your driving licence without a test, pay Rs 500 at bit.ly/dl-fast">Licence without a test</button>
+        </div>
+        <div class="row-act"><button class="btn" id="chkGo" type="button">Check it</button><span class="hint" id="chkHint">Never paste an OTP or card number.</span></div>
+        <div class="verdict" id="chkOut" hidden aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOCKER -->
+  <section class="sec dark" id="locker">
+    <div class="wrap locker-grid">
+      <div>
+        <p class="kicker light reveal">Your locker</p>
+        <h2 class="reveal d1">“What’s my PAN?”<br><span class="mintt">Answered. Privately.</span></h2>
+        <p class="lede reveal d2">Send a photo or PDF of a document, or type the number in yourself. Saathi keeps the number and expiry date encrypted and hidden until you tap <b>Unlock</b>. Then just ask.</p>
+        <ul class="ticks reveal d3">
+          <li>Reads name, number and expiry from a photo or PDF</li>
+          <li>Checks the number’s format before saving, so a misread never sneaks in</li>
+          <li>Answers from what you saved, not from an AI guess</li>
+          <li>Reminds you before a licence or passport expires</li>
+          <li>Erase everything any time by typing “forget”</li>
+        </ul>
+      </div>
+      <div class="lockdemo reveal d2" aria-label="Interactive example of the locker">
+        <div class="bubble me">what’s my PAN number?</div>
+        <div class="vcard" id="vcard" data-state="locked">
+          <div class="vh"><span class="ic" id="vIc">🔒</span><b>PAN card</b><span class="tiny">sample data</span></div>
+          <div class="vb" id="vBody"><span class="mask">••••••234F</span></div>
+          <div class="vbar" id="vBar"><i></i></div>
+          <button class="btn light" id="vBtn" type="button">Unlock</button>
+        </div>
+        <p class="tiny center">Try it. It hides itself again after a few seconds.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICE (filled from the server's real prices) -->
+  <section class="sec" id="price" hidden>
+    <div class="wrap price-grid">
+      <div>
+        <p class="kicker reveal">Simple pricing</p>
+        <h2 class="reveal d1">Pay only for<br>what you use.</h2>
+        <p class="lede reveal d2" id="priceLede"></p>
+      </div>
+      <div class="receipt reveal d2" id="receipt" role="list" aria-label="Price of each action">
+        <div class="rc-h">Saathi<span>receipt</span></div>
+        <div id="rcRows"></div>
+        <div class="rc-f" id="packNote"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="sec white" id="faq">
+    <div class="wrap faq-grid">
+      <div>
+        <p class="kicker reveal">Questions</p>
+        <h2 class="reveal d1">Straight answers.</h2>
+      </div>
+      <div class="faq reveal d1">
+        <details><summary>Is Saathi an official government service?</summary><div><p>No. Saathi is an independent helper and is not affiliated with or endorsed by any government body. It always points you to the official website, and rules and fees can change, so confirm on the official site before you pay.</p></div></details>
+        <details><summary>Does it log in to government sites for me?</summary><div><p>No, and it never will. Your OTP, captcha and consent belong to you. Saathi prepares your details and explains each step; you do the final steps yourself.</p></div></details>
+        <details><summary>What happens to my details and my locker?</summary><div><p>Nothing is saved unless you choose to. If you do, your details and your locker (ID numbers and expiry dates) are encrypted on our server, hidden until you tap Unlock, and erased any time by typing “forget”. Photos are read once and never kept. There are no ads. Read the full notice on the <a href="/privacy">privacy page</a>.</p></div></details>
+        <details><summary>Can Saathi read my documents from a photo?</summary><div><p>Yes, if you allow it. A photo or PDF is read by an AI model to pull out your name, date of birth, address, ID number and expiry date. You see what it found and choose Save, Use once, or Discard. The photo itself is never kept.</p></div></details>
+        <details><summary>Do I need WhatsApp?</summary><div><p>No. The web app works in any browser and can be added to your home screen. If you do use WhatsApp, it is the same Saathi there.</p></div></details>
+        <details><summary>How much does it cost?</summary><div><p>New people get a small welcome credit and some free messages every day. After that, each action has a small price, shown above when prices are set. There is no subscription.</p></div></details>
+        <details><summary>What if I lose my phone or clear my browser?</summary><div><p>In the web app, open Settings and save your backup code. Paste it on a new device to get your balance back.</p></div></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="final">
+    <div class="wrap final-in reveal">
+      <h2>Start with<br>one question.</h2>
+      <a class="btn dark lg" href="/app" data-app>Open Saathi<span class="arr" aria-hidden="true">→</span></a>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <div class="brand"><img src="/logo.svg" width="28" height="28" alt=""><span class="word">Saathi</span><span class="word-hi" lang="hi">साथी</span></div>
+    <p class="disc">Saathi is an independent helper and is not affiliated with or endorsed by any government body. Always confirm rules and fees on the official website.</p>
+    <nav class="flinks"><a href="/app" data-app>Open the app</a><a href="/privacy">Privacy</a><a href="#faq">Questions</a></nav>
+  </div>
+</footer>
+<script src="/site.js" defer></script>
+</body>
+</html>

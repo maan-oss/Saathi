@@ -1,0 +1,8 @@
+.env
+.env.backup
+data/
+data-sim/
+node_modules/
+.test-*
+.vercel
+*.zip

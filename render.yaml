@@ -1,0 +1,33 @@
+# One-click deploy on Render: New > Blueprint > pick this repo. Fill the secrets it asks for (or copy them from .env).
+services:
+  - type: web
+    name: saathi
+    runtime: docker
+    plan: starter            # a disk needs a paid plan (about US$7/month + disk)
+    healthCheckPath: /health
+    disk:
+      name: saathi-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - { key: DATA_DIR, value: /data }
+      - { key: TRUST_PROXY, value: "1" }
+      - { key: PUBLIC_URL, sync: false }
+      - { key: WHATSAPP_NUMBER, sync: false }
+      - { key: VERIFY_TOKEN, sync: false }
+      - { key: APP_SECRET, sync: false }
+      - { key: HASH_SALT, sync: false }
+      - { key: VAULT_KEY, sync: false }
+      - { key: ADMIN_KEY, sync: false }
+      - { key: WHATSAPP_TOKEN, sync: false }
+      - { key: WHATSAPP_PHONE_ID, sync: false }
+      - { key: ANTHROPIC_API_KEY, sync: false }
+      - { key: RAZORPAY_KEY_ID, sync: false }
+      - { key: RAZORPAY_KEY_SECRET, sync: false }
+      - { key: RAZORPAY_WEBHOOK_SECRET, sync: false }
+      - { key: SARVAM_API_KEY, sync: false }
+      - { key: OPENAI_API_KEY, sync: false }
+      - { key: DETAILS_FLOW_ID, sync: false }
+      - { key: DOC_CHECK, value: "0" }
+      - { key: DAILY_BUDGET_INR, value: "300" }
+      - { key: MONTHLY_BUDGET_INR, value: "6000" }

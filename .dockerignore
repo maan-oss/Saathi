@@ -1,0 +1,6 @@
+.env
+.env.backup
+data/
+data-sim/
+node_modules/
+.test-e2e-*

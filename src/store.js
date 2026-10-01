@@ -1,0 +1,171 @@
+import { mkdirSync, readFileSync, writeFileSync, renameSync } from 'node:fs';
+import { join } from 'node:path';
+
+// Minimal JSON-file store. Fine for a pilot (hundreds of users/day).
+// Move to SQLite/Postgres when you outgrow it.
+export class Store {
+  constructor(dir) {
+    this.dir = dir;
+    mkdirSync(dir, { recursive: true });
+    this.users = this._load('users.json', {});
+    this.ledger = this._load('ledger.json', { days: {} });
+    this.payments = this._load('payments.json', {});
+    this.trials = this._load('trials.json', {});
+    this.translations = this._load('translations.json', {});
+    this.settings = this._load('settings.json', {});
+    this.seen = [];
+  }
+
+  getSetting(k) {
+    return this.settings[k];
+  }
+
+  setSetting(k, v) {
+    if (v === undefined || v === null || v === '') delete this.settings[k];
+    else this.settings[k] = v;
+    this._save('settings.json', this.settings);
+  }
+
+  _load(file, fallback) {
+    try {
+      return JSON.parse(readFileSync(join(this.dir, file), 'utf8'));
+    } catch {
+      return fallback;
+    }
+  }
+
+  _save(file, obj) {
+    const p = join(this.dir, file);
+    writeFileSync(p + '.tmp', JSON.stringify(obj));
+    renameSync(p + '.tmp', p);
+  }
+
+  getUser(id) {
+    return this.users[id] ? { ...this.users[id] } : null;
+  }
+
+  putUser(id, user) {
+    this.users[id] = { ...user, updated: Date.now() };
+    this._save('users.json', this.users);
+  }
+
+  deleteUser(id) {
+    delete this.users[id];
+    this._save('users.json', this.users);
+  }
+
+  // Privacy: forget people who have been idle. Session state goes after idleMs. People who saved a
+  // profile or hold wallet money keep their account until keepMs of inactivity, then it goes too.
+  sweep(idleMs, keepMs = idleMs) {
+    const now = Date.now();
+    let n = 0;
+    for (const [id, u] of Object.entries(this.users)) {
+      const idle = now - (u.updated || 0);
+      const hasValue = Boolean(u.vault) || (u.wallet && u.wallet.paise > 0) || (u.packs || []).some((p) => p.until > now) || (u.reminders || []).length > 0 || Boolean(u.linkTo) || (u.devices || []).length > 0 || Boolean(u.locker) || Boolean(u.extras);
+      if (idle > (hasValue ? keepMs : idleMs)) {
+        delete this.users[id];
+        n++;
+      } else if (idle > idleMs && u.state !== 'menu') {
+        for (const k of ['svc', 'ans', 'route', 'step', 'pending', 'await', 'next', 'fillKeys', 'fillIdx', 'backTo', 'pickFor', 'remType', 'remLabel'])
+          delete u[k];
+        u.state = u.lang ? 'menu' : 'new';
+        n++;
+      }
+    }
+    if (n) this._save('users.json', this.users);
+    return n;
+  }
+
+  // Remembers (by scrambled ID only) that a welcome credit was given, so delete-and-return cannot farm it.
+  hadTrial(id) {
+    return Boolean(this.trials[id]);
+  }
+
+  markTrial(id) {
+    this.trials[id] = 1;
+    this._save('trials.json', this.trials);
+  }
+
+  // Payment records are kept (amount, date, reference) for accounts and tax. The phone number is only
+  // held on a pending record so we can message "payment received", then removed.
+  putPayment(ref, rec) {
+    this.payments[ref] = rec;
+    this._save('payments.json', this.payments);
+  }
+
+  getPayment(ref) {
+    return this.payments[ref] ? { ...this.payments[ref] } : null;
+  }
+
+  saveLedger() {
+    this._save('ledger.json', this.ledger);
+  }
+
+  // WhatsApp retries webhooks; ignore repeats.
+  seenBefore(messageId) {
+    if (this.seen.includes(messageId)) return true;
+    this.seen.push(messageId);
+    if (this.seen.length > 2000) this.seen.shift();
+    return false;
+  }
+
+  // Machine translations of the bot's texts, one record per language. Edit translations.json by hand to
+  // replace a machine translation with a reviewed one: the bot never overwrites a record marked reviewed.
+  getTranslation(code) {
+    return this.translations[code] || null;
+  }
+
+  putTranslation(code, rec) {
+    if (this.translations[code]?.reviewed) return false;
+    this.translations[code] = rec;
+    this._save('translations.json', this.translations);
+    return true;
+  }
+
+  // ---- operator inbox: people who asked for a human ---------------------------------------
+  // A handoff is { id, ts, phone, svc, route, step, lang, status: 'open'|'replied'|'closed', thread: [{ts, dir, text}] }.
+  // The phone number and thread are kept only because the person asked for a human. Closed ones go after 30 days.
+  _handoffs() {
+    return this._load('handoff.json', []);
+  }
+
+  listHandoffs() {
+    return this._handoffs();
+  }
+
+  getHandoff(id) {
+    return this._handoffs().find((h) => h.id === id) || null;
+  }
+
+  /** Newest handoff for this phone that is not closed. */
+  activeHandoff(phone) {
+    const list = this._handoffs();
+    for (let i = list.length - 1; i >= 0; i--) if (list[i].phone === phone && list[i].status !== 'closed') return list[i];
+    return null;
+  }
+
+  // Only written when the user explicitly asks for a human.
+  appendHandoff(entry) {
+    const list = this._handoffs();
+    const rec = { id: entry.id || `h${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`, status: 'open', thread: [], ...entry };
+    list.push(rec);
+    this._save('handoff.json', list.slice(-500));
+    return rec;
+  }
+
+  updateHandoff(id, fn) {
+    const list = this._handoffs();
+    const h = list.find((x) => x.id === id);
+    if (!h) return null;
+    fn(h);
+    this._save('handoff.json', list);
+    return h;
+  }
+
+  pruneHandoffs(maxAgeMs = 30 * 86400000) {
+    const list = this._handoffs();
+    const keep = list.filter((h) => !(h.status === 'closed' && Date.now() - (h.closedAt || 0) > maxAgeMs));
+    if (keep.length !== list.length) this._save('handoff.json', keep);
+    return list.length - keep.length;
+  }
+}

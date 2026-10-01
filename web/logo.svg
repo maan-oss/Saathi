@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Saathi">
+  <defs><clipPath id="lens"><circle cx="24" cy="32" r="19"/></clipPath></defs>
+  <circle cx="24" cy="32" r="19" fill="#1F1E1D"/>
+  <circle cx="40" cy="32" r="19" fill="#1F1E1D"/>
+  <circle cx="40" cy="32" r="19" fill="#FAF9F5" clip-path="url(#lens)"/>
+</svg>

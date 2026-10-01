@@ -1,0 +1,166 @@
+{
+  "version": "6.0",
+  "screens": [
+    {
+      "id": "DETAILS",
+      "title": "Your details",
+      "terminal": true,
+      "success": true,
+      "data": {
+        "full_name": {
+          "type": "string",
+          "__example__": "Asha Devi"
+        },
+        "dob": {
+          "type": "string",
+          "__example__": "1990-02-05"
+        },
+        "father_name": {
+          "type": "string",
+          "__example__": "Ram Lal"
+        },
+        "gender": {
+          "type": "string",
+          "__example__": "female"
+        },
+        "address": {
+          "type": "string",
+          "__example__": "12 Gandhi Road, Jaipur, Rajasthan"
+        },
+        "pincode": {
+          "type": "string",
+          "__example__": "302001"
+        },
+        "mother_name": {
+          "type": "string",
+          "__example__": "Sita Devi"
+        },
+        "mobile": {
+          "type": "string",
+          "__example__": "9876543210"
+        },
+        "email": {
+          "type": "string",
+          "__example__": "asha@example.com"
+        }
+      },
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "TextHeading",
+            "text": "Your details"
+          },
+          {
+            "type": "TextBody",
+            "text": "Type them exactly like your Aadhaar. Never enter an Aadhaar number here."
+          },
+          {
+            "type": "TextInput",
+            "name": "full_name",
+            "label": "Full name (as on Aadhaar)",
+            "input-type": "text",
+            "required": true,
+            "init-value": "${data.full_name}"
+          },
+          {
+            "type": "DatePicker",
+            "name": "dob",
+            "label": "Date of birth",
+            "required": true,
+            "init-value": "${data.dob}"
+          },
+          {
+            "type": "TextInput",
+            "name": "father_name",
+            "label": "Father's name",
+            "input-type": "text",
+            "required": true,
+            "init-value": "${data.father_name}"
+          },
+          {
+            "type": "Dropdown",
+            "name": "gender",
+            "label": "Gender",
+            "required": true,
+            "init-value": "${data.gender}",
+            "data-source": [
+              {
+                "id": "male",
+                "title": "Male"
+              },
+              {
+                "id": "female",
+                "title": "Female"
+              },
+              {
+                "id": "other",
+                "title": "Other"
+              }
+            ]
+          },
+          {
+            "type": "TextInput",
+            "name": "address",
+            "label": "Address",
+            "input-type": "text",
+            "required": true,
+            "init-value": "${data.address}"
+          },
+          {
+            "type": "TextInput",
+            "name": "pincode",
+            "label": "PIN code",
+            "input-type": "number",
+            "required": true,
+            "min-chars": "6",
+            "max-chars": "6",
+            "init-value": "${data.pincode}"
+          },
+          {
+            "type": "TextInput",
+            "name": "mother_name",
+            "label": "Mother's name",
+            "input-type": "text",
+            "required": false,
+            "init-value": "${data.mother_name}"
+          },
+          {
+            "type": "TextInput",
+            "name": "mobile",
+            "label": "Mobile number",
+            "input-type": "phone",
+            "required": false,
+            "init-value": "${data.mobile}"
+          },
+          {
+            "type": "TextInput",
+            "name": "email",
+            "label": "Email",
+            "input-type": "email",
+            "required": false,
+            "init-value": "${data.email}"
+          },
+          {
+            "type": "Footer",
+            "label": "Save details",
+            "on-click-action": {
+              "name": "complete",
+              "payload": {
+                "full_name": "${form.full_name}",
+                "dob": "${form.dob}",
+                "father_name": "${form.father_name}",
+                "gender": "${form.gender}",
+                "address": "${form.address}",
+                "pincode": "${form.pincode}",
+                "mother_name": "${form.mother_name}",
+                "mobile": "${form.mobile}",
+                "email": "${form.email}"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

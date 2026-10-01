@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Saathi साथी: help with government paperwork</title>
+<meta name="description" content="Saathi walks you through PAN, Aadhaar, driving licence, passport and more, in your language. It never asks for your OTP.">
+<meta name="theme-color" content="#FAF9F5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#262624" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/logo.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="preload" href="/fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/screens.css">
+<link rel="stylesheet" href="/guides.css">
+<link rel="stylesheet" href="/polish.css">
+</head>
+<body data-wa="__WA_NUMBER__">
+<div class="shell">
+<aside class="sidebar" id="sidebar" aria-label="Menu" data-ta="Menu"></aside>
+<div class="scrim" id="scrim"></div>
+<div class="app" id="app">
+  <header class="top">
+    <button class="icon-btn menu-btn" id="menuBtn" aria-label="Open menu" data-ta="Open menu" aria-expanded="false" aria-controls="sidebar">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+    </button>
+    <a class="brand" href="/" aria-label="Saathi home">
+      <img src="/logo.svg" width="30" height="30" alt="">
+      <span class="word">Saathi</span>
+    </a>
+    <span class="sp"></span>
+    <button class="pill" id="wallet" hidden aria-label="Open wallet" data-ta="Open wallet"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M4 7.5h15a1 1 0 011 1V18a1 1 0 01-1 1H5a1 1 0 01-1-1zM4 7.5l11-3v3M15.5 13.5h2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="walletText">₹0</span></button>
+  </header>
+
+  <main class="chat" id="chat" aria-live="polite" aria-label="Conversation" data-ta="Conversation">
+    <div class="thread" id="thread">
+    </div>
+  </main>
+
+  <footer class="dock">
+    <div class="composer-wrap">
+      <div class="rec" id="rec" hidden>
+        <span class="rec-dot"></span><span id="recTime">0:00</span><span class="rec-msg" id="recMsg" data-t="Recording. Tap send when you are done.">Recording. Tap send when you are done.</span>
+        <button class="rec-lang" id="dictLang" type="button" hidden></button>
+        <button class="link-btn" id="recCancel" type="button" data-t="Cancel">Cancel</button>
+      </div>
+      <form class="composer" id="form" autocomplete="off">
+        <div class="attach-wrap">
+          <button class="icon-btn round" id="attachBtn" type="button" aria-label="Attach a photo or PDF" data-ta="Attach a photo or PDF" aria-haspopup="true" aria-expanded="false">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+          </button>
+          <div class="pop" id="attachPop" hidden role="menu">
+            <button type="button" role="menuitem" id="pickCamera" data-t="Take a photo">Take a photo</button>
+            <button type="button" role="menuitem" id="pickFile" data-t="Choose photo or PDF">Choose photo or PDF</button>
+          </div>
+        </div>
+        <textarea id="input" rows="1" placeholder="Ask Saathi anything" data-tp="Ask Saathi anything" aria-label="Message" data-ta="Message" maxlength="2000" enterkeyhint="send"></textarea>
+        <button class="icon-btn round" id="micBtn" type="button" aria-label="Speak instead of typing" data-ta="Speak instead of typing" hidden>
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <button class="send" id="sendBtn" type="submit" aria-label="Send" data-ta="Send" disabled>
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 19V6M6 11l6-6 6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        </button>
+      </form>
+      <p class="trust" data-t="Saathi guides you. You do the final steps on the official site. Never share your OTP with anyone.">Saathi guides you. You do the final steps on the official site. Never share your OTP with anyone.</p>
+    </div>
+    <input type="file" id="fileInput" accept="image/*,application/pdf" hidden>
+    <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
+  </footer>
+</div>
+</div>
+
+<button class="jump" id="jump" type="button" aria-label="Jump to latest message" data-ta="Jump to latest message" hidden><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+
+<section class="screen" id="screen" hidden aria-live="polite"></section>
+<div class="onboard" id="onboard" hidden role="dialog" aria-modal="true" aria-label="Welcome to Saathi" data-ta="Welcome to Saathi"></div>
+<div class="dialog-wrap" id="dialogWrap" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="/app.js" defer></script>
+<script src="/screens.js" defer></script>
+<script src="/tools.js" defer></script>
+<script src="/guides.js" defer></script>
+</body>
+</html>
