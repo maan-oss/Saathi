@@ -188,3 +188,9 @@ body{background-image:radial-gradient(120% 60% at 50% -10%,color-mix(in srgb,var
 /* sidebar current item */
 .side-i[aria-current=page],.side-i.on,.nav-i.on{background:var(--ac-soft);color:var(--ac)}
 .sc-col h1,.sc-col .sc-big,.screen h1{font-family:var(--serif);font-weight:700;letter-spacing:-.035em}
+
+/* no glow */
+.hello::before{display:none!important}
+body{background-image:none!important}
+#onboard{background:var(--bg)!important}
+.ob-art{filter:none!important}
