@@ -23,6 +23,11 @@
     msg: 'M5 5h14a1 1 0 011 1v9a1 1 0 01-1 1h-7l-4 4v-4H5a1 1 0 01-1-1V6a1 1 0 011-1z', download: 'M12 4v11M7 11l5 5 5-5M5 20h14', plusc: 'M12 21a9 9 0 100-18 9 9 0 000 18zM12 8v8M8 12h8',
     warn: 'M12 4l9 16H3zM12 10v4M12 17.5v.01', star: 'M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z', search: 'M11 4a7 7 0 100 14 7 7 0 000-14zM20 20l-4-4', refresh: 'M20 12a8 8 0 11-2.6-5.9M20 4v5h-5',
     bolt: 'M13 3L5 14h6l-1 7 8-11h-6z',
+    tkt: 'M4 8.5A1.5 1.5 0 015.5 7h13A1.5 1.5 0 0120 8.5V11a2 2 0 000 4v2.5a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 014 17.5V15a2 2 0 000-4zM14 7v2M14 11v2M14 15v2',
+    stk: 'M12 3l9 4.5-9 4.5-9-4.5zM3 12l9 4.5 9-4.5M3 16.5l9 4.5 9-4.5',
+    crown: 'M3.5 8l4.5 4.5L12 5l4 7.5L20.5 8 19 19H5zM5 19h14',
+    doc: 'M7 3h7l4 4v14H7zM14 3v4h4M10 12h5M10 16h5',
+    mic: 'M12 3a3 3 0 00-3 3v5a3 3 0 006 0V6a3 3 0 00-3-3zM6 11a6 6 0 0012 0M12 17v4',
     rupee: 'M7 5h10M7 9h10M7 5c5 0 6 2.5 6 4s-1 4-6 4l6 6', people: 'M9 11a3 3 0 100-6 3 3 0 000 6zM3 20c0-3 2.7-5 6-5s6 2 6 5M16 11a2.5 2.5 0 100-5M17 15c2.5 0 4 1.7 4 4',
     book: 'M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3zM5 17a3 3 0 013-3h11', chatx: 'M5 5h14a1 1 0 011 1v9a1 1 0 01-1 1h-7l-4 4v-4H5a1 1 0 01-1-1V6a1 1 0 011-1zM9.5 8.5l5 4M14.5 8.5l-5 4', type: 'M5 19L12 5l7 14M8.5 14h7',
     tools: 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z', photo: 'M4 6h16v12H4zM4 15l4.5-4.5 4 4 3-3L20 16M15.5 9.5v.01', devices: 'M3 6h13v9H3zM1 18h17M18 9h4v10h-4zM20 16.5v.01',
@@ -384,7 +389,7 @@
 
   // ---- packs -------------------------------------------------------------------------------------
   const PACK_TAG = { pan_pack: N('Most popular'), pack_month: N('Best value') };
-  const PACK_ICON = { pack_quick: 'bolt', pan_pack: 'star', pack_month: 'spark' };
+  const PACK_ICON = { pack_quick: 'tkt', pan_pack: 'stk', pack_month: 'crown' };
   SCREENS.packs = async () => {
     const col = frame(T('Packs'), T('One price for a whole paperwork job. No need to count messages.'));
     const packs = C.prices?.packs || [];
@@ -401,7 +406,7 @@
         top.append(ic, nm); if (PACK_TAG[pk.id]) top.append(el('span', 'tag hot', T(PACK_TAG[pk.id])));
         const price = el('div', 'pack-price'); price.append(el('b', '', rupee(pk.paise)), el('span', '', T('about {amt} a day', { amt: rupee(Math.round(pk.paise / pk.days)) })));
         const ul = el('ul', 'incl');
-        for (const t of [T('Unlimited guide messages'), T('Unlimited form sheets'), T('{n} document checks', { n: pk.scans }), T('{n} AI answers', { n: pk.ai }), T('{n} voice notes', { n: pk.voice }), T('{n} reminders', { n: pk.remind })]) { const li = el('li'); li.append(ico('check', 16), el('span', '', t)); ul.append(li); }
+        for (const [k, t] of [['msg', T('Unlimited guide messages')], ['doc', T('Unlimited form sheets')], ['camera', T('{n} document checks', { n: pk.scans })], ['spark', T('{n} AI answers', { n: pk.ai })], ['mic', T('{n} voice notes', { n: pk.voice })], ['bell', T('{n} reminders', { n: pk.remind })]]) { const li = el('li'); const c = el('span', 'inc-ic'); c.append(ico(k, 16)); li.append(c, el('span', '', t)); ul.append(li); }
         const enough = (w?.paise || 0) >= pk.paise; const need = Math.max(1000, Math.ceil((pk.paise - (w?.paise || 0)) / 100) * 100);
         const buy = btn('btn ' + (PACK_TAG[pk.id] ? 'pri' : 'ink') + ' xl', enough ? T('Get it for {amt} from your wallet', { amt: rupee(pk.paise) }) : T('Pay {amt} and get it', { amt: rupee(need) }), () => buyPack(pk, buy, need));
         card.append(top, price, ul, buy); holder.append(card);
@@ -683,7 +688,7 @@
     const slide = (s) => { const d = el('div', 'ob-slide'); const a = el('div', 'ob-art'); a.innerHTML = ART[s.art]; d.append(a, el('h1', '', T(s.title)), el('p', 'ob-p', T(s.text))); return d; };
     function go(n) {
       if (busy) return;
-      dir = n >= step ? 1 : -1; step = Math.max(0, Math.min(total - 1, n));
+      dir = n >= step ? 1 : -1; step = Math.max(0, Math.min(total - 1, n)); next.disabled = false;
       stage.replaceChildren();
       for (const [i, d] of [...dots.children].entries()) d.classList.toggle('on', i === step);
       backB.setAttribute('aria-label', T('Back')); skip.textContent = T('Skip'); pl.textContent = T('How your data is handled'); fineT.textContent = T('Free to start, no sign-up.');
@@ -696,8 +701,8 @@
         const holder = el('div', 'ob-langs2'); view.append(holder);
         langPicker(holder, { current: langObj.code, onPick: (l) => { langObj = l; next.textContent = T('Continue in {lang}', { lang: l.en }); } });
         next.textContent = T('Continue in {lang}', { lang: langObj.en });
-      } else if (step === 1) { view = aboutView(); next.textContent = T('Continue'); }
-      else if (step < total - 1) { view = slide(STEPS[step - 2]); next.textContent = T('Next'); }
+      } else if (step === 1) { view = aboutView(); next.textContent = T('Continue'); syncNext(); }
+      else if (step < total - 1) { view = slide(STEPS[step - 2]); next.textContent = T('Next'); next.disabled = false; }
       else { view = slide(STEPS[step - 2]); next.textContent = T('Get started'); }
       view.classList.add(dir > 0 ? 'from-r' : 'from-l'); stage.append(view);
     }
@@ -706,21 +711,23 @@
     const tsend = async (op, args) => { const r = await api('/app/api/t', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ op, args }) }).catch(() => ({ ok: false, j: {} })); return r.ok ? { ok: true, data: r.j.data } : { ok: false, error: r.j?.error }; };
     const ageOf = (iso) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso); if (!m) return null; const b = new Date(+m[1], +m[2] - 1, +m[3]); if (b > new Date()) return null; const n = new Date(); let a = n.getFullYear() - b.getFullYear(); if (n < new Date(n.getFullYear(), b.getMonth(), b.getDate())) a--; return a >= 0 && a < 121 ? a : null; };
     let aboutErr = null;
+    const aboutReady = () => about.name.trim().length >= 2 && ageOf(about.dob) !== null && !!about.gender && about.state.trim().length >= 2;
+    const syncNext = () => { if (step === 1) next.disabled = busy || !aboutReady(); };
     const stateSeen = new Map();
     const checkState = async (v) => { const k = v.trim().toLowerCase(); if (stateSeen.has(k)) return stateSeen.get(k); const r = await tsend('state.find', { text: v }); if (r.ok) stateSeen.set(k, r); return r; };
     function aboutView() {
       const d = el('div', 'ob-slide about-step');
       const a = el('div', 'ob-art sm'); a.innerHTML = ART.me;
-      d.append(a, el('h1', 'sm', T('Tell Saathi about you')), el('p', 'ob-p', T('Saathi fills your forms from these, so you never type them twice. Stored encrypted. All optional.')));
+      d.append(a, el('h1', 'sm', T('Tell Saathi about you')), el('p', 'ob-p', T('Saathi fills your forms from these, so you never type them twice. Stored encrypted. Fill in all four to continue, or skip.')));
       const form = el('div', 'ob-form');
       const fld = (label, input, extra) => { const w = el('label', 'fld'); w.append(el('span', 'fld-l', label), input); if (extra) w.append(extra); return w; };
-      const nm = el('input', 'field-i'); nm.type = 'text'; nm.autocomplete = 'name'; nm.placeholder = T('As on your Aadhaar'); nm.value = about.name; nm.maxLength = 80; nm.oninput = () => { about.name = nm.value; };
+      const nm = el('input', 'field-i'); nm.type = 'text'; nm.autocomplete = 'name'; nm.placeholder = T('As on your Aadhaar'); nm.value = about.name; nm.maxLength = 80; nm.oninput = () => { about.name = nm.value; syncNext(); };
       const dob = el('input', 'field-i'); dob.type = 'date'; dob.max = new Date().toISOString().slice(0, 10); dob.value = about.dob; dob.autocomplete = 'bday';
       const age = el('small', 'fld-h'); const showAge = () => { const n = ageOf(dob.value); age.textContent = n === null ? '' : T('Age: {n}', { n }); };
-      dob.oninput = () => { about.dob = dob.value; showAge(); }; showAge();
-      const g = seg([['male', T('Male')], ['female', T('Female')], ['other', T('Other')]], about.gender, (v) => { about.gender = v; });
+      dob.oninput = () => { about.dob = dob.value; showAge(); syncNext(); }; showAge();
+      const g = seg([['male', T('Male')], ['female', T('Female')], ['other', T('Other')]], about.gender, (v) => { about.gender = v; syncNext(); });
       const gw = el('div', 'fld'); gw.append(el('span', 'fld-l', T('Gender')), g);
-      const st = el('input', 'field-i'); st.type = 'text'; st.setAttribute('list', 'obStates'); st.autocomplete = 'off'; st.placeholder = T('Your state'); st.value = about.state; st.oninput = () => { about.state = st.value; hint.textContent = ''; hint.className = 'fld-h'; };
+      const st = el('input', 'field-i'); st.type = 'text'; st.setAttribute('list', 'obStates'); st.autocomplete = 'off'; st.placeholder = T('Your state'); st.value = about.state; st.oninput = () => { about.state = st.value; syncNext(); hint.textContent = ''; hint.className = 'fld-h'; };
       const dl = el('datalist'); dl.id = 'obStates'; for (const n of STATE_LIST) { const o = el('option'); o.value = n; dl.append(o); }
       const hint = el('small', 'fld-h');
       st.onchange = async () => { const v = st.value.trim(); if (!v) return; const r = await checkState(v); if (r.ok && r.data.name) { st.value = about.state = r.data.name; hint.textContent = ''; } else if (r.ok) { hint.textContent = T('I don’t know a state like that.'); hint.className = 'fld-h bad'; hint.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } };
@@ -753,7 +760,7 @@
         store.set('saathi.lang', langObj.code); C.applyStatic(); buildSidebar();
         return go(1);
       }
-      if (step === 1) { busy = true; next.disabled = true; const ok = await saveAbout(); busy = false; next.disabled = false; if (!ok) return; return go(2); }
+      if (step === 1) { if (!aboutReady()) return; busy = true; next.disabled = true; const ok = await saveAbout(); busy = false; syncNext(); if (!ok) return; return go(2); }
       if (step < total - 1) return go(step + 1);
       await finish();
     };

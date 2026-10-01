@@ -339,3 +339,19 @@ h1{font-size:clamp(46px,7.4vw,92px)}
 .st-t{font-size:16px;letter-spacing:0}
 .hero h1{max-width:9em}
 @media (max-width:860px){.hero-in{grid-template-columns:minmax(0,1fr)}.stamp{order:-1;justify-self:start;width:120px;margin-bottom:0}}
+
+/* ===== black and white again ===== */
+:root{--ac:#1F1E1D;--ac-ink:#FAF9F6;--ac-soft:#EFEEE8;--ac-line:#D9D6CB}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ac:#F0EEE6;--ac-ink:#1F1F1E;--ac-soft:#34332F;--ac-line:#4A4944}}
+:root[data-theme="dark"]{--ac:#F0EEE6;--ac-ink:#1F1F1E;--ac-soft:#34332F;--ac-line:#4A4944}
+.btn:hover{box-shadow:none}
+.step:hover{box-shadow:0 14px 34px rgba(0,0,0,.08)}
+.final{background:var(--ac);color:var(--ac-ink)}
+.faq details{overflow:hidden}
+.faq summary::after{color:var(--fg)}
+.faq details.opening>div{animation:faqin .45s var(--ease) both}
+@keyframes faqin{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.faq details.closing summary::after{transform:none}
+.faq details[open] summary::after{transform:rotate(135deg)}
+.faq details.closing[open] summary::after{transform:none}
+.faq details>div{padding-bottom:20px}

@@ -55,6 +55,7 @@ const STATIC = {
   '/apple-touch-icon.png': ['apple-touch-icon.png', 'image/png'],
 };
 
+const LOGOS = new Map();
 export const CSP = "default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; style-src 'self'; script-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; object-src 'none'";
 
 export const isWebKey = (phoneKey) => typeof phoneKey === 'string' && phoneKey.startsWith('web:');
@@ -471,6 +472,24 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
     }
     if (p === '/app/api/config' && req.method === 'GET') {
       json(res, 200, { whatsapp: shell.whatsappNumber ? `https://wa.me/${shell.whatsappNumber}` : null, whatsappNumber: shell.whatsappNumber || null, voice: Boolean(shell.voice), pay: Boolean(shell.pay), link: Boolean(links), tools: Boolean(tools), privacy: '/privacy', prices: prices(), topups: config.rates?.topups || [], languages: [{ code: 'en', native: 'English', en: 'English' }, { code: 'hi', native: 'हिन्दी', en: 'Hindi' }, ...LANGS.map((l) => ({ code: l.code, native: l.native, en: l.en, beta: Boolean(l.beta) }))] });
+      return true;
+    }
+    // Site logos for the sources screen. Only real icons pass: a missing one is a 404 so the page shows a letter badge instead of a generic arrow.
+    if (p === '/app/api/logo' && req.method === 'GET') {
+      const h = String(url.searchParams.get('host') || '').toLowerCase();
+      if (!/^[a-z0-9-]+(\.[a-z0-9-]+){1,4}$/.test(h) || h.length > 80) { json(res, 400, { ok: false }); return true; }
+      let hit = LOGOS.get(h);
+      if (!hit) {
+        try {
+          const r = await fetch('https://icons.duckduckgo.com/ip3/' + h + '.ico', { signal: AbortSignal.timeout(5000) });
+          const buf = r.ok ? Buffer.from(await r.arrayBuffer()) : null;
+          hit = buf && buf.length > 80 && buf.length < 200000 ? { type: r.headers.get('content-type') || 'image/x-icon', buf } : { none: true };
+        } catch { hit = { none: true }; }
+        if (LOGOS.size > 300) LOGOS.clear();
+        LOGOS.set(h, hit);
+      }
+      if (hit.none) { res.writeHead(404, { 'cache-control': 'public, max-age=86400' }); res.end(); return true; }
+      res.writeHead(200, { 'content-type': hit.type, 'cache-control': 'public, max-age=604800', 'x-content-type-options': 'nosniff' }); res.end(hit.buf);
       return true;
     }
     // Public facts for the landing page: what each service needs, straight from the same data the bot uses.

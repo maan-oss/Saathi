@@ -580,7 +580,7 @@ export const HI = {
   "Private values are encrypted and never sit in this chat. They hide again after 20 seconds.": "निजी जानकारी एन्क्रिप्टेड रहती है और चैट में नहीं रखी जाती। 20 सेकंड बाद फिर छिप जाती है।",
   "Continue": "आगे बढ़ें",
   "Tell Saathi about you": "साथी को अपने बारे में बताइए",
-  "Saathi fills your forms from these, so you never type them twice. Stored encrypted. All optional.": "साथी इनसे आपके फ़ॉर्म भरता है, ताकि दोबारा टाइप न करना पड़े। एन्क्रिप्टेड सेव होता है। सब वैकल्पिक है।",
+  "Saathi fills your forms from these, so you never type them twice. Stored encrypted. Fill in all four to continue, or skip.": "साथी इनसे आपके फ़ॉर्म भरता है, ताकि दोबारा टाइप न करना पड़े। एन्क्रिप्टेड सेव होता है। आगे बढ़ने के लिए चारों भरें, या छोड़ दें।",
   "As on your Aadhaar": "आधार के अनुसार",
   "Age: {n}": "उम्र: {n}",
   "Male": "पुरुष",
@@ -748,4 +748,7 @@ export const HI = {
   "Save what I filled in": "जो भरा है वह सेव करें",
   "Fill in at least one field.": "कम से कम एक खाना भरें।",
   "Stored encrypted. Never sent to the AI.": "एन्क्रिप्टेड सेव होता है। AI को कभी नहीं भेजा जाता।",
+  "Official websites": "आधिकारिक वेबसाइटें",
+  "Used for {list}": "इनके लिए: {list}",
+  "Opens in your browser": "आपके ब्राउज़र में खुलेगा",
 };

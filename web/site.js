@@ -151,3 +151,20 @@
     watch($('#receipt'));
   }).catch(() => {});
 })();
+
+// ---- FAQ answers open with a real height animation ----------------------------------------------------------------------
+(() => {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  document.addEventListener('click', (e) => {
+    const sum = e.target.closest && e.target.closest('.faq summary'); const d = sum && sum.parentElement;
+    if (!d || !d.animate) return;
+    e.preventDefault();
+    if (d._a) d._a.cancel();
+    const startH = d.offsetHeight; const opening = !d.open;
+    d.style.overflow = 'hidden'; if (opening) d.open = true;
+    const endH = opening ? d.scrollHeight : sum.offsetHeight;
+    d.classList.toggle('opening', opening);
+    const a = d.animate({ height: [startH + 'px', endH + 'px'] }, { duration: opening ? 380 : 280, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    d._a = a; a.onfinish = () => { d._a = null; d.style.overflow = ''; d.classList.remove('opening'); if (!opening) d.open = false; };
+  });
+})();

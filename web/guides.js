@@ -21,12 +21,25 @@
   const inr = (n) => '₹' + Math.round(n).toLocaleString('en-IN');
   const todayIso = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 
-  // *bold* to <b>, without ever touching innerHTML
+  // *bold* to <b>, and official web addresses to real links, without ever touching innerHTML.
+  // Only government sites and the two PAN partners become links; anything else stays plain text.
+  const OFFICIAL = /(?:^|\.)(?:gov\.in|nic\.in)$|^(?:tinpan\.proteantech\.in|pan\.utiitsl\.com|proteantech\.in|utiitsl\.com)$/i;
+  const DOMAIN = /\b((?:[a-z0-9-]+\.)+(?:gov\.in|nic\.in|proteantech\.in|utiitsl\.com))(\/[^\s),;]*)?/gi;
+  function linkify(parent, text) {
+    let last = 0;
+    for (const m of text.matchAll(DOMAIN)) {
+      if (!OFFICIAL.test(m[1])) continue;
+      if (m.index > last) parent.append(text.slice(last, m.index));
+      const a = el('a', 'ext-link', m[0].replace(/[.]+$/, '')); a.href = 'https://' + a.textContent; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      parent.append(a); last = m.index + a.textContent.length;
+    }
+    if (last < text.length) parent.append(text.slice(last));
+  }
   function md(text) {
     const f = document.createDocumentFragment();
     String(text || '').split(/(\*[^*\n]+\*)/g).forEach((part) => {
-      if (/^\*[^*\n]+\*$/.test(part)) f.append(el('b', '', part.slice(1, -1)));
-      else if (part) f.append(part);
+      if (/^\*[^*\n]+\*$/.test(part)) { const b = el('b'); linkify(b, part.slice(1, -1)); f.append(b); }
+      else if (part) linkify(f, part);
     });
     return f;
   }
@@ -100,9 +113,9 @@
       else if (nextStep() === -1) status = T('Every step is done');
       else status = T('Step {i} of {n} is next', { i: nextStep() + 1, n: stepsTotal() });
       info.append(el('div', 'gh-st', status));
-      const top = el('div', 'gh-top'); top.append(ring(p, 56), info);
-      const wm = el('span', 'gh-wm'); wm.setAttribute('aria-hidden', 'true'); wm.append(ico(meta[2], 150));
-      head.append(wm, top);
+      const gi = el('span', 'gh-ic'); gi.setAttribute('aria-hidden', 'true'); gi.append(ico(meta[2], 26));
+      const top = el('div', 'gh-top'); top.append(gi, info, ring(p, 52));
+      head.append(top);
       const acts = el('div', 'gh-acts');
       acts.append(btn('btn sm', T('Ask Saathi'), () => U.startServiceChat(id)));
       if (route?.kind === 'steps' && P.steps.length) acts.append(btn('btn sm ghost', T('Start over'), confirmReset));
@@ -130,10 +143,13 @@
         actions: [btn('btn', T('Cancel'), closeDialog), btn('btn danger', T('Start over'), () => { closeDialog(); P.route = ''; P.ans = {}; P.steps = []; save(); route = null; order = []; question = null; init(); })],
       });
     }
-    const drawPane = () => {
+    let tipsOpen = false;
+    const drawPane = (soft) => {
+      const sc = pane.closest('.screen'); const y = sc ? sc.scrollTop : 0;
       pane.replaceChildren();
-      pane.classList.remove('in'); void pane.offsetWidth; pane.classList.add('in');
+      if (soft) pane.classList.remove('in'); else { pane.classList.remove('in'); void pane.offsetWidth; pane.classList.add('in'); }
       if (tab === 'steps') stepsPane(); else if (tab === 'docs') docsPane(); else if (tab === 'fees') feesPane(); else mePane();
+      if (soft && sc) sc.scrollTop = y;
     };
     const refresh = () => { drawHead(); };
 
@@ -223,9 +239,9 @@
     function toggleStep(i) {
       const at = P.steps.indexOf(i);
       if (at >= 0) P.steps.splice(at, 1); else P.steps.push(i);
-      save(); refresh(); drawPane();
+      save(); refresh(); drawPane(true);
       const now = P.steps.includes(i);
-      if (now) { const li = pane.querySelector(`.stp-i:nth-child(${i + 2})`); li?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' }); }
+      if (now) { const li = pane.querySelector('.stp-i.cur'); li?.scrollIntoView?.({ block: 'center', behavior: 'smooth' }); }
     }
     function askStep(i, text) {
       const q = T('I am on step {i} of the {name} guide: "{text}". Explain it simply and tell me what to watch out for.', { i: i + 1, name: G.name, text: text.slice(0, 300) });
@@ -243,7 +259,7 @@
     }
     function tipsCard() {
       if (!G.tips.length) return;
-      const c = el('details', 'g-card tips');
+      const c = el('details', 'g-card tips'); if (tipsOpen) c.open = true; c.addEventListener('toggle', () => { tipsOpen = c.open; });
       c.append(el('summary', '', T('Watch out for')));
       const ul = el('ul', 'tp'); for (const t of G.tips) { const li = el('li'); li.append(ico('warn', 16), el('span', '', t)); ul.append(li); }
       c.append(ul); pane.append(c);

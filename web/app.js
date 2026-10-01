@@ -831,3 +831,29 @@
     resetAfterDelete() { clearChats(); store.del('saathi.poll'); },
   };
 })();
+
+// ---- small motion helpers shared by every screen -------------------------------------------------------------------
+// 1) <details> opens and closes with a real height animation. 2) Scrolling lists fade at the edge that has more to see.
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.addEventListener('click', (e) => {
+    const sum = e.target.closest && e.target.closest('summary'); const d = sum && sum.parentElement;
+    if (!d || d.tagName !== 'DETAILS' || reduce || !d.animate) return;
+    e.preventDefault();
+    if (d._anim) { d._anim.cancel(); d._anim = null; }
+    const startH = d.offsetHeight; d.style.overflow = 'hidden';
+    const opening = !d.open;
+    if (opening) d.open = true;
+    const endH = opening ? d.scrollHeight : sum.offsetHeight + (parseFloat(getComputedStyle(d).borderTopWidth) || 0) * 2 + (parseFloat(getComputedStyle(d).paddingTop) || 0) + (parseFloat(getComputedStyle(d).paddingBottom) || 0);
+    d.classList.toggle('opening', opening); d.classList.toggle('closing', !opening);
+    const a = d.animate({ height: [startH + 'px', endH + 'px'] }, { duration: opening ? 380 : 280, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    d._anim = a;
+    const done = () => { d._anim = null; d.style.overflow = ''; d.classList.remove('opening', 'closing'); if (!opening) d.open = false; };
+    a.onfinish = done; a.oncancel = () => { d.style.overflow = ''; };
+  });
+  const SEL = '.ob-langs2 .langs, .ob-stage, .sb-scroll, #chat, .screen';
+  const upd = (n) => { const t = n.scrollTop > 6, b = n.scrollHeight - n.clientHeight - n.scrollTop > 6; n.style.setProperty('--ft', t ? '26px' : '0px'); n.style.setProperty('--fb', b ? '26px' : '0px'); n.classList.add('fadey'); };
+  const all = () => document.querySelectorAll(SEL).forEach(upd);
+  document.addEventListener('scroll', (e) => { const n = e.target; if (n && n.matches && n.matches(SEL)) upd(n); }, true);
+  setInterval(all, 400); all();
+})();

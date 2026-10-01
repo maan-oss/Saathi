@@ -910,10 +910,34 @@
   };
 
   // ---- where our facts come from --------------------------------------------------------------------------------------------
+  const ORG = {
+    'incometax.gov.in': 'Income Tax Department', 'tinpan.proteantech.in': 'Protean (PAN services)', 'pan.utiitsl.com': 'UTIITSL (PAN services)',
+    'sarathi.parivahan.gov.in': 'Sarathi, driving licence', 'parivahan.gov.in': 'Parivahan, transport', 'myaadhaar.uidai.gov.in': 'myAadhaar, UIDAI',
+    'uidai.gov.in': 'UIDAI, Aadhaar', 'bookappointment.uidai.gov.in': 'UIDAI appointments', 'voters.eci.gov.in': 'Election Commission, voters',
+    'electoralsearch.eci.gov.in': 'Electoral search', 'passportindia.gov.in': 'Passport Seva', 'portal2.passportindia.gov.in': 'Passport Seva portal',
+    'gst.gov.in': 'GST portal', 'reg.gst.gov.in': 'GST registration', 'services.india.gov.in': 'India.gov.in services',
+  };
+  const hostOf = (u) => { const m = /([a-z0-9-]+(?:\.[a-z0-9-]+)+)/i.exec(String(u)); return m ? m[1].toLowerCase() : ''; };
+  const siteLogo = (host) => {
+    const w = el('span', 'src-logo'); w.append(el('b', '', host.replace(/^(www|tinpan|portal2|reg|myaadhaar|sarathi|voters|electoralsearch|bookappointment|pan)\./, '').charAt(0).toUpperCase()));
+    const im = el('img'); im.alt = ''; im.width = 28; im.height = 28; im.loading = 'lazy'; im.decoding = 'async';
+    im.src = '/app/api/logo?host=' + encodeURIComponent(host);
+    im.onload = () => { if (im.naturalWidth > 8) w.classList.add('has'); else im.remove(); }; im.onerror = () => im.remove();
+    w.append(im); return w;
+  };
   S.sources = async () => {
     const col = frame(T('Where our facts come from'), T('Every fee and step is taken from an official page. When we last checked is shown below.'));
     const d = await U.loadServices();
-    for (const s of d.services || []) col.append(group(s.name, ...(s.sites || []).map((u) => row({ icon: 'globe', title: u.replace(/^https:\/\//, ''), href: u }))));
+    const by = new Map();
+    for (const s of d.services || []) for (const u of s.sites || []) { const h = hostOf(u); if (!h || !/\.(gov\.in|nic\.in|in|com)$/.test(h)) continue; if (!by.has(h)) by.set(h, []); const l = by.get(h); if (!l.includes(s.name)) l.push(s.name); }
+    const list = el('div', 'src-list');
+    for (const [h, names] of by) {
+      const a = el('a', 'src-i'); a.href = 'https://' + h; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      const tx = el('span', 'src-tx'); tx.append(el('b', '', ORG[h] || h), el('small', 'src-h', h), el('small', 'src-u', T('Used for {list}', { list: names.join(', ') })));
+      const go = ico('ext', 16); go.classList.add('src-go');
+      a.append(siteLogo(h), tx, go); list.append(a);
+    }
+    col.append(el('h3', 'src-t', T('Official websites')), list);
     if (d.verified) col.append(el('p', 'mut small center', T('Information last checked {date}.', { date: d.verified })));
     col.append(note(T('Fees and rules change. Always confirm on the official site before you pay.'), 'help'));
   };
