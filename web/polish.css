@@ -268,3 +268,62 @@ details.tips .tp li svg{flex:none;margin-top:2px;color:var(--mut)}
 .src-h{color:var(--ink);font-size:13.5px;overflow-wrap:anywhere}
 .src-u{color:var(--mut);font-size:13px}
 .src-go{flex:none;color:var(--mut)}
+
+/* ---- round: guide header, step animation, info card, privacy, chat logo -------------------------------- */
+.gr-ring{width:56px;height:56px}
+.gr-ring svg{width:100%;height:100%}
+.gr-pct{position:relative;line-height:1;letter-spacing:-.02em}
+.gh-top{align-items:center}
+.gh-ic{width:56px;height:56px;border-radius:17px;background:var(--ink);color:var(--bg)}
+.gh-ic .gi{width:38px;height:38px;display:block}
+.gh-ic .gi *{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.gh-ic .gi .f{fill:currentColor;fill-opacity:.35}
+.gr-fg{transition:stroke-dashoffset .8s cubic-bezier(.22,1,.36,1)}
+.meter i{transition:transform .8s cubic-bezier(.22,1,.36,1),width .8s cubic-bezier(.22,1,.36,1)}
+
+/* steps: a finished step settles, the next one opens */
+.stp-i{transition:background-color .35s,border-color .35s,box-shadow .35s,transform .35s}
+.stp-i.just{animation:stpSettle .55s cubic-bezier(.22,1,.36,1)}
+.stp-i.just .gk{animation:gkPop .5s cubic-bezier(.3,1.6,.5,1)}
+.stp-i.just .gk svg path{stroke-dasharray:24;stroke-dashoffset:24;animation:gkDraw .35s .12s ease forwards}
+.stp-i.arrive{animation:stpArrive .5s cubic-bezier(.22,1,.36,1)}
+.stp-i.arrive .stp-a{animation:stpActs .45s .08s cubic-bezier(.22,1,.36,1) both}
+.stp-i.undo{animation:stpSettle .4s ease}
+@keyframes stpSettle{0%{transform:scale(.985)}60%{transform:scale(1.01)}100%{transform:none}}
+@keyframes gkPop{0%{transform:scale(.6)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+@keyframes gkDraw{to{stroke-dashoffset:0}}
+@keyframes stpArrive{0%{transform:translateY(8px);opacity:.6}100%{transform:none;opacity:1}}
+@keyframes stpActs{0%{opacity:0;transform:translateY(-6px)}100%{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.stp-i.just,.stp-i.just .gk,.stp-i.arrive,.stp-i.arrive .stp-a,.stp-i.undo{animation:none}}
+
+/* "everything you need" card */
+.pack .pk-txt{padding:6px 18px 14px}
+.pack .pk-p{margin:4px 0 8px;color:var(--mut);font-size:14.5px;line-height:1.5}
+.pack .pk-ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0}
+.pack .pk-ul li{position:relative;display:flex;flex-direction:column;gap:2px;padding:11px 0 11px 18px;border-top:1px solid var(--line);font-size:15px;line-height:1.5}
+.pack .pk-ul li:first-child{border-top:0}
+.pack .pk-ul li::before{content:"";position:absolute;left:2px;top:19px;width:6px;height:6px;border-radius:50%;background:var(--ink)}
+.pack .pk-ul .pk-k{font-weight:650;color:var(--ink)}
+.pack .pk-ul .txt{display:inline;white-space:normal}
+.pack .pk-h{padding:18px 18px 4px;color:var(--mut)}
+.pack .pk-prog{display:flex;align-items:center;gap:12px;padding:14px 18px;border-top:1px solid var(--line);font-size:14px;color:var(--mut)}
+.pack .pk-prog .meter{flex:1;min-width:40px}
+.pack .pk-prog .btn{flex:none}
+.sheet-miss{display:none}
+
+/* chat logo: no ring, bigger */
+.msg.botrow .av{width:38px;height:38px;border:0;background:transparent;border-radius:0;margin-top:0}
+.msg.botrow .av img{width:34px;height:34px}
+
+/* privacy */
+.priv{display:flex;flex-direction:column}
+.priv-s{display:flex;gap:14px;padding:16px 0;border-top:1px solid var(--line)}
+.priv-s:first-child{border-top:0}
+.priv-ic{flex:none;width:38px;height:38px;border-radius:12px;background:var(--bg2);display:grid;place-items:center;color:var(--ink)}
+.priv-s h3{margin:0 0 4px;font:700 16px/1.25 var(--serif)}
+.priv-s p{margin:0;color:var(--mut);font-size:14.5px;line-height:1.55}
+.dialog .priv{max-height:min(52vh,420px);overflow:auto;text-align:left;margin:6px 0 4px}
+.pack .pk-prog{display:grid;grid-template-columns:1fr auto;gap:10px 12px;align-items:center}
+.pack .pk-prog .meter{grid-column:1/-1;grid-row:2;display:block;height:8px;border-radius:99px;background:var(--bg2);border:1px solid var(--line);overflow:hidden}
+.pack .pk-prog .meter i{display:block;height:100%;width:100%;transform-origin:left;transform:scaleX(var(--v,0));background:var(--ink);border-radius:99px}
+.pack .pk-prog>span:first-child{color:var(--ink);font-weight:600}

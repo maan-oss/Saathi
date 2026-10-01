@@ -128,7 +128,24 @@
     head.append(badge, tt);
     card.append(head);
     const sec = (title) => { const h = el('div', 'pk-h', title); card.append(h); };
-    const block = (txt) => { if (!txt) return; const d = el('div', 'pk-txt'); d.append(richText(String(txt), r.links)); card.append(d); };
+    const block = (txt) => {
+      if (!txt) return;
+      const d = el('div', 'pk-txt'); let ul = null;
+      const lines = String(txt).split('\n').map((x) => x.trim()).filter(Boolean);
+      const bullets = lines.some((x) => /^[•\-·]\s/.test(x));
+      const flat = bullets ? lines : lines.flatMap((x) => x.split(/(?<=[.!?])\s+(?=[A-Z₹])/));
+      for (const ln of flat) {
+        const isB = /^[•\-·]\s/.test(ln) || !bullets;
+        if (isB) {
+          if (!ul) { ul = el('ul', 'pk-ul'); d.append(ul); }
+          const t = ln.replace(/^[•\-·]\s+/, '');
+          const li = el('li'); const m = bullets ? /^([^:]{2,30}):\s+(.+)$/.exec(t) : null;
+          if (m) { li.append(el('b', 'pk-k', m[1])); li.append(richText(m[2], r.links)); } else li.append(richText(t, r.links));
+          ul.append(li);
+        } else { ul = null; const pr = el('p', 'pk-p'); pr.append(richText(ln, r.links)); d.append(pr); }
+      }
+      card.append(d);
+    };
     sec(T('Documents')); block(r.docs);
     sec(T('Fee')); block(r.fee);
     const lockRow = (label, set, fetcher, i) => {
@@ -175,7 +192,14 @@
     const fieldVal = async (key) => { const d = await tcall('details.get', {}); const f = d.fields.find((x) => x.key === key); if (!f?.value) throw new Error('none'); return { view: f.value, copy: f.value }; };
     privFields.forEach((f, i) => lockRow(f.label, f.set, () => fieldVal(f.key), i));
     (r.ids || []).forEach((x, i) => lockRow(x.label, x.set, async () => { const d = await tcall('locker.reveal', { type: x.type }); return { view: d.number, copy: d.copy }; }, i + privFields.length));
-    if (r.missing?.length) { const m = el('div', 'sheet-miss'); m.append(el('b', '', T('Still needed')), ' ' + r.missing.join(', ')); card.append(m); }
+    {
+      const all = [...plainFields, ...privFields, ...(r.ids || [])]; const have = all.filter((x) => x.set).length;
+      const m = el('div', 'pk-prog'); const tx = el('span', '', T('{n} of {m} saved', { n: have, m: all.length }));
+      const bar = el('span', 'meter'); const fill = el('i'); fill.style.setProperty('--v', String(all.length ? have / all.length : 0)); bar.append(fill);
+      m.append(tx, bar);
+      if (have < all.length) { const ab = el('button', 'btn sm', T('Add my details')); ab.type = 'button'; ab.onclick = () => core.openScreen?.('details'); m.append(ab); }
+      card.append(m);
+    }
     const note = el('div', 'sheet-note'); note.append(iconEl(SHIELD, 16), el('span', '', T('Private values are encrypted and never sit in this chat. They hide again after 20 seconds.')));
     card.append(note);
     return card;
@@ -246,6 +270,26 @@
     const t = el('span', 'tt'); t.append(el('b', '', title)); if (desc) t.append(el('small', '', desc));
     b.append(ic, t); b.onclick = onclick; return b;
   }
+  // Official sites: always open a page that exists. Guessed deep paths often lead nowhere, so only these are kept; everything else opens the site's front page.
+  const LANDING = {
+    'incometax.gov.in': 'https://www.incometax.gov.in/iec/foportal/', 'www.incometax.gov.in': 'https://www.incometax.gov.in/iec/foportal/',
+    'eportal.incometax.gov.in': 'https://eportal.incometax.gov.in/iec/foservices/',
+    'tinpan.proteantech.in': 'https://www.protean-tinpan.com/', 'proteantech.in': 'https://www.protean-tinpan.com/',
+    'pan.utiitsl.com': 'https://www.pan.utiitsl.com/', 'utiitsl.com': 'https://www.pan.utiitsl.com/', 'www.pan.utiitsl.com': 'https://www.pan.utiitsl.com/',
+    'sarathi.parivahan.gov.in': 'https://sarathi.parivahan.gov.in/sarathiservice/', 'parivahan.gov.in': 'https://parivahan.gov.in/',
+    'uidai.gov.in': 'https://uidai.gov.in/', 'myaadhaar.uidai.gov.in': 'https://myaadhaar.uidai.gov.in/', 'bookappointment.uidai.gov.in': 'https://bookappointment.uidai.gov.in/',
+    'passportindia.gov.in': 'https://www.passportindia.gov.in/', 'www.passportindia.gov.in': 'https://www.passportindia.gov.in/', 'portal2.passportindia.gov.in': 'https://portal2.passportindia.gov.in/',
+    'gst.gov.in': 'https://www.gst.gov.in/', 'www.gst.gov.in': 'https://www.gst.gov.in/', 'reg.gst.gov.in': 'https://reg.gst.gov.in/',
+    'voters.eci.gov.in': 'https://voters.eci.gov.in/', 'electoralsearch.eci.gov.in': 'https://electoralsearch.eci.gov.in/', 'services.india.gov.in': 'https://services.india.gov.in/',
+  };
+  function fixUrl(u) {
+    const m = /^(?:https?:\/\/)?([a-z0-9.-]+\.[a-z]{2,})(\/[^\s]*)?/i.exec(String(u || '').trim());
+    if (!m) return null;
+    const host = m[1].toLowerCase(); const path = m[2] || '';
+    if (/incometax\.gov\.in$/.test(host) && /instant|e-?pan/i.test(path)) return 'https://eportal.incometax.gov.in/iec/foservices/#/pre-login/instant-e-pan';
+    if (LANDING[host]) return LANDING[host];
+    return /\.(gov\.in|nic\.in)$/.test(host) ? 'https://' + host + '/' : 'https://' + host + path;
+  }
   function toHref(url) {
     const u = /^https?:\/\//i.test(url) ? url : 'https://' + url.replace(/^\/\//, '');
     try { const p = new URL(u); return p.protocol === 'https:' || p.protocol === 'http:' ? p.href : null; } catch { return null; }
@@ -265,13 +309,11 @@
   }
 
   function linkNode(url, info) {
-    const href = toHref(url);
+    const href = info.kind === 'official' ? fixUrl(url) : toHref(url);
     if (info.kind === 'official' && href) {
       const a = el('a', 'link ok', url);
       a.href = href; a.target = '_blank'; a.rel = 'noopener noreferrer nofollow';
-      const b = el('span', 'badge ok'); b.append(svg(ICON.check, 11), T('Official'));
-      const w = el('span'); w.append(a, b);
-      return w;
+      return a;
     }
     if (info.kind === 'payment' && href) {
       const a = el('a', 'link pay'); a.href = href; a.target = '_blank'; a.rel = 'noopener noreferrer nofollow';
@@ -817,7 +859,7 @@
 
   // What the screens (sidebar, settings, wallet, onboarding...) use.
   const core = window.SaathiCore = {
-    $, el, svg, api, toast, store, tab, HIST_KEY, sid, rupee, send, copyText, welcome, boot, setWallet, applyTheme, applyScale, richText, renderReply,
+    $, el, svg, api, toast, store, tab, HIST_KEY, sid, rupee, send, copyText, welcome, boot, setWallet, applyTheme, applyScale, richText, renderReply, fixUrl,
     T, N, uiLang, loadUI, applyStatic, openChat, newChat, deleteChat, clearChats, openServiceChat, randomHex, mergeChats,
     get wallet() { return walletNow; },
     get prices() { return pricesNow; },

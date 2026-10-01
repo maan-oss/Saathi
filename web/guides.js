@@ -30,7 +30,7 @@
     for (const m of text.matchAll(DOMAIN)) {
       if (!OFFICIAL.test(m[1])) continue;
       if (m.index > last) parent.append(text.slice(last, m.index));
-      const a = el('a', 'ext-link', m[0].replace(/[.]+$/, '')); a.href = 'https://' + a.textContent; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      const a = el('a', 'ext-link', m[0].replace(/[.]+$/, '')); a.href = C.fixUrl(a.textContent) || 'https://' + a.textContent; a.target = '_blank'; a.rel = 'noopener noreferrer';
       parent.append(a); last = m.index + a.textContent.length;
     }
     if (last < text.length) parent.append(text.slice(last));
@@ -45,25 +45,44 @@
   }
   const mdBox = (cls, text) => { const d = el('div', cls); d.append(md(text)); return d; };
 
+
+  // Guide icons: two-tone drawings, one per service, so each guide looks like what it is.
+  const GI = {
+    pan: '<rect x="3" y="7" width="26" height="18" rx="3.5"/><rect x="7" y="12" width="7" height="5.5" rx="1.2" class="f"/><path d="M18 13h7M18 17h7M7 21.5h18"/>',
+    aadhaar: '<rect x="3" y="7" width="26" height="18" rx="3.5"/><circle cx="11" cy="14" r="2.6" class="f"/><path d="M6.5 21.5c.9-3 8.1-3 9 0M19 13h7M19 17h7M19 21h4"/>',
+    dl: '<rect x="3" y="7" width="26" height="18" rx="3.5"/><circle cx="11.5" cy="16" r="4.6"/><circle cx="11.5" cy="16" r="1.2" class="f"/><path d="M7 16h3.3M12.7 16H16M11.5 17.2v3.2M20 13h6M20 17h6M20 21h3.5"/>',
+    passport: '<rect x="7" y="3" width="18" height="26" rx="2.8"/><circle cx="16" cy="13.5" r="5"/><path d="M11 13.5h10M16 8.5c2.2 2.6 2.2 7.4 0 10M16 8.5c-2.2 2.6-2.2 7.4 0 10M11.5 23.5h9"/>',
+    voter: '<path d="M5 17h22v9.5a1.5 1.5 0 01-1.5 1.5h-19A1.5 1.5 0 015 26.5z"/><path d="M11 17V6.5a1 1 0 011-1h8a1 1 0 011 1V17"/><path d="M13.2 11.2l2.1 2.1 3.6-4" /><rect x="11" y="21" width="10" height="2.6" rx="1.3" class="f"/>',
+    gst: '<path d="M7 3.5h18v25l-3-2.3-3 2.3-3-2.3-3 2.3-3-2.3-3 2.3z"/><circle cx="12.5" cy="10.5" r="1.8" class="f"/><circle cx="19.5" cy="18.5" r="1.8" class="f"/><path d="M20 9.5l-8 10M12 24h8"/>',
+    income: '<path d="M8 3.5h11l6 6v19H8z"/><path d="M19 3.5v6h6"/><path d="M12.5 15h7.5M12.5 18.5h7.5M12.5 15c4.6 0 5 2.1 5 3.3s-.9 3.4-5 3.4l5.2 4.3"/>',
+    caste: '<rect x="3.5" y="5" width="25" height="18" rx="2.8"/><path d="M8.5 10.5h15M8.5 14.5h8"/><circle cx="22" cy="20.5" r="4" class="f"/><path d="M19.8 24.2L19 29l3-1.6 3 1.6-.8-4.8"/>',
+  };
+  const gIcon = (id, fallbackKey) => {
+    const body = GI[id]; if (!body) return ico(fallbackKey, 26);
+    const doc = new DOMParser().parseFromString('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="30" height="30" class="gi" aria-hidden="true">' + body + '</svg>', 'image/svg+xml');
+    return document.importNode(doc.documentElement, true);
+  };
+  let lastRing = null; let lastMeter = null;
   function ring(p, size = 64) {
-    const box = el('div', 'gr-ring'); box.style.setProperty('--p', String(Math.max(0, Math.min(1, p))));
+    const box = el('div', 'gr-ring'); const pv = Math.max(0, Math.min(1, p));
+    box.style.setProperty('--p', String(lastRing === null ? pv : lastRing)); if (lastRing !== null && lastRing !== pv) requestAnimationFrame(() => requestAnimationFrame(() => box.style.setProperty('--p', String(pv)))); lastRing = pv;
     const ns = 'http://www.w3.org/2000/svg';
-    const s = document.createElementNS(ns, 'svg'); s.setAttribute('viewBox', '0 0 36 36'); s.setAttribute('width', size); s.setAttribute('height', size); s.setAttribute('aria-hidden', 'true');
+    const s = document.createElementNS(ns, 'svg'); s.setAttribute('viewBox', '0 0 36 36'); s.setAttribute('aria-hidden', 'true');
     const bg = document.createElementNS(ns, 'circle'); bg.setAttribute('cx', 18); bg.setAttribute('cy', 18); bg.setAttribute('r', 15.5); bg.setAttribute('class', 'gr-bg');
     const fg = document.createElementNS(ns, 'circle'); fg.setAttribute('cx', 18); fg.setAttribute('cy', 18); fg.setAttribute('r', 15.5); fg.setAttribute('class', 'gr-fg'); fg.setAttribute('pathLength', 100);
     s.append(bg, fg); box.append(s);
-    const t = el('span', 'gr-pct', Math.round(p * 100) + '%'); box.append(t);
+    const t = el('span', 'gr-pct', Math.round(pv * 100) + '%'); box.append(t);
     return box;
   }
   const tick = (on, label, onclick) => {
     const b = el('button', 'gk' + (on ? ' on' : '')); b.type = 'button'; b.setAttribute('role', 'checkbox'); b.setAttribute('aria-checked', String(on)); b.setAttribute('aria-label', label);
     b.append(ico('check', 15)); b.onclick = onclick; return b;
   };
-  const meter = (v) => { const m = el('span', 'meter gm'); const i = el('i'); i.style.setProperty('--v', String(v)); m.append(i); return m; };
+  const meter = (v) => { const m = el('span', 'meter gm'); const i = el('i'); i.style.setProperty('--v', String(lastMeter === null ? v : lastMeter)); if (lastMeter !== null && lastMeter !== v) requestAnimationFrame(() => requestAnimationFrame(() => i.style.setProperty('--v', String(v)))); lastMeter = v; m.append(i); return m; };
 
   S.service = async ({ id }) => {
     S.__svc = id;
-    const meta = U.svcMeta(id);
+    const meta = U.svcMeta(id); lastRing = null; lastMeter = null;
     const lang = C.uiLang();
     const col = frame(T(meta[1]), '');
     col.classList.add('wide-col', 'guide');
@@ -113,7 +132,7 @@
       else if (nextStep() === -1) status = T('Every step is done');
       else status = T('Step {i} of {n} is next', { i: nextStep() + 1, n: stepsTotal() });
       info.append(el('div', 'gh-st', status));
-      const gi = el('span', 'gh-ic'); gi.setAttribute('aria-hidden', 'true'); gi.append(ico(meta[2], 26));
+      const gi = el('span', 'gh-ic'); gi.setAttribute('aria-hidden', 'true'); gi.append(gIcon(id, meta[2]));
       const top = el('div', 'gh-top'); top.append(gi, info, ring(p, 52));
       head.append(top);
       const acts = el('div', 'gh-acts');
@@ -241,7 +260,10 @@
       if (at >= 0) P.steps.splice(at, 1); else P.steps.push(i);
       save(); refresh(); drawPane(true);
       const now = P.steps.includes(i);
-      if (now) { const li = pane.querySelector('.stp-i.cur'); li?.scrollIntoView?.({ block: 'center', behavior: 'smooth' }); }
+      const items = pane.querySelectorAll('.stp-i');
+      if (items[i]) items[i].classList.add(now ? 'just' : 'undo');
+      const cur = pane.querySelector('.stp-i.cur');
+      if (cur && now) { cur.classList.add('arrive'); setTimeout(() => cur.scrollIntoView?.({ block: 'center', behavior: 'smooth' }), 120); }
     }
     function askStep(i, text) {
       const q = T('I am on step {i} of the {name} guide: "{text}". Explain it simply and tell me what to watch out for.', { i: i + 1, name: G.name, text: text.slice(0, 300) });

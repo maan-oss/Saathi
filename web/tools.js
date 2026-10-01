@@ -705,7 +705,7 @@
 
       const acts = el('div', 'lk-acts');
       const site = (d.services || []).find((s) => s.id === a.svc)?.sites?.[0];
-      if (site) { const l = el('a', 'btn sm', T('Official site')); l.href = site; l.target = '_blank'; l.rel = 'noopener noreferrer'; acts.append(l); }
+      if (site) { const l = el('a', 'btn sm', T('Official site')); l.href = C.fixUrl(site) || site; l.target = '_blank'; l.rel = 'noopener noreferrer'; acts.append(l); }
       if (!isDone(a)) { const rb = btn('btn sm', '', () => remind(a, rb)); rb.append(ico('bell', 15), el('span', '', T('Remind me to check'))); acts.append(rb); }
       acts.append(btn('btn sm', T('Edit'), () => openForm(a)), btn('btn sm danger', T('Delete'), () => showDialog({ title: T('Delete this?'), body: a.title, actions: [btn('btn', T('Cancel'), closeDialog), btn('btn danger', T('Delete'), async () => { closeDialog(); apps = apps.filter((x) => x !== a); await persist(); draw(); })] })));
       c.append(acts);
@@ -932,7 +932,7 @@
     for (const s of d.services || []) for (const u of s.sites || []) { const h = hostOf(u); if (!h || !/\.(gov\.in|nic\.in|in|com)$/.test(h)) continue; if (!by.has(h)) by.set(h, []); const l = by.get(h); if (!l.includes(s.name)) l.push(s.name); }
     const list = el('div', 'src-list');
     for (const [h, names] of by) {
-      const a = el('a', 'src-i'); a.href = 'https://' + h; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      const a = el('a', 'src-i'); a.href = C.fixUrl(h); a.target = '_blank'; a.rel = 'noopener noreferrer';
       const tx = el('span', 'src-tx'); tx.append(el('b', '', ORG[h] || h), el('small', 'src-h', h), el('small', 'src-u', T('Used for {list}', { list: names.join(', ') })));
       const go = ico('ext', 16); go.classList.add('src-go');
       a.append(siteLogo(h), tx, go); list.append(a);

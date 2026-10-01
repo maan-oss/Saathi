@@ -149,7 +149,7 @@
     const wal = navItem('wallet', 'wallet', T('Wallet'), () => openScreen('wallet'));
     const bal = el('span', 'sb-bal'); bal.id = 'sbBal'; bal.textContent = $('walletText').textContent; wal.append(bal);
     foot.append(wal, ...(C.cfg?.link ? [navItem('devices', 'devices', T('Devices and sync'), () => openScreen('devices'))] : []), navItem('settings', 'sliders', T('Settings'), () => openScreen('settings')), navItem('help', 'help', T('Help and support'), () => openScreen('help')));
-    const fine = el('div', 'sb-fine'); const pa = el('a', '', T('Privacy')); pa.href = '/privacy'; pa.target = '_blank'; pa.rel = 'noopener noreferrer';
+    const fine = el('div', 'sb-fine'); const pa = el('a', '', T('Privacy')); pa.href = '#privacy'; pa.onclick = (e) => { e.preventDefault(); openScreen('privacy'); };
     fine.append(pa, el('span', '', ' · ' + T('Not a government website')));
     foot.append(fine);
     sb.append(head, nc, scroll, foot);
@@ -506,7 +506,7 @@
     col.append(acts);
     if (s?.fee) col.append(group(T('Official fee'), row({ icon: 'rupee', title: s.fee })));
     if (s?.docs?.length) { const ul = el('ul', 'checklist'); for (const t of s.docs) { const li = el('li'); li.append(ico('check', 16), el('span', '', t.replace(/^[•\-]\s*/, ''))); ul.append(li); } col.append(group(T('What you need'), ul)); }
-    if (s?.sites?.length) col.append(group(T('Official sites'), ...s.sites.map((u) => row({ icon: 'ext', title: u.replace(/^https:\/\//, ''), href: u }))));
+    if (s?.sites?.length) col.append(group(T('Official sites'), ...s.sites.map((u) => row({ icon: 'ext', title: u.replace(/^https:\/\//, ''), href: C.fixUrl(u) || u }))));
     if (s?.unverified?.length) col.append(note(T('Not confirmed by us: {list}. Check the official site.', { list: s.unverified.join(', ') }), 'help'));
     if (d.verified) col.append(el('p', 'mut small center', T('Information last checked {date}.', { date: d.verified })));
   };
@@ -562,6 +562,31 @@
     [N('My payment did not show up'), N('It can take a minute. Open Wallet and use “I have paid, check now”. If the money left your account and the wallet stays the same, message us on WhatsApp with your payment receipt.')],
     [N('How do I delete my data?'), N('Settings, then Delete all my data. It removes your saved details, locker, reminders and wallet from our server.')],
   ];
+  // ---- privacy notice: lives inside the app so it always opens --------------------------------
+  const PRIV = [
+    ['lock', N('What we keep'), N('Your place in the guide and your language, deleted after a few hours of inactivity. Details you choose to save (name, date of birth, parents’ names, gender, address, PIN code, mobile number, email) are stored encrypted until you delete them. The locker keeps ID numbers and expiry dates, encrypted, hidden until you unlock. We never store Aadhaar card photos, card numbers or OTPs.')],
+    ['scan', N('Photos, PDFs and voice notes'), N('Only read if you agree, held in memory and never saved. Voice notes are turned into text by a speech service and the audio is not kept.')],
+    ['bell', N('Reminders'), N('If you set one, we keep its date, its name and your phone number (encrypted) so we can message you before it.')],
+    ['wallet', N('Payments'), N('Paid on Razorpay’s own page. We never see your card or UPI details. We keep the amount, date and reference for your wallet.')],
+    ['spark', N('AI'), N('Free-form questions, document reading and translation are processed by an AI service. Your saved details are never sent to it. Languages other than English and Hindi are machine translated and may have mistakes.')],
+    ['shield', N('What we never do'), N('We never ask for your OTP or password. Do not share them with anyone. Everything is stored under a scrambled ID, not your phone number.')],
+    ['trash', N('Deleting your data'), N('Settings, then Delete all my data, removes your saved details, locker, reminders and wallet from our server.')],
+  ];
+  function privacyBody() {
+    const box = el('div', 'priv');
+    for (const [ic, h, t] of PRIV) {
+      const r = el('section', 'priv-s'); const i = el('span', 'priv-ic'); i.append(ico(I[ic] ? ic : 'shield', 18));
+      const x = el('div'); x.append(el('h3', '', T(h)), el('p', '', T(t))); r.append(i, x); box.append(r);
+    }
+    return box;
+  }
+  SCREENS.privacy = () => {
+    const col = frame(T('Privacy notice'), T('What Saathi keeps, what it never does, and how to delete it all.'));
+    col.append(privacyBody());
+  };
+  const showPrivacy = () => showDialog({ title: T('Privacy notice'), content: privacyBody(), actions: [btn('btn pri', T('Close'), closeDialog)] });
+  C.showPrivacy = showPrivacy;
+
   SCREENS.help = async () => {
     const col = frame(T('Help and support'), T('Answers to the questions people ask most.'));
     const box = el('div', 'faq');
@@ -608,7 +633,7 @@
     }
     col.append(group(T('Privacy and backup'),
       row({ icon: 'backup', title: T('Backup and restore'), sub: T('Move your wallet to a new phone'), onclick: () => openScreen('backup') }),
-      row({ icon: 'shield', title: T('Privacy notice'), href: '/privacy' }),
+      row({ icon: 'shield', title: T('Privacy notice'), onclick: () => openScreen('privacy') }),
       ...inst,
     ));
     col.append(group(T('Help'), row({ icon: 'help', title: T('Help and support'), onclick: () => openScreen('help') })));
@@ -681,7 +706,7 @@
     top.append(backB, dots, skip);
     const stage = el('div', 'ob-stage');
     const foot = el('div', 'ob-foot'); const next = btn('btn pri xl', '');
-    const fine = el('p', 'ob-fine'); const pl = el('a', ''); pl.href = '/privacy'; pl.target = '_blank'; pl.rel = 'noopener noreferrer'; const fineT = el('span');
+    const fine = el('p', 'ob-fine'); const pl = el('a', ''); pl.href = '#privacy'; pl.onclick = (e) => { e.preventDefault(); C.showPrivacy(); }; const fineT = el('span');
     fine.append(fineT, ' ', pl);
     foot.append(next, fine);
     ob.append(top, stage, foot);
