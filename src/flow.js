@@ -14,9 +14,9 @@ import {
   portalLine,
   L10,
   optTitle,
-  serviceFacts,
+  relevantFacts,
+  relevantCross,
   overviewFacts,
-  crossFacts,
   detectServices,
   detectService,
   LAST_VERIFIED,
@@ -77,20 +77,20 @@ function langHint(q) {
   return HINGLISH.test(q) ? 'Hinglish (Hindi in English letters)' : 'English';
 }
 
-function qaSystemPrompt(langName, svc, context, web = null, more = [], said = null) {
+function qaSystemPrompt(langName, svc, context, web = null, more = [], said = null, question = '') {
   const lines = [
-    'You are Saathi, a warm assistant that helps people in India with government paperwork (PAN, driving licence, Aadhaar, voter ID, passport, GST, state income and caste certificates). Sound like a helpful friend. Greetings get a short hello and a question about what they need.',
-    'RULES: Answer the question directly and confidently, with the exact rupee amounts, dates and steps from the FACTS below. Never reply with only "check the website": give the answer first, then at most one short line saying where the live figure shows (for example the portal fee page). If the FACTS do not cover a detail, use only what you are certain is standard and stable for Indian government procedures and say "usually" or "about"; if you truly do not know, say that in one sentence and name the one official place to look, never a vague "check the site". Where the FACTS say NOT CONFIRMED, give the typical value with "usually" and say the portal shows the exact amount. Lines marked LATEST READ FROM OFFICIAL PAGES override older lines. Never ask for or repeat OTPs, passwords or Aadhaar/PAN numbers. You only guide, you cannot submit applications. No tax or legal advice; steer unrelated questions back politely.',
+    'You are Saathi, a warm helper for Indian government paperwork (PAN, licence, Aadhaar, voter ID, passport, GST, income and caste certificates). Greetings: short hello, ask what they need.',
+    'RULES: Answer first, with exact amounts, dates and steps from FACTS. Never just "check the website"; at most one short line on where the live figure shows. If FACTS miss a detail, say only what is standard and stable, with "usually"; if unknown, say so and name the one official place. NOT CONFIRMED lines: give the typical value with "usually". LATEST lines override older ones. Never ask for or repeat OTPs, passwords, Aadhaar/PAN numbers. You only guide; you cannot submit. No tax/legal advice; steer unrelated questions back.',
     web
-      ? `${said ? `The person's latest message is in ${said}: reply in ${said}. ` : ''}Reply in the SAME language and script as the person's latest message (Hindi gets Devanagari, Hinglish gets Hinglish, other Indian languages their own script); if unclear use ${langName}. Plain short words, at most 120 words, answer first, only *bold*, no headings or tables. Use the conversation so far; do not repeat yourself.`
+      ? `${said ? `The person's latest message is in ${said}: reply in ${said}. ` : ''}Reply in the SAME language and script as the person's latest message (Hindi gets Devanagari, Hinglish gets Hinglish, other Indian languages their own script); if unclear use ${langName}. Plain short words, max 100 words, only *bold*, no headings or tables.`
       : `Reply in ${langName}, short plain words, at most 110 words, only *bold*, no headings or tables.`,
   ];
   if (web) {
     lines.push(
-      'Last line: ACTIONS: then up to two ids that truly help next (comma separated) or none. Ids: guide (step-by-step guide), docs, info (everything needed for one service in one card), fees (only when a service is being discussed), scan (check a document photo), details (their saved details for form filling), locker (saved IDs and expiry dates), reminders, track (track an application), photo (resize a photo or signature), check (is a message a scam). Never write ACTIONS anywhere else.',
+      'Last line: ACTIONS: up to two of guide,docs,info,fees,scan,details,locker,reminders,track,photo,check (or none). Nowhere else.',
     );
   }
-  lines.push('', 'FACTS:', more.length > 1 ? more.map(serviceFacts).join('\n\n') : svc ? serviceFacts(svc) : crossFacts(), context ? `\nCurrent step: ${context}` : '');
+  lines.push('', 'FACTS:', more.length > 1 ? more.map((m) => relevantFacts(m, question, 1400)).join('\n\n') : svc ? relevantFacts(svc, question) : relevantCross(question), context ? `\nCurrent step: ${context}` : '');
   return lines.join('\n');
 }
 
@@ -503,6 +503,10 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
           replies.push(hi ? 'नमस्ते! बताइए, किस काम में मदद चाहिए? पैन, आधार, ड्राइविंग लाइसेंस, पासपोर्ट, वोटर आईडी, जीएसटी या कोई प्रमाण पत्र।' : 'Hi! Tell me what you need help with: PAN, Aadhaar, driving licence, passport, voter ID, GST or a certificate.');
           return;
         }
+        if (/^\s*(thanks?( you)?|thx|ok(ay)?|got it|great|cool|bye|shukriya|dhanyavad|धन्यवाद|शुक्रिया|ठीक है)[\s!.]*$/i.test(q)) {
+          replies.push(/[\u0900-\u097F]/.test(q) || /shukriya|dhanyavad/i.test(q) ? 'खुशी हुई! और कुछ चाहिए तो बस पूछ लीजिए।' : 'Happy to help! Ask me anything else about your paperwork anytime.');
+          return;
+        }
         if (ALLINFO_Q.test(q)) {
           let sv = detectService(q) || baseService(web.svc);
           if (!sv && web.hist?.length) for (let i = web.hist.length - 1; i >= 0 && !sv; i--) sv = detectService(web.hist[i].t);
@@ -533,7 +537,7 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
       svc = svc || baseService(u.svc);
       if (web && svc && !inSteps) u.svc = svc.id;
       // The first question of a chat is often one many people ask. Reuse the answer for a while: no AI call, no charge.
-      const ckey = web && !web.hist?.length && !inSteps ? [svc?.id || '', L(), question.toLowerCase().replace(/[^\p{L}\p{N} ]/gu, '').replace(/\s+/g, ' ').trim().slice(0, 160)].join('|') : null;
+      const ckey = web && !inSteps && (!web.hist?.length || (detectService(question) && question.trim().split(/\s+/).length >= 4)) ? [svc?.id || '', L(), question.toLowerCase().replace(/[^\p{L}\p{N} ]/gu, '').replace(/\s+/g, ' ').trim().slice(0, 160)].join('|') : null;
       const hit = ckey ? QA_CACHE.get(ckey) : null;
       let raw0 = hit && hit.exp > Date.now() ? hit.text : null;
       let c = null;
@@ -549,10 +553,10 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
           let q = wrapUntrusted(question.slice(0, MAX_QUESTION_CHARS));
           if (web?.hist?.length) {
             // Only the last few turns, trimmed: every extra word is paid for again on every message.
-            const past = web.hist.slice(-4).map((h) => `${h.r === 'a' ? 'Saathi' : 'Person'}: ${h.t.slice(0, h.r === 'a' ? 220 : 240)}`).join('\n');
+            const past = web.hist.slice(-3).map((h) => `${h.r === 'a' ? 'Saathi' : 'Person'}: ${h.t.slice(0, h.r === 'a' ? 160 : 180)}`).join('\n');
             q = `Earlier:\n${past}\n\nNew message:\n${q}`;
           }
-          const r = await llm.answer(qaSystemPrompt(langName, svc, context, web, web ? detectServices(question) : [], web ? langHint(question) : null), q, { max: web ? 300 : 350 });
+          const r = await llm.answer(qaSystemPrompt(langName, svc, context, web, web ? detectServices(question) : [], web ? langHint(question) : null, question + ' ' + (web?.hist?.length ? web.hist.filter((h) => h.r !== 'a').slice(-1).map((h) => h.t.slice(0, 120)).join('') : '')), q, { max: web ? 220 : 250 });
           guard.recordLlm(userId, r.usage);
           raw0 = r.text;
           if (ckey && raw0) {

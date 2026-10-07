@@ -1021,6 +1021,51 @@ export function serviceFacts(svc) {
   return out.join('\n');
 }
 
+const WORDS = (t) => new Set(String(t).toLowerCase().match(/[a-z0-9\u0900-\u097f]{3,}/g) || []);
+const STOP = new Set(['the', 'and', 'for', 'how', 'what', 'can', 'are', 'you', 'with', 'this', 'that', 'from', 'will', 'need', 'get', 'does', 'much', 'kya', 'hai', 'kaise']);
+function pick(chunks, q, budget) {
+  const qw = [...WORDS(q)].filter((w) => !STOP.has(w));
+  const scored = chunks.map((c, i) => {
+    const cw = WORDS(c);
+    let sc = 0;
+    for (const w of qw) if (cw.has(w) || [...cw].some((x) => x.length > 4 && w.length > 4 && (x.startsWith(w.slice(0, 5)) || w.startsWith(x.slice(0, 5))))) sc++;
+    return { c, i, sc };
+  }).sort((a, b) => b.sc - a.sc || a.i - b.i);
+  const out = []; let n = 0;
+  for (const x of scored) { if (n + x.c.length > budget && out.length) continue; out.push(x); n += x.c.length; if (n >= budget) break; }
+  return out.sort((a, b) => a.i - b.i).map((x) => x.c);
+}
+
+/** Only the parts of a service's facts that match the question (about a third of the full text), so each AI call is small. */
+export function relevantFacts(svc, question, budget = 2200) {
+  const b = baseService(svc.id) || svc;
+  const strip = (t) => t.en.replace(/\*/g, '');
+  const must = [`Service: ${b.name.en}. Verified ${LAST_VERIFIED}. Official: ${(b.sites || []).join(', ')}.`, ...liveLines(b.id)];
+  if (b.fee) must.push(`Fees: ${strip(b.fee)}`);
+  if (b.unverified?.length) must.push(`NOT CONFIRMED (say usually, portal shows exact): ${b.unverified.join('; ')}.`);
+  const opt = [...(b.facts || []), ...extraFor(b.id)];
+  for (const [rid, r] of Object.entries(b.routes)) {
+    if (r.kind === 'info') opt.push(`${rid}: ${strip(r.text)}`);
+    else opt.push(`Route "${rid}": ${strip(r.intro).replace('{n}', String(r.steps.length)).replace('{note}', '').replace('{portal}', 'the state portal')}\n` + r.steps.map((x, i) => `${i + 1}. ${strip(x)}`).join('\n'));
+  }
+  if (b.docs) opt.push(strip(b.docs));
+  const room = Math.max(600, budget - must.join('\n').length);
+  return [...must, ...pick(opt, question, room)].join('\n');
+}
+
+/** No service named: the one-line overview plus the few fact lines that match the question across every service. */
+export function relevantCross(question, budget = 2400) {
+  const seen = new Set(); const chunks = [];
+  for (const s of SERVICES) {
+    if (s.alias || seen.has(s.id)) continue; seen.add(s.id);
+    const b = baseService(s.id) || s;
+    const head = `[${b.name.en}; official ${(b.sites || []).join(', ')}]`;
+    if (b.fee) chunks.push(`${head} Fees: ${b.fee.en.replace(/\*/g, '')}`);
+    for (const f of [...(b.facts || []), ...extraFor(b.id), ...liveLines(b.id)]) chunks.push(`${head} ${f}`);
+  }
+  return overviewFacts() + '\n\n' + pick(chunks, question, budget).join('\n');
+}
+
 // Newer facts read from the official pages while the server runs (see livefacts.js). Empty until the first refresh.
 let LIVE = {};
 export const setLiveFacts = (m) => { LIVE = m && typeof m === 'object' ? m : {}; };

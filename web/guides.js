@@ -420,12 +420,37 @@
     }
 
     // ---- my details ----------------------------------------------------------------------------------
+    function fillAlong() {
+      const rows = sheetFields().filter((f) => f.value).map((f) => ({ f, label: T(f.label.en), val: f.type === 'choice' ? T((f.options.find((o) => o.id === f.value) || { en: f.value }).en) : f.value }));
+      if (!rows.length) return;
+      let i = 0; const wrap = el('div', 'fw');
+      const draw = () => {
+        const r = rows[i]; wrap.replaceChildren();
+        const bar = el('div', 'fw-bar'); const fill = el('i'); fill.style.width = ((i + 1) / rows.length * 100) + '%'; bar.append(fill);
+        const v = el('div', 'fw-v', r.val); const sens = SENS.has(r.f.key); if (sens) v.classList.add('sens');
+        const back = btn('btn', T('Back'), () => { if (i > 0) { i--; draw(); } }); back.disabled = i === 0;
+        const last = i === rows.length - 1;
+        const next = btn('btn pri', last ? T('Copy and finish') : T('Copy and next'), async function () {
+          const t = document.createElement('button'); C.copyText(String(r.f.value), t);
+          if (last) closeDialog(); else { i++; draw(); }
+        });
+        wrap.append(el('div', 'fw-c', T('{i} of {n}', { i: i + 1, n: rows.length })), bar, el('div', 'fw-l', r.label), v,
+          el('p', 'fw-h', T('Tap the box on the website that says "{label}", paste, then come back.', { label: r.label })));
+        const ac = el('div', 'fw-a'); ac.append(back, next); wrap.append(ac);
+      };
+      draw();
+      showDialog({ title: T('Fill it with me'), content: wrap, actions: [btn('btn', T('Close'), closeDialog)] });
+    }
     function mePane() {
       const fields = sheetFields();
       if (!fields.length) { pane.append(U.note(T('This guide needs no saved details.'), 'check')); return; }
       const have = haveCount();
       const bar = el('div', 'g-progress'); bar.append(el('span', '', T('{done} of {n} saved', { done: have, n: fields.length })), meter(have / fields.length));
       pane.append(bar);
+      if (have) {
+        const fw = el('div', 'fw-cta'); const ft = el('div', 'fw-t'); ft.append(el('b', '', T('Fill it with me')), el('span', '', T('Saathi reads out each value in the order the form asks. You paste it into the official site.')));
+        fw.append(ft, btn('btn pri', T('Start'), () => fillAlong())); pane.append(fw);
+      }
       pane.append(mdBox('g-lead', have === fields.length ? T('Everything this form asks for is saved. Copy each value as you go.') : T('Fill in what is missing. It is saved encrypted and reused for every form.')));
       const box = el('div', 'g-card me'); const inputs = {};
       fields.forEach((f, i) => {

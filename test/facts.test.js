@@ -17,7 +17,7 @@ test('facts: a question with no service still gets the full facts (never just a 
   await t.run({ type: 'text', text: 'what is the penalty for not linking my card with the number thing' }, 'w1', { channel: 'web', ai: true });
   const sys = t.calls.systems.join('\n');
   assert.match(sys, /Rs 75/);
-  assert.match(sys, /Answer the question directly/);
+  assert.match(sys, /Answer first, with exact amounts/);
   t.done();
 });
 

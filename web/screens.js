@@ -607,10 +607,12 @@
     const col = frame(T('Settings'));
     const m = await refreshMe();
     const theme = seg([['system', T('Auto')], ['light', T('Light')], ['dark', T('Dark')]], store.get('saathi.theme') || 'system', (v) => { store.set('saathi.theme', v); C.applyTheme(v); });
+    const style = seg([['classic', T('Classic')], ['pro', T('Pro')]], store.get('saathi.style') === 'pro' ? 'pro' : 'classic', (v) => { store.set('saathi.style', v); C.applyStyle(v); });
     const size = seg([['1', T('Normal')], ['1.18', T('Large')], ['1.36', T('Huge')]], String(Number(store.get('saathi.scale')) || 1), (v) => { store.set('saathi.scale', v); C.applyScale(Number(v)); });
     col.append(group(T('Preferences'),
       row({ icon: 'globe', title: T('Language'), value: langName(C.uiLang()), onclick: () => openScreen('language') }),
       row({ icon: 'moon', title: T('Appearance'), right: theme }),
+      row({ icon: 'type', title: T('Style'), right: style }),
       row({ icon: 'type', title: T('Text size'), right: size }),
     ));
     col.append(group(T('Money'),

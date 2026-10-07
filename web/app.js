@@ -42,7 +42,9 @@
   const root = document.documentElement;
   const applyTheme = (t) => { if (t === 'light' || t === 'dark') root.dataset.theme = t; else delete root.dataset.theme; };
   const applyScale = (n) => root.style.setProperty('--scale', String(n));
+  const applyStyle = (v) => { if (v === 'pro') root.dataset.style = 'pro'; else delete root.dataset.style; };
   applyTheme(store.get('saathi.theme'));
+  applyStyle(store.get('saathi.style'));
   applyScale(Number(store.get('saathi.scale')) || 1);
   let toastTimer = null;
   function toast(msg) {
@@ -859,7 +861,7 @@
 
   // What the screens (sidebar, settings, wallet, onboarding...) use.
   const core = window.SaathiCore = {
-    $, el, svg, api, toast, store, tab, HIST_KEY, sid, rupee, send, copyText, welcome, boot, setWallet, applyTheme, applyScale, richText, renderReply, fixUrl,
+    $, el, svg, api, toast, store, tab, HIST_KEY, sid, rupee, send, copyText, welcome, boot, setWallet, applyTheme, applyStyle, applyScale, richText, renderReply, fixUrl,
     T, N, uiLang, loadUI, applyStatic, openChat, newChat, deleteChat, clearChats, openServiceChat, randomHex, mergeChats,
     get wallet() { return walletNow; },
     get prices() { return pricesNow; },
