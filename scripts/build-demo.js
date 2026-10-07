@@ -36,8 +36,7 @@ return { HI_DICT, LANGS: M_i18n.LANGS, SERVICES: M_services.SERVICES, LAST_VERIF
 const html = read('../web/index.html');
 const markup = html.slice(html.indexOf('<div class="shell"'), html.indexOf('<script src="/app.js"'));
 const logo = 'data:image/svg+xml;base64,' + Buffer.from(read('../web/logo.svg')).toString('base64');
-const css = read('../web/style.css').replace(/@font-face\{[^}]*\}\n?/g, '').replaceAll('"Bricolage"', '"Bricolage Grotesque"') + '\n' + read('../web/screens.css') + '\n' + read('../web/guides.css') + '\n' + read('../web/polish.css') + `
-.demo-note{flex:none;text-align:center;font-size:12.5px;padding:6px 12px;background:var(--bg2,#F0EEE6);color:var(--ink,#1F1E1D)}`;
+const css = read('../web/style.css').replace(/@font-face\{[^}]*\}\n?/g, '').replaceAll('"Bricolage"', '"Bricolage Grotesque"') + '\n' + read('../web/screens.css') + '\n' + read('../web/guides.css') + '\n' + read('../web/polish.css') + ``;
 const tools = read('../web/tools.js').replaceAll("'/logo.svg'", JSON.stringify(logo));
 const screens = read('../web/screens.js').replaceAll("'/logo.svg'", JSON.stringify(logo));
 const app = read('../web/app.js').replaceAll("'/logo.svg'", JSON.stringify(logo)).replace("if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});", '');
@@ -46,7 +45,7 @@ const shim = read('../demo/shim.js');
 const built = `<title>Saathi web app</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Instrument+Sans:wght@400..700&display=swap">
 <style>${css}</style>
-${markup.replace('<div class="app" id="app">', '<div class="app" id="app">\n  <div class="demo-note">Preview: runs in this page, nothing is sent anywhere.</div>').replaceAll('/logo.svg', logo)}
+${markup.replaceAll('/logo.svg', logo)}
 <script>
 ${engine}
 ${shim}

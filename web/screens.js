@@ -122,7 +122,7 @@
   function buildSidebar() {
     sb.replaceChildren(); sbItems = {};
     const head = el('div', 'sb-head');
-    const brand = el('a', 'sb-brand'); brand.href = '/'; brand.setAttribute('aria-label', 'Saathi');
+    const brand = el('a', 'sb-brand'); brand.href = '#'; brand.setAttribute('aria-label', 'Saathi'); brand.onclick = (e) => { e.preventDefault(); closeAll(); closeSidebar(); C.newChat(); };
     const lg = el('img'); lg.src = '/logo.svg'; lg.width = 28; lg.height = 28; lg.alt = '';
     brand.append(lg, el('span', '', 'Saathi'));
     const x = el('button', 'icon-btn sb-x'); x.type = 'button'; x.setAttribute('aria-label', T('Close menu')); x.append(ico('close', 22)); x.onclick = closeSidebar;

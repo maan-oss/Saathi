@@ -456,3 +456,31 @@ details.tips>summary .ti svg{stroke:var(--bg);width:20px;height:20px}
 :root[data-style="sky"] .g-tab[aria-selected="true"]{background:#1d1d1f!important;color:#fff!important}
 :root[data-style="sky"][data-sky="night"] .g-tab[aria-selected="true"]{background:#f5f5f7!important;color:#1d1d1f!important}
 :root[data-style="sky"] :is(.pack,.w-hero,.card-i,.dt-sec,.lk2-comp,.rm-new,.rm-notice,.faq,.dt-meter,.langs,.empty,.set-grp){background:var(--glass)!important;border:1px solid var(--glass-line);-webkit-backdrop-filter:blur(20px) saturate(1.2);backdrop-filter:blur(20px) saturate(1.2);box-shadow:var(--shadow-sm);color:var(--ink)}
+
+/* ---- round 2 fixes ---- */
+/* count numbers are plain text, never a pill */
+.g-tab small,.g-tab[aria-selected=true] small,:root[data-style="sky"] .g-tab small{background:none!important;padding:0!important;border-radius:0!important;color:inherit;opacity:.75}
+/* For-you: the verb button is a full pill like the row */
+:root[data-style="sky"] .fy-v{border-radius:999px!important;padding:10px 20px;line-height:1.1}
+/* round buttons: calm hover */
+:root[data-style="sky"] .icon-btn{background:transparent;transition:background .2s}
+:root[data-style="sky"] .icon-btn:hover,:root[data-style="sky"] .icon-btn:focus-visible{background:rgba(20,32,60,.09)!important;color:inherit}
+:root[data-style="sky"] .icon-btn:active{background:rgba(20,32,60,.16)!important}
+:root[data-style="sky"] .top .icon-btn:hover,:root[data-style="sky"] .top .icon-btn:focus-visible{background:rgba(255,255,255,.2)!important}
+:root[data-style="sky"] .top .icon-btn:active{background:rgba(255,255,255,.3)!important}
+:root[data-style="sky"][data-sky="night"] .icon-btn:hover{background:rgba(255,255,255,.12)!important}
+/* progress ring: clear on glass */
+:root[data-style="sky"] .gr-bg{stroke:rgba(20,32,60,.2);stroke-width:3.4}
+:root[data-style="sky"] .gr-fg{stroke:#1d1d1f;stroke-width:3.4}
+:root[data-style="sky"] .gr-pct{color:#1d1d1f;font-weight:700}
+:root[data-style="sky"][data-sky="night"] .gr-bg{stroke:rgba(255,255,255,.25)}
+:root[data-style="sky"][data-sky="night"] .gr-fg{stroke:#fff}
+:root[data-style="sky"][data-sky="night"] .gr-pct{color:#fff}
+:root:not([data-style="sky"]) .gr-bg{stroke:color-mix(in srgb,var(--ink) 18%,transparent)}
+/* richer, Hark-like skies: soft glow at the horizon over a smooth gradient */
+:root[data-style="sky"] body{background:radial-gradient(120% 55% at 50% 108%,var(--sk-glow,transparent),transparent 70%),linear-gradient(180deg,var(--sk-a) 0%,var(--sk-b) 52%,var(--sk-c) 100%) fixed}
+:root[data-style="sky"][data-sky="day"]{--sk-a:#4f86c9;--sk-b:#9cc7ee;--sk-c:#dfe8ef;--sk-glow:rgba(255,255,255,.55)}
+:root[data-style="sky"][data-sky="dawn"]{--sk-a:#6c92cf;--sk-b:#b9b3c8;--sk-c:#f6cdb0;--sk-glow:rgba(255,214,170,.6)}
+:root[data-style="sky"][data-sky="sunset"]{--sk-a:#3f5f9a;--sk-b:#b7a0a6;--sk-c:#f0b98a;--sk-glow:rgba(255,190,130,.6)}
+:root[data-style="sky"][data-sky="night"]{--sk-a:#0b1530;--sk-b:#1c3560;--sk-c:#46628d;--sk-glow:rgba(214,170,130,.32);--bg:#0e1932;--bg2:#17284a;--glass:rgba(14,26,52,.6);--glass-line:rgba(255,255,255,.14)}
+:root[data-style="sky"][data-sky="night"] .top .brand img{border-radius:50%;box-shadow:0 0 0 1.5px rgba(255,255,255,.55)}

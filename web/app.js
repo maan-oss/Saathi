@@ -874,11 +874,24 @@
     for (const a of sum.appsList || []) if ((a.status === 'applied' || a.status === 'waiting') && a.since > 14) items.push({ k: 50, v: T('Check'), t: (a.title || T('Application')) + ' · ' + T('Waiting for {n} days. Check its status.', { n: a.since }), go: 'apps' });
     for (const [id, g] of Object.entries(sum.guides || {})) if (g?.steps?.length) items.push({ k: 80, v: T('Continue'), t: T('Continue your guide'), go: 'service', args: { id } });
     if (sum.details && !sum.details.filled) items.push({ k: 90, v: T('Save'), t: T('Save your details once'), go: 'details' });
-    if (!items.length) return;
+    const started = new Set(Object.keys(sum.guides || {}));
+    const hour = new Date().getHours();
+    const ideas = [
+      { v: T('Check'), t: T('Got a suspicious call or message? Check if it is a scam.'), go: 'check' },
+      { v: T('Scan'), t: T('Scan a document and pull out the details'), go: 'scan' },
+      { v: T('Resize'), t: T('Make a photo or signature the size a form wants'), go: 'photo' },
+      { v: T('Add'), t: T('Set a reminder so you never miss a date'), go: 'reminders' },
+      { v: T('Start'), t: T('Apply for a PAN card, step by step'), go: 'service', args: { id: 'pan' }, svc: 'pan' },
+      { v: T('Start'), t: T('Fix your Aadhaar details, step by step'), go: 'service', args: { id: 'aadhaar' }, svc: 'aadhaar' },
+      { v: T('Start'), t: T('Get a driving licence, step by step'), go: 'service', args: { id: 'dl' }, svc: 'dl' },
+      { v: T('Start'), t: T('Apply for a passport, step by step'), go: 'service', args: { id: 'passport' }, svc: 'passport' },
+    ].filter((x) => !x.svc || !started.has(x.svc));
+    const off = (new Date().getDate() + (hour > 12 ? 2 : 0)) % ideas.length;
+    for (let i = 0; i < ideas.length; i++) items.push({ k: 200 + i, ...ideas[(i + off) % ideas.length] });
     items.sort((a, b) => a.k - b.k);
     document.querySelectorAll('.foryou').forEach((n) => n.remove());
     const stack = el('div', 'foryou'); stack.append(el('div', 'fy-h', T('For you')));
-    for (const it of items.slice(0, 3)) {
+    for (const it of items.slice(0, 4)) {
       const b = el('button', 'fy-card'); b.type = 'button';
       b.append(el('span', 'fy-v', it.v), el('span', 'fy-t', it.t));
       b.onclick = () => core.openScreen?.(it.go, it.args);
@@ -887,6 +900,8 @@
     document.getElementById('app').append(stack);
   }
 
+  const brandLink = document.querySelector('.top .brand');
+  if (brandLink) { brandLink.href = '#'; brandLink.addEventListener('click', (e) => { e.preventDefault(); if (document.body.classList.contains('screen-open')) return; newChat(); }); }
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
   chat.addEventListener('scroll', onChatScroll, { passive: true });
   grow();
