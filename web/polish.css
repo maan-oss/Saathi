@@ -484,3 +484,6 @@ details.tips>summary .ti svg{stroke:var(--bg);width:20px;height:20px}
 :root[data-style="sky"][data-sky="sunset"]{--sk-a:#3f5f9a;--sk-b:#b7a0a6;--sk-c:#f0b98a;--sk-glow:rgba(255,190,130,.6)}
 :root[data-style="sky"][data-sky="night"]{--sk-a:#0b1530;--sk-b:#1c3560;--sk-c:#46628d;--sk-glow:rgba(214,170,130,.32);--bg:#0e1932;--bg2:#17284a;--glass:rgba(14,26,52,.6);--glass-line:rgba(255,255,255,.14)}
 :root[data-style="sky"][data-sky="night"] .top .brand img{border-radius:50%;box-shadow:0 0 0 1.5px rgba(255,255,255,.55)}
+:root[data-style="sky"] .sb-label{color:var(--mut);opacity:1;text-shadow:none}
+:root[data-style="sky"] .sidebar{background:rgba(238,243,250,.96)}
+:root[data-style="sky"][data-sky="night"] .sidebar{background:rgba(11,21,44,.97)}

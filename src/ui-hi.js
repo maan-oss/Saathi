@@ -801,4 +801,5 @@ export const HI = {
   "Fix your Aadhaar details, step by step": "आधार की जानकारी ठीक करें, स्टेप बाय स्टेप",
   "Get a driving licence, step by step": "ड्राइविंग लाइसेंस बनवाएँ, स्टेप बाय स्टेप",
   "Apply for a passport, step by step": "पासपोर्ट के लिए आवेदन करें, स्टेप बाय स्टेप",
+  "This language needs Saathi’s AI, which is not switched on yet. Hindi and English work now.": "इस भाषा के लिए साथी का AI चाहिए, जो अभी चालू नहीं है। हिन्दी और अंग्रेज़ी अभी चलती हैं।",
 };

@@ -213,7 +213,7 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
     }
     let body = buf;
     if (file === 'index.html' || file === 'app.js') body = Buffer.from(buf.toString('utf8').replaceAll('__WA_NUMBER__', shell.whatsappNumber || ''));
-    headers(res, { 'content-type': type, 'cache-control': file === 'sw.js' ? 'no-cache' : file.startsWith('fonts/') ? 'public, max-age=31536000, immutable' : 'public, max-age=300' });
+    headers(res, { 'content-type': type, 'cache-control': (file === 'sw.js' || /\.(js|css|html)$/.test(file)) ? 'no-cache' : file.startsWith('fonts/') ? 'public, max-age=31536000, immutable' : 'public, max-age=300' });
     res.end(req.method === 'HEAD' ? undefined : body);
     return true;
   }

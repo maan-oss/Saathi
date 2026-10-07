@@ -457,12 +457,13 @@
   // Changing the language: the bot's own texts, then the app's words. The AI answers keep following whatever you write in.
   async function applyLanguage(l, { reload = true } = {}) {
     showDialog({ title: T('Setting up {lang}', { lang: l.en }), body: l.code === 'en' || l.code === 'hi' ? T('One moment…') : T('The first time a language is used it takes up to a minute. Later it is instant.'), busy: true });
-    const [r] = await Promise.all([
+    const [r, n] = await Promise.all([
       api('/app/api/lang', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ code: l.code }) }),
       C.loadUI(l.code, { wait: 90000 }),
     ]);
     closeDialog();
     if (!r.ok || !r.j.ok) { toast(T('Could not change the language. Please try again.')); return false; }
+    if (!n) { toast(T('This language needs Saathi’s AI, which is not switched on yet. Hindi and English work now.')); return false; }
     store.set('saathi.lang', l.code);
     if (reload) location.reload();
     return true;
@@ -599,7 +600,7 @@
     const col = frame(T('Settings'));
     const m = await refreshMe();
     const theme = seg([['system', T('Auto')], ['light', T('Light')], ['dark', T('Dark')]], store.get('saathi.theme') || 'system', (v) => { store.set('saathi.theme', v); C.applyTheme(v); });
-    const style = seg([['classic', T('Classic')], ['sky', T('Sky')]], ['sky', 'pro'].includes(store.get('saathi.style')) ? 'sky' : 'classic', (v) => { store.set('saathi.style', v); C.applyStyle(v); });
+    const style = seg([['classic', T('Classic')], ['sky', T('Sky')]], store.get('saathi.style') === 'classic' ? 'classic' : 'sky', (v) => { store.set('saathi.style', v); C.applyStyle(v); });
     const size = seg([['1', T('Normal')], ['1.18', T('Large')], ['1.36', T('Huge')]], String(Number(store.get('saathi.scale')) || 1), (v) => { store.set('saathi.scale', v); C.applyScale(Number(v)); });
     col.append(group(T('Preferences'),
       row({ icon: 'globe', title: T('Language'), value: langName(C.uiLang()), onclick: () => openScreen('language') }),

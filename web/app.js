@@ -42,7 +42,7 @@
   const root = document.documentElement;
   const applyTheme = (t) => { if (t === 'light' || t === 'dark') root.dataset.theme = t; else delete root.dataset.theme; if (typeof skyPhase === 'function') skyPhase(); };
   const applyScale = (n) => root.style.setProperty('--scale', String(n));
-  const applyStyle = (v) => { if (v === 'sky' || v === 'pro') root.dataset.style = 'sky'; else { delete root.dataset.style; delete root.dataset.sky; } skyPhase(); };
+  const applyStyle = (v) => { if (v !== 'classic') root.dataset.style = 'sky'; else { delete root.dataset.style; delete root.dataset.sky; } skyPhase(); };
   // Sky style: the backdrop follows the viewer's own clock (dawn, day, sunset, night), like the Hark app.
   function skyPhase() {
     if (root.dataset.style !== 'sky') return;
@@ -83,7 +83,7 @@
   const N = (s) => s;
   async function loadUI(code, opts = {}) {
     code = code || uiLang();
-    if (code === 'en') { UI = {}; document.documentElement.lang = 'en'; return; }
+    if (code === 'en') { UI = {}; document.documentElement.lang = 'en'; return 1; }
     const ck = 'saathi.ui.' + code;
     try { const c = JSON.parse(store.get(ck) || 'null'); if (c && c.n > 20) UI = c.s; } catch { /* fetch below */ }
     try {
@@ -95,6 +95,7 @@
       if (j && j.strings && Object.keys(j.strings).length) { UI = j.strings; store.set(ck, JSON.stringify({ n: Object.keys(UI).length, s: UI })); }
     } catch { /* keep the cached or English text */ }
     document.documentElement.lang = code;
+    return Object.keys(UI).length;
   }
   /** Translate the fixed words in index.html. */
   function applyStatic() {
