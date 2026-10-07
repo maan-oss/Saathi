@@ -802,12 +802,22 @@
       if (!store.get('saathi.lang')) store.set('saathi.lang', langObj.code);
       api('/app/api/lang', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ code: C.uiLang() }) }).then(() => refreshMe()).catch(() => {});
       ob.classList.remove('on'); document.body.classList.remove('ob-open');
-      setTimeout(() => { ob.hidden = true; ob.replaceChildren(); }, 420);
+      setTimeout(() => { ob.hidden = true; ob.replaceChildren(); C.openPending?.(); }, 420);
       C.welcome(); C.applyStatic();
     }
     go(0);
   };
 
+  // A service picked on the landing page (?service=pan, or kept from its onboarding) opens once the app is ready.
+  C.openPending = () => {
+    const q = new URLSearchParams(location.search).get('service');
+    if (q) { try { sessionStorage.setItem('saathi.open', q); } catch { /* private mode */ } history.replaceState(null, '', '/app'); }
+    let id = null; try { id = sessionStorage.getItem('saathi.open'); } catch { /* private mode */ }
+    if (!id || !store.get('saathi.onboarded') || document.body.classList.contains('ob-open')) return;
+    if (!SERVICES.some((s) => s[0] === id)) return;
+    try { sessionStorage.removeItem('saathi.open'); } catch { /* private mode */ }
+    openScreen('service', { id });
+  };
   C.ui = { STATE_LIST, frame, row, group, seg, note, empty, btn, ico, SCREENS, openScreen, goBack, closeAll, showDialog, closeDialog, refreshMe, rupee, fmtDate, chatDo, startServiceChat, loadServices, svcMeta, SERVICES, packName };
   buildSidebar();
   C.rebuild = buildSidebar;

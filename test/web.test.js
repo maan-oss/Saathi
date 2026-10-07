@@ -209,7 +209,7 @@ test('web: the landing page can read real service facts, and the site and app ar
     assert.ok(j.verified && j.services.length >= 5);
     const pan = j.services.find((s) => /PAN/i.test(s.name));
     assert.ok(pan.fee && pan.docs.length && pan.sites.every((u) => /^https:\/\//.test(u)));
-    assert.match((await w.call('/', { sid: null })).text, /id="seg"/);
+    assert.match((await w.call("/", { sid: null })).text, /id="obSvc"/);
     assert.match((await w.call('/app', { sid: null })).text, /id="onboard"/);
   } finally { w.close(); }
 });

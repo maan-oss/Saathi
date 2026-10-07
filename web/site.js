@@ -3,10 +3,10 @@
   'use strict';
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   const rupees = (p) => '₹' + (p % 100 === 0 ? p / 100 : (p / 100).toFixed(2));
   const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+  const save = (k, v) => { try { localStorage.setItem(k, v); } catch { /* private mode */ } };
+  const keep = (k, v) => { try { sessionStorage.setItem(k, v); } catch { /* private mode */ } };
 
   // ---- Scroll reveal ---------------------------------------------------------
   document.documentElement.classList.add('js');
@@ -16,62 +16,103 @@
   const watch = (n) => (io ? io.observe(n) : n.classList.add('in'));
   $$('.reveal').forEach(watch);
 
-  // Same sky as the app: the page colours follow the time of day (or the device's dark mode).
+  // The page's colours follow the time of day (or the device's dark mode), same as the app.
   (() => { const h = new Date().getHours(); const dark = matchMedia('(prefers-color-scheme: dark)').matches;
     document.documentElement.dataset.sky = dark || h >= 20 || h < 5 ? 'night' : h < 8 ? 'dawn' : h < 17 ? 'day' : 'sunset'; })();
-  const nav = $('#nav');
-  const onScroll = () => nav && nav.classList.toggle('scrolled', scrollY > 8);
-  addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
 
-  // ---- "What do I need for…" card: real facts from /app/api/services -----------------
-  const seg = $('#seg'), body = $('#needBody'), go = $('#needGo'), dateEl = $('#needDate');
-  const ICONS = {
-    fee: '<path d="M7 5h10M7 9h10M9 5c4 0 6 1.5 6 4s-2 4-6 4l7 6"/>',
-    docs: '<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h5M10 16h5"/>',
-    site: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>',
-  };
-  const icon = (k) => { const w = el('span', 'ic'); w.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICONS[k] + '</svg>'; return w; };
-  const row = (k, label, build) => {
-    const r = el('div', 'nrow'); const t = el('div'); t.append(el('div', 'k', label)); build(t); r.append(icon(k), t); return r;
-  };
-  const host = (u) => { try { return new URL(u).host; } catch { return ''; } };
-  let data = null;
-  function show(i) {
-    const sv = data.services[i];
-    $$('button', seg).forEach((b, j) => { b.setAttribute('aria-selected', String(i === j)); b.tabIndex = i === j ? 0 : -1; });
-    body.replaceChildren();
-    body.append(row('fee', 'What it costs', (t) => { const f = sv.fee.split('\n')[0]; const m = f.match(/^[^.]{6,60}\./); t.append(el('div', 'big', m ? m[0] : f)); const rest = m ? f.slice(m[0].length).trim() : ''; if (rest) t.append(el('div', 'sm', rest)); }));
-    body.append(row('docs', 'What to keep ready', (t) => {
-      const lines = sv.docs.filter((l) => /^[•\-*]/.test(l)).map((l) => l.replace(/^[•\-*]\s*/, ''));
-      const head = sv.docs.find((l) => !/^[•\-*]/.test(l));
-      if (head && !lines.length) t.append(el('div', 'big', head));
-      const ul = el('ul'); lines.slice(0, 7).forEach((l) => ul.append(el('li', '', l)));
-      if (lines.length) t.append(ul);
+  // ---- Get started: a real three-step onboarding ----------------------------------
+  const ob = $('#start');
+  if (ob) {
+    const steps = $$('.ob-step', ob), dots = $$('#obDots i'), count = $('#obCount');
+    const back = $('#obBack'), next = $('#obNext'), go = $('#obGo');
+    const svcWrap = $('#obSvc'), svcName = $('#obSvcName'), feeEl = $('#obFee'), docsEl = $('#obDocs');
+    const siteRow = $('#obSiteRow'), siteA = $('#obSite'), flag = $('#obFlag');
+    let step = 1, lang = 'en', services = null, chosen = null; // chosen: service object, 'other', or null
+
+    const setStep = (n, dir) => {
+      step = n;
+      steps.forEach((s) => {
+        const on = Number(s.dataset.step) === n;
+        s.hidden = !on;
+        s.classList.toggle('back', on && dir < 0);
+      });
+      dots.forEach((d, i) => d.classList.toggle('on', i === n - 1));
+      count.textContent = `Step ${n} of 3`;
+      back.hidden = n === 1;
+      next.hidden = n === 3;
+      go.hidden = n !== 3;
+      next.disabled = n === 2 && chosen === null;
+      if (n === 3) fillStep3();
+      const focusTarget = steps[n - 1]?.querySelector('h2');
+      if (focusTarget && dir) { focusTarget.setAttribute('tabindex', '-1'); focusTarget.focus({ preventScroll: true }); }
+    };
+
+    // Step 1: language. Only English and Hindi here; the app has the rest.
+    $$('[data-lang]', ob).forEach((b) => b.addEventListener('click', () => {
+      lang = b.dataset.lang;
+      $$('[data-lang]', ob).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
     }));
-    const site = (sv.sites || []).find((u) => /^https:\/\//.test(u));
-    if (site) body.append(row('site', 'Official site', (t) => {
-      const a = el('a', 'site', host(site)); a.href = site; a.target = '_blank'; a.rel = 'noopener noreferrer'; t.append(a);
-      if (sv.unverified?.length) t.append(el('div', 'flag', 'Some details here are not confirmed on an official page yet. Saathi says so when it matters.'));
-    }));
-    go.href = '/app?service=' + encodeURIComponent(sv.id);
+
+    // Step 2: service tiles, loaded from the same data the bot uses.
+    const pick = (b) => {
+      $$('[data-svc]', ob).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      chosen = b.dataset.svc ? services?.find((s) => s.id === b.dataset.svc) || null : 'other';
+      if (b.dataset.svc === '') chosen = 'other';
+      next.disabled = chosen === null;
+    };
+    const tileFor = (sv) => {
+      const b = el('button', 'tile', null); b.type = 'button'; b.dataset.svc = sv.id; b.setAttribute('aria-pressed', 'false');
+      b.append(el('b', '', sv.name));
+      b.addEventListener('click', () => pick(b));
+      return b;
+    };
+    const loadServices = () => fetch('/app/api/services').then((r) => (r.ok ? r.json() : Promise.reject())).then((d) => {
+      services = d.services || [];
+      svcWrap.replaceChildren(...services.map(tileFor));
+    }).catch(() => {
+      svcWrap.replaceChildren(el('p', 'sm', 'Could not load the list just now. Pick “Something else”, or open the app.'));
+    });
+    const other = $('[data-svc=""]', ob);
+    if (other) other.addEventListener('click', () => pick(other));
+
+    // Step 3: what to keep ready, from the chosen service.
+    function fillStep3() {
+      if (chosen === 'other' || chosen === null) {
+        svcName.textContent = 'Ask in your own words';
+        feeEl.textContent = 'Free to ask. Prices show when you go ahead.';
+        docsEl.replaceChildren(el('li', '', 'Tell Saathi what you need, in your own words.'), el('li', '', 'It asks a few questions, then gives you the steps.'));
+        siteRow.hidden = true;
+        go.href = '/app';
+        return;
+      }
+      const sv = chosen;
+      svcName.textContent = sv.name;
+      const f = String(sv.fee || '').split('\n')[0];
+      const m = f.match(/^[^.]{6,60}\./);
+      feeEl.textContent = m ? m[0] : f;
+      const rest = m ? f.slice(m[0].length).trim() : '';
+      if (rest) feeEl.append(el('div', 'sm', rest));
+      const lines = (sv.docs || []).filter((l) => /^[•\-*]/.test(l)).map((l) => l.replace(/^[•\-*]\s*/, ''));
+      const head = (sv.docs || []).find((l) => !/^[•\-*]/.test(l));
+      docsEl.replaceChildren(...(lines.length ? lines.slice(0, 7) : [head || 'Ask Saathi for the list']).map((l) => el('li', '', l)));
+      const site = (sv.sites || []).find((u) => /^https:\/\//.test(u));
+      siteRow.hidden = !site;
+      if (site) { siteA.textContent = new URL(site).host; siteA.href = site; }
+      flag.hidden = !(sv.unverified && sv.unverified.length);
+      go.href = '/app?service=' + encodeURIComponent(sv.id);
+    }
+
+    // Opening the app: remember the language and the chosen service, then the app picks them up.
+    go.addEventListener('click', () => {
+      save('saathi.lang', lang);
+      if (chosen && chosen !== 'other') keep('saathi.open', chosen.id);
+    });
+
+    next.addEventListener('click', () => { if (step < 3) setStep(step + 1, 1); });
+    back.addEventListener('click', () => { if (step > 1) setStep(step - 1, -1); });
+    setStep(1, 0);
+    loadServices();
   }
-  if (seg && body) fetch('/app/api/services').then((r) => (r.ok ? r.json() : Promise.reject())).then((d) => {
-    data = d;
-    if (dateEl && d.verified) dateEl.textContent = 'Checked ' + d.verified;
-    seg.replaceChildren();
-    d.services.forEach((sv, i) => {
-      const b = el('button', '', sv.name); b.type = 'button'; b.setAttribute('role', 'tab');
-      b.addEventListener('click', () => show(i));
-      seg.append(b);
-    });
-    seg.addEventListener('keydown', (e) => {
-      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-      const bs = $$('button', seg); const cur = bs.findIndex((b) => b.getAttribute('aria-selected') === 'true');
-      const n = (cur + (e.key === 'ArrowRight' ? 1 : bs.length - 1)) % bs.length; show(n); bs[n].focus();
-    });
-    show(0);
-  }).catch(() => { body.replaceChildren(el('p', 'sm', 'Could not load the list just now. Open the app and ask Saathi directly.')); });
 
   // ---- Scam checker (uses the same rules as the bot; nothing is saved) --------
   const chkIn = $('#chkIn'), chkGo = $('#chkGo'), chkOut = $('#chkOut'), chkHint = $('#chkHint');

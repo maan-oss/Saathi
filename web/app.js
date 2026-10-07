@@ -856,6 +856,7 @@
     chats.cur = null; store.set(HIST_KEY, JSON.stringify(chats));
     if (!store.get('saathi.onboarded')) core.onboarding();
     else welcome();
+    core.openPending?.();
     core.onChats?.();
     const { ok, j } = await api('/app/api/me').catch(() => ({ ok: false }));
     if (ok) setWallet(j.wallet);
