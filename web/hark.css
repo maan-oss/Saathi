@@ -10,7 +10,7 @@
 .hk-round:hover{background:rgba(255,255,255,.8)}
 .hk-round:active,.hk-av:active{transform:scale(.92)}
 .hk-seg{position:relative;flex:1;max-width:310px;height:46px;padding:4px;border-radius:999px;display:grid;grid-template-columns:repeat(3,1fr);background:rgba(110,135,175,.4);margin:0 auto;min-width:0}
-.hk-thumb{position:absolute;top:4px;bottom:4px;left:4px;width:var(--w,33%);border-radius:999px;background:#111;transform:translateX(var(--x,0px));transition:transform .45s var(--hk-ease),width .45s var(--hk-ease);will-change:transform;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.hk-thumb{position:absolute;top:4px;bottom:4px;left:0;width:var(--w,33%);border-radius:999px;background:#111;transform:translateX(var(--x,0px));transition:transform .45s var(--hk-ease),width .45s var(--hk-ease);will-change:transform;box-shadow:0 2px 8px rgba(0,0,0,.2)}
 .hk-tab{position:relative;z-index:1;min-width:0;overflow:hidden;white-space:nowrap;text-align:center;background:none;border:0;border-radius:999px!important;font:600 clamp(13px,3.7vw,15px)/1 var(--sans);cursor:pointer;padding:0 4px;transition:color .25s,transform .15s}
 :root[data-style="sky"] .top.hk-top .hk-tab{color:rgba(29,29,31,.72)}
 :root[data-style="sky"] .top.hk-top .hk-tab.on{color:#fff}
@@ -238,3 +238,4 @@ html,body{overflow-x:hidden;overscroll-behavior-x:none}
 .app[data-search] .composer,.app[data-search] .hk-comp,.app[data-search] form.composer{opacity:0!important;pointer-events:none!important;transition:opacity .2s}
 .app[data-search] .composer-wrap{opacity:0!important;pointer-events:none!important;transition:opacity .2s}
 .hk-rail{scroll-padding-left:34px;scroll-padding-right:44px}
+.app[data-search] main.chat{opacity:0!important;pointer-events:none;transition:opacity .2s}.app main.chat{transition:opacity .25s}
