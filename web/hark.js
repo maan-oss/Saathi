@@ -23,32 +23,50 @@
   const home = el('section', 'hk-pane hk-home'); home.id = 'hkHome';
   const guides = el('section', 'hk-pane hk-guides'); guides.id = 'hkGuides';
   chat.before(home, guides);
-  const float = el('button', 'hk-float'); float.type = 'button'; float.append(ico('msg', 20), el('span', ''));
-  float.onclick = () => { showTab('chat'); C.focusInput?.(); };
-  app.append(float);
-
   function moveThumb() { const b = tbtn[cur]; if (!b || !b.offsetWidth) return; thumb.style.setProperty('--x', b.offsetLeft + 'px'); thumb.style.setProperty('--w', b.offsetWidth + 'px'); }
   new ResizeObserver(moveThumb).observe(seg); document.fonts?.ready?.then(moveThumb);
   function labels() {
     tbtn.home.textContent = T('Home'); tbtn.chat.textContent = T('Chat'); tbtn.guides.textContent = T('Guides');
-    av.setAttribute('aria-label', T('Profile')); float.lastChild.textContent = T('Ask Saathi');
+    av.setAttribute('aria-label', T('Profile'));
     plusMode(); moveThumb();
   }
   function plusMode() {
     plus.replaceChildren(ico(cur === 'chat' ? 'search' : 'plus', 22));
     plus.setAttribute('aria-label', cur === 'chat' ? T('Search') : T('New chat'));
   }
-  // The pressed button flies to the middle of the screen, dissolves sideways, and then the search box rises.
+  // The pressed button glides to the middle of the screen, then turns into dust that drifts sideways while the search page comes up.
+  function dust(cx, cy, w, h) {
+    const cv = document.createElement('canvas'); const dpr = Math.min(2, devicePixelRatio || 1);
+    cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
+    Object.assign(cv.style, { position: 'fixed', inset: '0', width: '100%', height: '100%', zIndex: '99', pointerEvents: 'none' });
+    document.body.append(cv); const g = cv.getContext('2d'); g.scale(dpr, dpr);
+    const n = Math.max(140, Math.min(420, Math.round(w * h / 28))); const ps = [];
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * 6.283, r = Math.sqrt(Math.random()); const x = cx + Math.cos(a) * r * w / 2, y = cy + Math.sin(a) * r * h / 2;
+      ps.push({ x, y, vx: .5 + Math.random() * 2.3, vy: (Math.random() - .65) * 1.1, s: 1.2 + Math.random() * 2.8, life: 650 + Math.random() * 650, d: (1 - (x - (cx - w / 2)) / w) * 260, ph: Math.random() * 6.28 });
+    }
+    const t0 = performance.now();
+    (function tick(now) {
+      const t = now - t0; g.clearRect(0, 0, innerWidth, innerHeight); let live = 0;
+      for (const p of ps) {
+        const k = t - p.d; if (k < 0) { live++; g.fillStyle = 'rgba(255,255,255,.9)'; g.beginPath(); g.arc(p.x, p.y, p.s, 0, 6.283); g.fill(); continue; }
+        if (k > p.life) continue; live++;
+        const u = k / p.life; const ease = u * u;
+        const x = p.x + p.vx * k * .09 * (1 + u), y = p.y + p.vy * k * .05 + Math.sin(k / 140 + p.ph) * 4 * u;
+        g.fillStyle = `rgba(255,255,255,${(.9 * (1 - u) ** 1.4).toFixed(3)})`; g.beginPath(); g.arc(x, y, p.s * (1 - ease * .6), 0, 6.283); g.fill();
+      }
+      if (live) requestAnimationFrame(tick); else cv.remove();
+    })(t0);
+  }
   function flySearch(from) {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches || !from.animate) return U.openScreen('search');
     const r = from.getBoundingClientRect(); const g = from.cloneNode(true);
-    Object.assign(g.style, { position: 'fixed', left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px', margin: '0', zIndex: '99', pointerEvents: 'none', willChange: 'transform,opacity' });
+    Object.assign(g.style, { position: 'fixed', left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px', margin: '0', zIndex: '98', pointerEvents: 'none', willChange: 'transform' });
     document.body.append(g); from.style.visibility = 'hidden';
-    const cx = innerWidth / 2 - (r.left + r.width / 2), cy = innerHeight / 2 - (r.top + r.height / 2);
-    const mid = `translate(${cx}px,${cy}px) scale(1.12)`;
-    const a = g.animate([{ transform: 'none' }, { transform: mid }], { duration: 420, easing: 'cubic-bezier(.22,.9,.28,1)', fill: 'forwards' });
-    a.finished.then(() => g.animate([{ transform: mid, opacity: 1, filter: 'blur(0px)' }, { transform: `translate(${cx + 70}px,${cy}px) scale(3.6,.55)`, opacity: 0, filter: 'blur(8px)' }], { duration: 360, easing: 'ease-in', fill: 'forwards' }).finished)
-      .then(() => { g.remove(); from.style.visibility = ''; U.openScreen('search'); }).catch(() => { g.remove(); from.style.visibility = ''; U.openScreen('search'); });
+    const cx = innerWidth / 2, cy = innerHeight * .46; const dx = cx - (r.left + r.width / 2), dy = cy - (r.top + r.height / 2);
+    const fin = () => { g.remove(); from.style.visibility = ''; };
+    g.animate([{ transform: 'none' }, { transform: `translate(${dx}px,${dy}px) scale(${r.width > 120 ? .8 : 1.15})` }], { duration: 520, easing: 'cubic-bezier(.3,.8,.25,1)', fill: 'forwards' }).finished
+      .then(() => { dust(cx, cy, r.width * (r.width > 120 ? .8 : 1.15), r.height * (r.width > 120 ? .8 : 1.15)); fin(); setTimeout(() => U.openScreen('search'), 220); }).catch(() => { fin(); U.openScreen('search'); });
   }
   C.flySearch = flySearch;
   plus.onclick = () => { if (cur === 'chat') flySearch(plus); else C.newChat(); };
@@ -87,20 +105,22 @@
   }
   function buildHome() {
     built = true; home.replaceChildren();
-    const hi = card('hk-hello'); hi.append(el('h1', '', greet()), el('p', '', T('What do you need help with today?')));
+    const hi = el('div', 'hk-hello'); hi.append(el('h1', '', greet()), el('p', '', T('What do you need help with today?')));
     const ask = el('button', 'hk-ask'); ask.type = 'button'; ask.append(ico('msg', 20), el('span', '', T('Ask Saathi anything')), ico('mic', 20));
     ask.onclick = () => { showTab('chat'); C.focusInput?.(); }; hi.append(ask);
-    fyBox = card(); fyBox.hidden = true; fyList = el('div', 'hk-list'); fyBox.append(el('h2', '', T('For you')), fyList);
-    const q = card(); q.append(el('h2', '', T('Quick start')));
-    const grid = el('div', 'hk-qs');
+    fyBox = card(); fyList = el('div', 'hk-list'); fyBox.append(el('h2', '', T('For you')), fyList);
+    for (let i = 0; i < 2; i++) fyList.append(el('div', 'hk-skel'));
+    const q = el('section', 'hk-strip'); q.append(el('h2', 'hk-h2', T('Quick start')));
+    const rail = el('div', 'hk-rail'); rail.dataset.noswipe = '1';
     const pick = ['pan', 'aadhaar', 'dl', 'passport', 'voter'].map((id) => { const s = U.SERVICES.find((x) => x[0] === id); return [s[2], T(s[1]), () => U.openScreen('service', { id })]; });
-    for (const [ic, label, go] of [...pick, ['scan', T('Scan'), () => U.openScreen('scan')], ['doc', T('Resize'), () => U.openScreen('photo')], ['warn', T('Check if it is a scam'), () => U.openScreen('check')]]) {
-      const b = el('button', 'hk-q'); b.type = 'button'; const c = el('span', 'hk-circ'); c.append(ico(ic, 22)); b.append(c, el('span', '', label)); b.onclick = go; grid.append(b);
-    }
-    q.append(grid);
-    home.append(hi, fyBox, q);
+    [...pick, ['scan', T('Scan'), () => U.openScreen('scan')], ['doc', T('Resize'), () => U.openScreen('photo')], ['warn', T('Check if it is a scam'), () => U.openScreen('check')]].forEach(([ic, label, go], i) => {
+      const b = el('button', 'hk-rq'); b.type = 'button'; b.style.setProperty('--d', 260 + i * 55 + 'ms'); const c = el('span', 'hk-circ'); c.append(ico(ic, 24)); b.append(c, el('span', '', label)); b.onclick = go; rail.append(b);
+    });
+    q.append(rail);
+    const s = card(); s.append(el('h2', '', T('Got a strange call or message?')), wide('light', T('Check if it is a scam'), () => U.openScreen('check')));
+    home.append(hi, q, fyBox, s);
     if (lastItems) paintFy(lastItems);
-    home.classList.add('fresh'); [...home.children].forEach((c, i) => c.style.setProperty('--d', i * 70 + 'ms')); setTimeout(() => home.classList.remove('fresh'), 1200);
+    home.classList.add('fresh'); [...home.children].forEach((c, i) => c.style.setProperty('--d', i * 80 + 'ms')); setTimeout(() => home.classList.remove('fresh'), 1400);
   }
   async function drawHome() {
     if (!built) buildHome();
@@ -139,7 +159,7 @@
   SC.profile = async () => {
     const col = U.frame(T('Profile'));
     const m = await U.refreshMe().catch(() => ({}));
-    const bal = card('hk-brand hk-prof'); bal.append(el('div', 'hk-logo', 'saathi'), el('p', '', T('Wallet balance') + ' · ' + ($('walletText').textContent || '₹0')));
+    const bal = card('hk-prof'); bal.append(el('p', '', T('Wallet balance')), el('div', 'hk-logo', $('walletText').textContent || '₹0'));
     bal.append(wide('dark', T('Top up'), () => U.openScreen('topup')));
     const g = (...r) => U.group(null, ...r);
     const lang = C.uiLang();
@@ -150,7 +170,7 @@
       g(U.row({ icon: 'help', title: T('Help and support'), onclick: () => U.openScreen('help') }), U.row({ icon: 'backup', title: T('Backup and restore'), onclick: () => U.openScreen('backup') })),
       el('p', 'mut small center about', T('Saathi 1.0 · Independent, not a government website')),
       el('div', 'hk-spacer'));
-    screenEl.append(floatSearch());
+    const fb = el('div', 'hk-fadebar'); screenEl.append(fb, floatSearch());
   };
   SC.search = () => {
     screenEl.replaceChildren();
@@ -163,7 +183,14 @@
     bar.append(field, x); wrap.append(body, bar); screenEl.append(wrap);
     const run = () => {
       const q = inp.value.trim().toLowerCase(); body.replaceChildren();
-      if (!q) return body.append(hint);
+      if (!q) {
+        const rec = C.chats.list.filter((c) => c.items.length).slice(0, 8);
+        if (!rec.length) return body.append(hint);
+        body.append(el('h2', 'hk-h2', T('Recent')));
+        const box = card('hk-flush');
+        for (const c of rec) { const b = el('button', 'hk-svc'); b.type = 'button'; const ci = el('span', 'hk-circ'); ci.append(ico('msg', 20)); const tx = el('span', 'hk-st'); tx.append(el('b', '', c.title || T('New chat'))); b.append(ci, tx, ico('chev', 18)); b.onclick = () => { U.closeAll(); C.openChat(c.id, { fromSwitch: true }); }; box.append(b); }
+        return body.append(box);
+      }
       const out = [];
       for (const c of C.chats.list) { const t = (c.title || '') + ' ' + c.items.map((i) => i.text || i.reply?.body || '').join(' '); if (t.toLowerCase().includes(q)) out.push([ico('msg', 20), c.title || T('New chat'), () => { U.closeAll(); C.openChat(c.id, { fromSwitch: true }); }]); }
       for (const [id, name, ic] of U.SERVICES) if (T(name).toLowerCase().includes(q) || name.toLowerCase().includes(q)) out.push([ico(ic, 20), T(name), () => U.openScreen('service', { id })]);
@@ -172,7 +199,7 @@
       for (const [i, t, go] of out.slice(0, 20)) { const b = el('button', 'hk-svc'); b.type = 'button'; const c = el('span', 'hk-circ'); c.append(i); const tx = el('span', 'hk-st'); tx.append(el('b', '', t)); b.append(c, tx, ico('chev', 18)); b.onclick = go; box.append(b); }
       body.append(box);
     };
-    inp.addEventListener('input', run);
+    run(); inp.addEventListener('input', run);
     setTimeout(() => inp.focus(), 80);
   };
 
