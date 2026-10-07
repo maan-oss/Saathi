@@ -358,8 +358,8 @@ details.tips>summary .ti svg{stroke:var(--bg);width:20px;height:20px}
 .foryou{display:none}
 :root[data-style="sky"]{--shadow:0 1px 1px rgba(20,30,60,.04),0 14px 40px rgba(20,30,60,.14);--shadow-sm:0 1px 2px rgba(20,30,60,.06),0 6px 18px rgba(20,30,60,.08);--glass:rgba(255,255,255,.7);--glass-line:rgba(255,255,255,.6);--onsky:#fff;--r:28px}
 :root[data-style="sky"][data-sky="day"]{--sk-a:#5b8cc6;--sk-b:#a9d0ef;--sk-c:#d3dcdc}
-:root[data-style="sky"][data-sky="dawn"]{--sk-a:#6f8fc4;--sk-b:#b9a6c8;--sk-c:#f2bba6}
-:root[data-style="sky"][data-sky="sunset"]{--sk-a:#4f6592;--sk-b:#8b7ba4;--sk-c:#e8b184}
+:root[data-style="sky"][data-sky="dawn"]{--sk-a:#6f93c8;--sk-b:#c9aab4;--sk-c:#f3c6a8}
+:root[data-style="sky"][data-sky="sunset"]{--sk-a:#4a6590;--sk-b:#c49a90;--sk-c:#ecbb8c}
 :root[data-style="sky"][data-sky="night"]{--sk-a:#1d2a44;--sk-b:#2f4268;--sk-c:#55688a;--bg:#14203a;--bg2:#1d2c4b;--ink:#f4f6fb;--mut:#aab6cc;--line:rgba(255,255,255,.16);--glass:rgba(22,34,62,.62);--glass-line:rgba(255,255,255,.12);color-scheme:dark}
 :root[data-style="sky"]:not([data-sky]){--sk-a:#5b8cc6;--sk-b:#a9d0ef;--sk-c:#d3dcdc}
 :root[data-style="sky"] body{background:linear-gradient(180deg,var(--sk-a),var(--sk-b) 55%,var(--sk-c)) fixed;color:var(--ink)}
@@ -417,3 +417,19 @@ details.tips>summary .ti svg{stroke:var(--bg);width:20px;height:20px}
 :root[data-style="sky"] .msg.botrow .bot{--ink:#fff;--mut:rgba(255,255,255,.78);--line:rgba(255,255,255,.2)}
 :root[data-style="sky"] .msg.botrow .bot :is(.sheet,.pack,.g-card,.chip,.btn,button.copy){--ink:#1d1d1f;--mut:#5f6368;--line:rgba(0,0,0,.1);color:var(--ink)}
 :root[data-style="sky"][data-sky="night"] .msg.botrow .bot :is(.sheet,.pack,.g-card){--ink:#f4f6fb;--mut:#aab6cc;--line:rgba(255,255,255,.16)}
+
+/* fit: one radius, one gutter, no nested boxes */
+:root[data-style="sky"] body .msg.me .bubble-me{border-radius:26px!important;padding:11px 18px;max-width:min(82%,480px);background:rgba(255,255,255,.3)!important;color:#fff!important;border:1px solid rgba(255,255,255,.4)!important}
+:root[data-style="sky"] .msg.botrow .bot:has(.err,.sheet,.pack,.g-card,.vault){background:transparent;padding:0;-webkit-backdrop-filter:none;backdrop-filter:none;max-width:min(94%,560px)}
+:root[data-style="sky"] .err{background:rgba(255,255,255,.78);color:#8f1d1d;border-radius:26px;padding:14px 18px;font-size:15.5px;gap:10px 14px;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);box-shadow:var(--shadow-sm)}
+:root[data-style="sky"] .err .link-btn{background:#fff;color:#1d1d1f;border-radius:999px;padding:7px 14px;font-weight:500;text-decoration:none;box-shadow:0 1px 2px rgba(20,30,60,.1)}
+:root[data-style="sky"] .msg.botrow .bot{padding:12px 18px;line-height:1.5}
+:root[data-style="sky"] .msg.botrow .bot>.body>*:first-child{margin-top:0}
+:root[data-style="sky"] .msg.botrow .bot>.body>*:last-child{margin-bottom:0}
+:root[data-style="sky"] .send{background:rgba(255,255,255,.7);color:#1d1d1f;border:0}
+:root[data-style="sky"] .send:disabled{background:rgba(255,255,255,.35);color:rgba(29,29,31,.4)}
+:root[data-style="sky"] .thread{padding-left:16px;padding-right:16px}
+:root[data-style="sky"]{--glass:rgba(255,255,255,.8)}
+:root[data-style="sky"][data-sky="night"]{--glass:rgba(22,34,62,.66)}
+:root[data-style="sky"] .fy-t{color:#1d1d1f;font-weight:450}
+:root[data-style="sky"][data-sky="night"] .fy-t{color:#f4f6fb}
