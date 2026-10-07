@@ -191,7 +191,7 @@ body{background-image:radial-gradient(120% 60% at 50% -10%,color-mix(in srgb,var
 
 /* no glow */
 .hello::before{display:none!important}
-body{background-image:none!important}
+:root:not([data-style="sky"]) body{background-image:none!important}
 #onboard{background:var(--bg)!important}
 .ob-art{filter:none!important}
 
@@ -354,25 +354,39 @@ details.tips>summary .ti svg{stroke:var(--bg);width:20px;height:20px}
 .fw-h{margin:0;color:var(--mut);font-size:14px}
 .fw-a{display:flex;gap:10px;justify-content:flex-end;margin-top:6px}
 
-/* PRO style: sharper, denser, hairline, no shadows */
-:root[data-style="pro"]{--serif:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--shadow:none;--shadow-sm:none;--shadow-lg:0 12px 40px rgba(0,0,0,.18)}
-:root[data-style="pro"] body{background-image:none;letter-spacing:-.005em}
-:root[data-style="pro"] .hello h1,:root[data-style="pro"] h1,:root[data-style="pro"] h2{font-weight:650;letter-spacing:-.025em}
-:root[data-style="pro"] .hello::before{display:none}
-:root[data-style="pro"] .composer,:root[data-style="pro"] .tool-card,:root[data-style="pro"] .hub-cc,:root[data-style="pro"] .gtile,:root[data-style="pro"] .sheet,:root[data-style="pro"] .g-card,:root[data-style="pro"] .fw-v,:root[data-style="pro"] .fw-cta{border-radius:8px}
-:root[data-style="pro"] .tool-ic,:root[data-style="pro"] .gtile-ic,:root[data-style="pro"] .hub-cc-ic{border-radius:6px;width:38px;height:38px}
-:root[data-style="pro"] .tool-card:hover,:root[data-style="pro"] .gtile:hover,:root[data-style="pro"] .hub-cc:hover{transform:none;background:var(--bg2);border-color:var(--ink)}
-:root[data-style="pro"] .btn,:root[data-style="pro"] button.copy,:root[data-style="pro"] .chip,:root[data-style="pro"] .field-i,:root[data-style="pro"] .g-tab{border-radius:6px}
-:root[data-style="pro"] .seg,:root[data-style="pro"] .seg button{border-radius:6px}
-:root[data-style="pro"] .fw-l,:root[data-style="pro"] .sheet-h,:root[data-style="pro"] .me-l .l{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:600}
-:root[data-style="pro"] .msg .bub,:root[data-style="pro"] .msg.user .bub{border-radius:8px}
-:root[data-style="pro"] .tool-card,:root[data-style="pro"] .gtile{padding:14px;min-height:0}
-:root[data-style="pro"]{--bg:#fff;--bg2:#f4f4f2;--line:#dcdcd8;font-family:"Instrument Sans",system-ui,sans-serif}
-:root[data-style="pro"] body{background:var(--bg)}
-:root[data-style="pro"] .hello{align-items:flex-start;text-align:left;padding:12vh 0 3vh;animation:none}
-:root[data-style="pro"] .hello h1{font:700 clamp(30px,7vw,40px)/1.1 "Instrument Sans",system-ui,sans-serif;letter-spacing:-.035em}
-:root[data-style="pro"] .hello p{font-size:15px}
-:root[data-style="pro"] .composer{border:1px solid var(--ink);border-radius:8px;box-shadow:none}
-:root[data-style="pro"] .composer:focus-within{box-shadow:0 0 0 3px color-mix(in srgb,var(--ink) 12%,transparent)}
-:root[data-style="pro"] h1,:root[data-style="pro"] h2,:root[data-style="pro"] h3,:root[data-style="pro"] .fw-v{font-family:"Instrument Sans",system-ui,sans-serif}
-:root[data-style="pro"] header,:root[data-style="pro"] .topbar{border-bottom:1px solid var(--line)}
+/* SKY style (Hark-inspired): a calm sky that follows the clock, frosted layered cards, "next" cards, one thread */
+.foryou{display:none}
+:root[data-style="sky"]{--shadow:0 1px 1px rgba(20,30,50,.04),0 10px 30px rgba(20,30,50,.08);--shadow-sm:0 1px 2px rgba(20,30,50,.05);--glass:rgba(255,255,255,.66);--glass-line:rgba(255,255,255,.7);
+  --sky1:#cfe3f5;--sky2:#eaf2f8;--sky3:#f8f6f0}
+:root[data-style="sky"][data-sky="dawn"]{--sky1:#e9d5df;--sky2:#f5e6e0;--sky3:#fbf4ea}
+:root[data-style="sky"][data-sky="day"]{--sky1:#bcd9f2;--sky2:#dcebf7;--sky3:#f7f8f6}
+:root[data-style="sky"][data-sky="sunset"]{--sky1:#f1c9a5;--sky2:#f6dfc8;--sky3:#fbf1e4}
+:root[data-style="sky"][data-sky="night"]{--sky1:#1b2347;--sky2:#242b52;--sky3:#2d3057;--bg:#161a33;--bg2:#1f2447;--ink:#f1f2fa;--mut:#a4a9c7;--line:rgba(255,255,255,.14);--glass:rgba(34,40,78,.62);--glass-line:rgba(255,255,255,.12);color-scheme:dark}
+:root[data-style="sky"] body{background:linear-gradient(180deg,var(--sky1),var(--sky2) 55%,var(--sky3)) fixed;color:var(--ink)}
+:root[data-style="sky"] body::before,:root[data-style="sky"] body::after{content:"";position:fixed;inset:-10% -20%;pointer-events:none;z-index:-1;background:radial-gradient(ellipse 28% 8% at 20% 22%,rgba(255,255,255,.55),transparent 70%),radial-gradient(ellipse 34% 9% at 72% 34%,rgba(255,255,255,.42),transparent 70%),radial-gradient(ellipse 24% 7% at 45% 12%,rgba(255,255,255,.4),transparent 70%);animation:cloud 90s linear infinite alternate}
+:root[data-style="sky"] body::after{animation-duration:140s;animation-direction:alternate-reverse;opacity:.7;transform:scale(1.2)}
+:root[data-style="sky"][data-sky="night"] body::before,:root[data-style="sky"][data-sky="night"] body::after{opacity:.08}
+@keyframes cloud{from{transform:translateX(-6%)}to{transform:translateX(6%)}}
+@media (prefers-reduced-motion:reduce){:root[data-style="sky"] body::before,:root[data-style="sky"] body::after{animation:none}}
+:root[data-style="sky"] .hello{align-items:flex-start;text-align:left;padding:10vh 0 2vh;gap:6px}
+:root[data-style="sky"] .hello h1{font:600 clamp(32px,8vw,46px)/1.08 var(--serif);letter-spacing:-.03em}
+:root[data-style="sky"] .hello::before{display:none}
+:root[data-style="sky"] .composer,:root[data-style="sky"] .tool-card,:root[data-style="sky"] .hub-cc,:root[data-style="sky"] .gtile,:root[data-style="sky"] .sheet,:root[data-style="sky"] .g-card,:root[data-style="sky"] .hub-clear,:root[data-style="sky"] .grp-box,:root[data-style="sky"] .fw-cta,:root[data-style="sky"] .fw-v{background:var(--glass);border:1px solid var(--glass-line);-webkit-backdrop-filter:blur(18px) saturate(1.2);backdrop-filter:blur(18px) saturate(1.2);box-shadow:var(--shadow)}
+:root[data-style="sky"] .composer{border-radius:26px}
+:root[data-style="sky"] .sidebar,:root[data-style="sky"] #sb,:root[data-style="sky"] .sb{background:var(--glass);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px)}
+:root[data-style="sky"] .tool-card:hover,:root[data-style="sky"] .gtile:hover,:root[data-style="sky"] .hub-cc:hover{background:var(--glass);transform:translateY(-2px)}
+:root[data-style="sky"] .msg.user .bub{background:var(--ink);color:var(--bg)}
+:root[data-style="sky"] .foryou{display:flex;flex-direction:column;width:100%;max-width:440px;margin-top:22px;gap:0}
+:root[data-style="sky"] .fy-card{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;width:100%;padding:14px 16px;border:1px solid var(--glass-line);border-radius:18px;background:var(--glass);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);color:var(--ink);box-shadow:var(--shadow-sm);animation:polup .5s var(--pol) both}
+:root[data-style="sky"] .fy-card span{color:var(--mut);font-size:13.5px}
+:root[data-style="sky"] .fy-card+.fy-card{margin-top:-8px;transform:scale(.97);opacity:.92;animation-delay:.08s}
+:root[data-style="sky"] .fy-card+.fy-card+.fy-card{transform:scale(.94);opacity:.8;animation-delay:.16s}
+:root[data-style="sky"] .fy-card:hover{transform:translateY(-2px) scale(1)!important;opacity:1}
+:root[data-style="sky"] .shell,:root[data-style="sky"] .app,:root[data-style="sky"] .chat,:root[data-style="sky"] .screen,:root[data-style="sky"] .dock{background:transparent}
+:root[data-style="sky"] .top{background:var(--glass);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-bottom:1px solid var(--glass-line)}
+:root[data-style="sky"] .sidebar{background:var(--glass);border-right:1px solid var(--glass-line)}
+:root[data-style="sky"] .grp-box,:root[data-style="sky"] .set-grp{overflow:hidden}
+:root[data-style="sky"] #screen,:root[data-style="sky"] .screen.on{background:transparent!important}
+:root[data-style="sky"] .screen .frame-h,:root[data-style="sky"] .screen header{background:transparent}
+:root[data-style="sky"] .sc-body,:root[data-style="sky"] .sc-head,:root[data-style="sky"] .sc-top{background:transparent!important}
+:root[data-style="sky"] .search-w,:root[data-style="sky"] .field-i,:root[data-style="sky"] .seg{background:var(--glass);border-color:var(--glass-line)}

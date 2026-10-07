@@ -145,9 +145,8 @@
       tabs.replaceChildren();
       const items = [
         ['steps', T('Steps'), stepsTotal() ? `${P.steps.filter((n) => n < stepsTotal()).length}/${stepsTotal()}` : ''],
-        ['docs', T('Documents'), G.docs.length ? `${docsDone()}/${G.docs.length}` : ''],
-        ['fees', T('Fees'), ''],
-        ['me', T('My details'), G.sheet.length ? `${haveCount()}/${G.sheet.length}` : ''],
+        ['docs', T('What you need'), G.docs.length ? `${docsDone()}/${G.docs.length}` : ''],
+        ['me', T('Fill it'), G.sheet.length ? `${haveCount()}/${G.sheet.length}` : ''],
       ];
       for (const [k, label, badge] of items) {
         const b = el('button', 'g-tab'); b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', String(tab === k));
@@ -167,7 +166,7 @@
       const sc = pane.closest('.screen'); const y = sc ? sc.scrollTop : 0;
       pane.replaceChildren();
       if (soft) pane.classList.remove('in'); else { pane.classList.remove('in'); void pane.offsetWidth; pane.classList.add('in'); }
-      if (tab === 'steps') stepsPane(); else if (tab === 'docs') docsPane(); else if (tab === 'fees') feesPane(); else mePane();
+      if (tab === 'steps') stepsPane(); else if (tab === 'docs') { docsPane(); if (G.docs.length) feesPane(); } else mePane();
       if (soft && sc) sc.scrollTop = y;
     };
     const refresh = () => { drawHead(); };

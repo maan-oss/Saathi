@@ -40,9 +40,18 @@
 
   // ---- settings that live on this device: theme, text size ---------------------------------
   const root = document.documentElement;
-  const applyTheme = (t) => { if (t === 'light' || t === 'dark') root.dataset.theme = t; else delete root.dataset.theme; };
+  const applyTheme = (t) => { if (t === 'light' || t === 'dark') root.dataset.theme = t; else delete root.dataset.theme; if (typeof skyPhase === 'function') skyPhase(); };
   const applyScale = (n) => root.style.setProperty('--scale', String(n));
-  const applyStyle = (v) => { if (v === 'pro') root.dataset.style = 'pro'; else delete root.dataset.style; };
+  const applyStyle = (v) => { if (v === 'sky' || v === 'pro') root.dataset.style = 'sky'; else { delete root.dataset.style; delete root.dataset.sky; } skyPhase(); };
+  // Sky style: the backdrop follows the viewer's own clock (dawn, day, sunset, night), like the Hark app.
+  function skyPhase() {
+    if (root.dataset.style !== 'sky') return;
+    const h = new Date().getHours();
+    const dark = root.dataset.theme === 'dark' || (root.dataset.theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+    const lightPick = root.dataset.theme === 'light';
+    root.dataset.sky = dark || (!lightPick && (h >= 20 || h < 5)) ? 'night' : h < 8 ? 'dawn' : h < 17 ? 'day' : 'sunset';
+  }
+  setInterval(skyPhase, 600000);
   applyTheme(store.get('saathi.theme'));
   applyStyle(store.get('saathi.style'));
   applyScale(Number(store.get('saathi.scale')) || 1);
@@ -852,7 +861,30 @@
     const box = el('div', 'hello');
     box.append(el('h1', '', T('Hi, I’m Saathi.')), el('p', '', T('What do you need help with today?')));
     thread.append(box);
+    forYou(box);
     input.focus({ preventScroll: true });
+  }
+  // Up to three "next" cards from the person's own account (Sky style shows them; Classic hides them with CSS).
+  async function forYou(after) {
+    if (!store.get('saathi.onboarded')) return;
+    const r = await api('/app/api/t', { method: 'POST', headers: { 'content-type': 'application/json', 'x-saathi': '1' }, body: JSON.stringify({ op: 'summary', args: {} }) }).catch(() => null);
+    if (!r?.ok || !r.j?.ok || !after.isConnected) return;
+    const sum = r.j.data || {}; const items = [];
+    for (const x of sum.reminders || []) if (x.left <= 14) items.push({ k: x.left, t: x.label, s: x.left < 0 ? T('{n} days ago', { n: -x.left }) : x.left === 0 ? T('Today') : T('In {n} days', { n: x.left }), go: 'reminders' });
+    for (const d of sum.docs || []) if (d.left !== null && d.left <= 60) items.push({ k: d.left, t: T('A saved document expires soon'), s: T('Open your locker'), go: 'locker' });
+    for (const a of sum.appsList || []) if ((a.status === 'applied' || a.status === 'waiting') && a.since > 14) items.push({ k: 50, t: a.title || T('Application'), s: T('Waiting for {n} days. Check its status.', { n: a.since }), go: 'apps' });
+    for (const [id, g] of Object.entries(sum.guides || {})) if (g?.steps?.length) items.push({ k: 80, t: T('Continue your guide'), s: T('{n} steps done', { n: g.steps.length }), go: 'service', args: { id } });
+    if (sum.details && !sum.details.filled) items.push({ k: 90, t: T('Save your details once'), s: T('Then every form is a copy and paste away'), go: 'details' });
+    if (!items.length) return;
+    items.sort((a, b) => a.k - b.k);
+    const stack = el('div', 'foryou');
+    for (const it of items.slice(0, 3)) {
+      const b = el('button', 'fy-card'); b.type = 'button';
+      b.append(el('b', '', it.t), el('span', '', it.s));
+      b.onclick = () => core.openScreen?.(it.go, it.args);
+      stack.append(b);
+    }
+    after.append(stack);
   }
 
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});

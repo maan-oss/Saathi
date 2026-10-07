@@ -131,20 +131,12 @@
     nc.onclick = () => { closeAll(); closeSidebar(); C.newChat(); };
     const scroll = el('nav', 'sb-scroll');
     recentBox = el('div', 'sb-recent'); scroll.append(recentBox);
-    scroll.append(el('div', 'sb-label', T('Tools')));
     scroll.append(
-      navItem('tools', 'tools', T('All tools'), () => openScreen('tools')),
-      navItem('scan', 'scan', T('Scan a document'), () => openScreen('scan')),
-      navItem('locker', 'lock', T('My locker'), () => openScreen('locker')),
+      navItem('tools', 'tools', T('Today'), () => openScreen('tools')),
+      navItem('services', 'plusc', T('Guides'), () => openScreen('services')),
       navItem('details', 'user', T('My details'), () => openScreen('details')),
-      navItem('reminders', 'bell', T('Reminders'), () => openScreen('reminders')),
-      navItem('apps', 'apps', T('Applications'), () => openScreen('apps')),
-      navItem('photo', 'photo', T('Photo resizer'), () => openScreen('photo')),
-      navItem('check', 'shield', T('Is this real?'), () => openScreen('check')),
+      navItem('locker', 'lock', T('My locker'), () => openScreen('locker')),
     );
-    scroll.append(el('div', 'sb-label', T('Guides')));
-    for (const [id, name, ic] of SERVICES) scroll.append(navItem('svc_' + id, ic, T(name), () => openScreen('service', { id })));
-    scroll.append(navItem('services', 'plusc', T('All guides'), () => openScreen('services')));
     const foot = el('div', 'sb-foot');
     const wal = navItem('wallet', 'wallet', T('Wallet'), () => openScreen('wallet'));
     const bal = el('span', 'sb-bal'); bal.id = 'sbBal'; bal.textContent = $('walletText').textContent; wal.append(bal);
@@ -607,7 +599,7 @@
     const col = frame(T('Settings'));
     const m = await refreshMe();
     const theme = seg([['system', T('Auto')], ['light', T('Light')], ['dark', T('Dark')]], store.get('saathi.theme') || 'system', (v) => { store.set('saathi.theme', v); C.applyTheme(v); });
-    const style = seg([['classic', T('Classic')], ['pro', T('Pro')]], store.get('saathi.style') === 'pro' ? 'pro' : 'classic', (v) => { store.set('saathi.style', v); C.applyStyle(v); });
+    const style = seg([['classic', T('Classic')], ['sky', T('Sky')]], ['sky', 'pro'].includes(store.get('saathi.style')) ? 'sky' : 'classic', (v) => { store.set('saathi.style', v); C.applyStyle(v); });
     const size = seg([['1', T('Normal')], ['1.18', T('Large')], ['1.36', T('Huge')]], String(Number(store.get('saathi.scale')) || 1), (v) => { store.set('saathi.scale', v); C.applyScale(Number(v)); });
     col.append(group(T('Preferences'),
       row({ icon: 'globe', title: T('Language'), value: langName(C.uiLang()), onclick: () => openScreen('language') }),
