@@ -354,47 +354,66 @@ details.tips>summary .ti svg{stroke:var(--bg);width:20px;height:20px}
 .fw-h{margin:0;color:var(--mut);font-size:14px}
 .fw-a{display:flex;gap:10px;justify-content:flex-end;margin-top:6px}
 
-/* SKY style (Hark-style): full-screen sky backdrop that follows your local time, centred greeting and composer, a feed of "next" cards */
+/* SKY style, modelled on the Hark Pro app: smooth dusk-to-day gradient, translucent pill bubbles, big frosted cards, verb-button action rows */
 .foryou{display:none}
-:root[data-style="sky"]{--shadow:0 1px 1px rgba(10,20,40,.05),0 12px 34px rgba(10,20,40,.12);--shadow-sm:0 1px 2px rgba(10,20,40,.06);--glass:rgba(255,255,255,.62);--glass-line:rgba(255,255,255,.55);--cloud1:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221400%22 height=%22900%22%3E%3Cfilter id=%22f%22 x=%220%22 y=%220%22 width=%22100%25%22 height=%22100%25%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.0035 0.0085%22 numOctaves=%225%22%20stitchTiles=%22stitch%22 seed=%2211%22/%3E%3CfeColorMatrix values=%220 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 2.4 -1.05%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23f)%22/%3E%3C/svg%3E");--cloud2:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221400%22 height=%22900%22%3E%3Cfilter id=%22f%22 x=%220%22 y=%220%22 width=%22100%25%22 height=%22100%25%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.0055 0.012%22 numOctaves=%225%22%20stitchTiles=%22stitch%22 seed=%224%22/%3E%3CfeColorMatrix values=%220 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 2.4 -1.15%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23f)%22/%3E%3C/svg%3E");
-  --sk-a:#3f86c9;--sk-b:#8dc0ea;--sk-c:#dcecf8;--onsky:#fff}
-:root[data-style="sky"][data-sky="dawn"]{--sk-a:#7090b8;--sk-b:#e6b4a4;--sk-c:#fbe4cf}
-:root[data-style="sky"][data-sky="day"]{--sk-a:#2f79c0;--sk-b:#7fb8e8;--sk-c:#d7eaf8}
-:root[data-style="sky"][data-sky="sunset"]{--sk-a:#37598a;--sk-b:#e39a6c;--sk-c:#f8d6a3}
-:root[data-style="sky"][data-sky="night"]{--sk-a:#070d18;--sk-b:#101c30;--sk-c:#22314a;--bg:#0f1621;--bg2:#18212f;--ink:#f3f5f8;--mut:#a5afbd;--line:rgba(255,255,255,.14);--glass:rgba(24,33,48,.66);--glass-line:rgba(255,255,255,.1);color-scheme:dark}
-:root[data-style="sky"] body{background:linear-gradient(180deg,var(--sk-a),var(--sk-b) 58%,var(--sk-c)) fixed;color:var(--ink)}
-:root[data-style="sky"] body::before,:root[data-style="sky"] body::after{content:"";position:fixed;left:-30%;right:-30%;top:-5%;bottom:-5%;pointer-events:none;z-index:-1;background-size:1400px 900px;background-repeat:repeat;opacity:.9;animation:cloud 120s linear infinite alternate}
-:root[data-style="sky"] body::before{background-image:var(--cloud1);background-position:0 -80px}
-:root[data-style="sky"] body::after{background-image:var(--cloud2);background-position:300px 140px;opacity:.55;animation-duration:200s;animation-direction:alternate-reverse}
-:root[data-style="sky"][data-sky="sunset"] body::before,:root[data-style="sky"][data-sky="sunset"] body::after{filter:sepia(.55) saturate(2.2) hue-rotate(-12deg) brightness(1.05)}
-:root[data-style="sky"][data-sky="dawn"] body::before,:root[data-style="sky"][data-sky="dawn"] body::after{filter:sepia(.35) saturate(1.5) hue-rotate(-14deg)}
-:root[data-style="sky"][data-sky="night"] body::before{opacity:.12}
-:root[data-style="sky"][data-sky="night"] body::after{opacity:.07}
-@keyframes cloud{from{transform:translateX(-5%)}to{transform:translateX(5%)}}
-@media (prefers-reduced-motion:reduce){:root[data-style="sky"] body::before,:root[data-style="sky"] body::after{animation:none}}
+:root[data-style="sky"]{--shadow:0 1px 1px rgba(20,30,60,.04),0 14px 40px rgba(20,30,60,.14);--shadow-sm:0 1px 2px rgba(20,30,60,.06),0 6px 18px rgba(20,30,60,.08);--glass:rgba(255,255,255,.7);--glass-line:rgba(255,255,255,.6);--onsky:#fff;--r:28px}
+:root[data-style="sky"][data-sky="day"]{--sk-a:#5b8cc6;--sk-b:#a9d0ef;--sk-c:#d3dcdc}
+:root[data-style="sky"][data-sky="dawn"]{--sk-a:#6f8fc4;--sk-b:#b9a6c8;--sk-c:#f2bba6}
+:root[data-style="sky"][data-sky="sunset"]{--sk-a:#4f6592;--sk-b:#8b7ba4;--sk-c:#e8b184}
+:root[data-style="sky"][data-sky="night"]{--sk-a:#1d2a44;--sk-b:#2f4268;--sk-c:#55688a;--bg:#14203a;--bg2:#1d2c4b;--ink:#f4f6fb;--mut:#aab6cc;--line:rgba(255,255,255,.16);--glass:rgba(22,34,62,.62);--glass-line:rgba(255,255,255,.12);color-scheme:dark}
+:root[data-style="sky"]:not([data-sky]){--sk-a:#5b8cc6;--sk-b:#a9d0ef;--sk-c:#d3dcdc}
+:root[data-style="sky"] body{background:linear-gradient(180deg,var(--sk-a),var(--sk-b) 55%,var(--sk-c)) fixed;color:var(--ink)}
+:root[data-style="sky"] body::before,:root[data-style="sky"] body::after{display:none}
 :root[data-style="sky"] .shell,:root[data-style="sky"] .app,:root[data-style="sky"] .chat,:root[data-style="sky"] .dock,:root[data-style="sky"] #screen,:root[data-style="sky"] .screen.on,:root[data-style="sky"] .sc-body{background:transparent!important}
 :root[data-style="sky"] .top{background:transparent;border-bottom:0;backdrop-filter:none;-webkit-backdrop-filter:none}
-:root[data-style="sky"] .app:has(.hello) .top,:root[data-style="sky"] .app:has(.hello) .top *{color:var(--onsky)}
-:root[data-style="sky"] .app:has(.hello) .top svg{stroke:var(--onsky)}
-:root[data-style="sky"] body.screen-open .top{visibility:hidden}
-:root[data-style="sky"] .sc-head{background:var(--glass);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-bottom:1px solid var(--glass-line)}
-:root[data-style="sky"] .sidebar{background:var(--glass);border-right:1px solid var(--glass-line);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)}
+:root[data-style="sky"] .top,:root[data-style="sky"] .top *{color:var(--onsky)}
+:root[data-style="sky"] .top svg{stroke:var(--onsky)}
+:root[data-style="sky"] body.screen-open .top,:root[data-style="sky"] body.screen-open .foryou{visibility:hidden;display:none!important}
+:root[data-style="sky"] .sc-head{background:transparent;border-bottom:0}
+:root[data-style="sky"] .sc-head,:root[data-style="sky"] .sc-head *{color:var(--onsky)}
+:root[data-style="sky"] .sc-head svg{stroke:var(--onsky)}
+:root[data-style="sky"] .sc-big h1{color:var(--onsky);font-weight:600;letter-spacing:-.03em;text-shadow:0 2px 20px rgba(20,40,80,.2)}
+:root[data-style="sky"] .sc-big p{color:var(--onsky);opacity:.9}
+:root[data-style="sky"] .grp-t,:root[data-style="sky"] .sb-label{color:var(--onsky);opacity:.85;text-shadow:0 1px 10px rgba(20,40,80,.25)}
+:root[data-style="sky"] .sidebar{background:var(--glass);border-right:1px solid var(--glass-line);-webkit-backdrop-filter:blur(26px);backdrop-filter:blur(26px)}
+/* home */
 :root[data-style="sky"] .app:has(.hello) .chat{flex:0 0 auto;overflow:visible}
 :root[data-style="sky"] .app:has(.hello) .dock{order:2}
 :root[data-style="sky"] .app:has(.hello) .foryou{order:3}
-:root[data-style="sky"] .hello{align-items:center;text-align:center;padding:16vh 0 3vh;gap:8px;color:var(--onsky);animation:none}
-:root[data-style="sky"] .hello h1{font:600 clamp(36px,10vw,54px)/1.05 var(--serif);letter-spacing:-.03em;color:var(--onsky);text-shadow:0 2px 24px rgba(10,30,60,.25)}
-:root[data-style="sky"] .hello p{color:var(--onsky);opacity:.92;font-size:17px;text-shadow:0 1px 14px rgba(10,30,60,.25)}
+:root[data-style="sky"] .hello{align-items:center;text-align:center;padding:15vh 0 3vh;gap:8px;animation:none}
+:root[data-style="sky"] .hello h1{font:500 clamp(34px,9.5vw,52px)/1.06 var(--serif);letter-spacing:-.035em;color:var(--onsky);text-shadow:0 2px 24px rgba(20,40,80,.22)}
+:root[data-style="sky"] .hello p{color:var(--onsky);opacity:.92;font-size:17px}
 :root[data-style="sky"] .hello::before{display:none}
-:root[data-style="sky"] .app:has(.hello) .dock *:not(.composer):not(.composer *){color:var(--onsky);text-shadow:0 1px 10px rgba(10,30,60,.3)}
-:root[data-style="sky"] .composer{background:var(--glass);border:1px solid var(--glass-line);border-radius:28px;-webkit-backdrop-filter:blur(20px) saturate(1.3);backdrop-filter:blur(20px) saturate(1.3);box-shadow:var(--shadow);padding:8px}
-:root[data-style="sky"] .composer:focus-within{box-shadow:0 0 0 3px rgba(255,255,255,.45),var(--shadow);border-color:#fff}
-:root[data-style="sky"] .tool-card,:root[data-style="sky"] .hub-cc,:root[data-style="sky"] .gtile,:root[data-style="sky"] .sheet,:root[data-style="sky"] .g-card,:root[data-style="sky"] .hub-clear,:root[data-style="sky"] .grp-box,:root[data-style="sky"] .fw-cta,:root[data-style="sky"] .fw-v,:root[data-style="sky"] .search-w,:root[data-style="sky"] .seg,:root[data-style="sky"] .field-i{background:var(--glass);border:1px solid var(--glass-line);-webkit-backdrop-filter:blur(18px) saturate(1.2);backdrop-filter:blur(18px) saturate(1.2);box-shadow:var(--shadow-sm)}
+:root[data-style="sky"] .dock{color:var(--onsky)}
+:root[data-style="sky"] .dock>*:not(.composer-wrap),:root[data-style="sky"] .composer-wrap>*:not(.composer){color:var(--onsky);opacity:.88}
+:root[data-style="sky"] .composer{background:var(--glass);border:1px solid var(--glass-line);border-radius:999px;-webkit-backdrop-filter:blur(22px) saturate(1.3);backdrop-filter:blur(22px) saturate(1.3);box-shadow:var(--shadow);padding:8px 8px 8px 10px;color:var(--ink)}
+:root[data-style="sky"] .composer:focus-within{box-shadow:0 0 0 3px rgba(255,255,255,.4),var(--shadow);border-color:#fff}
+/* chat: dark translucent pill for Saathi, light pill for you */
+:root[data-style="sky"] .bubble-me{background:rgba(255,255,255,.3)!important;color:#fff!important;border:1px solid rgba(255,255,255,.35);border-radius:26px;box-shadow:none;padding:11px 18px;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+:root[data-style="sky"] .msg.botrow .bot{background:rgba(24,38,72,.58);color:#fff;border-radius:26px;padding:12px 18px;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);max-width:min(92%,560px)}
+:root[data-style="sky"] .msg.botrow .bot a{color:#fff;text-decoration:underline}
+:root[data-style="sky"] .msg.botrow .bot .sheet,:root[data-style="sky"] .msg.botrow .bot .pack,:root[data-style="sky"] .msg.botrow .bot .g-card{color:var(--ink)}
+:root[data-style="sky"] .msg.botrow .av{display:none}
+/* cards: big, frosted, small grey header, white pill buttons */
+:root[data-style="sky"] .tool-card,:root[data-style="sky"] .hub-cc,:root[data-style="sky"] .gtile,:root[data-style="sky"] .sheet,:root[data-style="sky"] .g-card,:root[data-style="sky"] .hub-clear,:root[data-style="sky"] .grp-box,:root[data-style="sky"] .fw-cta,:root[data-style="sky"] .fw-v,:root[data-style="sky"] .search-w,:root[data-style="sky"] .seg,:root[data-style="sky"] .field-i,:root[data-style="sky"] .pk-prog,:root[data-style="sky"] .set-grp{background:var(--glass);border:1px solid var(--glass-line);border-radius:var(--r);-webkit-backdrop-filter:blur(20px) saturate(1.2);backdrop-filter:blur(20px) saturate(1.2);box-shadow:var(--shadow-sm);color:var(--ink)}
+:root[data-style="sky"] .seg,:root[data-style="sky"] .search-w,:root[data-style="sky"] .field-i{border-radius:999px}
+:root[data-style="sky"] .tool-ic,:root[data-style="sky"] .gtile-ic,:root[data-style="sky"] .hub-cc-ic{background:rgba(255,255,255,.85);color:#1d1d1f;border:0;border-radius:16px}
+:root[data-style="sky"][data-sky="night"] .tool-ic,:root[data-style="sky"][data-sky="night"] .gtile-ic,:root[data-style="sky"][data-sky="night"] .hub-cc-ic{background:rgba(255,255,255,.14);color:#fff}
 :root[data-style="sky"] .tool-card:hover,:root[data-style="sky"] .gtile:hover,:root[data-style="sky"] .hub-cc:hover{background:var(--glass);transform:translateY(-2px)}
-:root[data-style="sky"] .seg button[aria-pressed="true"],:root[data-style="sky"] .seg .on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-:root[data-style="sky"] .msg.user .bub{background:var(--ink);color:var(--bg)}
+:root[data-style="sky"] .btn,:root[data-style="sky"] button.copy,:root[data-style="sky"] .chip{background:rgba(255,255,255,.9);color:#1d1d1f;border:0;border-radius:999px;box-shadow:0 1px 2px rgba(20,30,60,.08),0 4px 12px rgba(20,30,60,.08)}
+:root[data-style="sky"] .btn.pri,:root[data-style="sky"] .btn.xl{background:#1d1d1f;color:#fff}
+:root[data-style="sky"][data-sky="night"] .btn.pri,:root[data-style="sky"][data-sky="night"] .btn.xl{background:#f5f5f7;color:#1d1d1f}
+:root[data-style="sky"] .seg button[aria-pressed="true"],:root[data-style="sky"] .seg .on{background:#1d1d1f;color:#fff;border-color:transparent;border-radius:999px}
+:root[data-style="sky"][data-sky="night"] .seg button[aria-pressed="true"]{background:#f5f5f7;color:#1d1d1f}
+/* action rows, like Hark's "Check in to your United flight." */
 :root[data-style="sky"] .foryou{display:flex;flex-direction:column;gap:10px;width:100%;max-width:560px;margin:14px auto 0;padding:0 16px 24px;overflow-y:auto}
 .app:not(:has(.hello)) .foryou{display:none!important}
-:root[data-style="sky"] .fy-h{color:var(--onsky);font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.9;text-shadow:0 1px 10px rgba(10,30,60,.3);padding:0 4px}
-:root[data-style="sky"] .fy-card{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;width:100%;padding:14px 16px;border:1px solid var(--glass-line);border-radius:20px;background:var(--glass);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);color:var(--ink);box-shadow:var(--shadow-sm);animation:polup .5s var(--pol) both}
-:root[data-style="sky"] .fy-card span{color:var(--mut);font-size:13.5px}
+:root[data-style="sky"] .fy-h{color:var(--onsky);font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.9;padding:0 6px}
+:root[data-style="sky"] .fy-card{display:flex;align-items:center;gap:12px;text-align:left;width:100%;padding:10px 20px 10px 10px;border:1px solid var(--glass-line);border-radius:999px;background:var(--glass);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:var(--ink);box-shadow:var(--shadow-sm);animation:polup .5s var(--pol) both;font-size:16px}
+:root[data-style="sky"] .fy-v{flex:none;padding:10px 16px;border-radius:14px;background:#fff;color:#1d1d1f;box-shadow:0 1px 2px rgba(20,30,60,.1);font-weight:500}
+:root[data-style="sky"][data-sky="night"] .fy-v{background:rgba(255,255,255,.92)}
+:root[data-style="sky"] .fy-t{min-width:0;line-height:1.3}
+
+:root[data-style="sky"] .msg.botrow .bot{--ink:#fff;--mut:rgba(255,255,255,.78);--line:rgba(255,255,255,.2)}
+:root[data-style="sky"] .msg.botrow .bot :is(.sheet,.pack,.g-card,.chip,.btn,button.copy){--ink:#1d1d1f;--mut:#5f6368;--line:rgba(0,0,0,.1);color:var(--ink)}
+:root[data-style="sky"][data-sky="night"] .msg.botrow .bot :is(.sheet,.pack,.g-card){--ink:#f4f6fb;--mut:#aab6cc;--line:rgba(255,255,255,.16)}

@@ -870,18 +870,18 @@
     const r = await api('/app/api/t', { method: 'POST', headers: { 'content-type': 'application/json', 'x-saathi': '1' }, body: JSON.stringify({ op: 'summary', args: {} }) }).catch(() => null);
     if (!r?.ok || !r.j?.ok || !after.isConnected) return;
     const sum = r.j.data || {}; const items = [];
-    for (const x of sum.reminders || []) if (x.left <= 14) items.push({ k: x.left, t: x.label, s: x.left < 0 ? T('{n} days ago', { n: -x.left }) : x.left === 0 ? T('Today') : T('In {n} days', { n: x.left }), go: 'reminders' });
-    for (const d of sum.docs || []) if (d.left !== null && d.left <= 60) items.push({ k: d.left, t: T('A saved document expires soon'), s: T('Open your locker'), go: 'locker' });
-    for (const a of sum.appsList || []) if ((a.status === 'applied' || a.status === 'waiting') && a.since > 14) items.push({ k: 50, t: a.title || T('Application'), s: T('Waiting for {n} days. Check its status.', { n: a.since }), go: 'apps' });
-    for (const [id, g] of Object.entries(sum.guides || {})) if (g?.steps?.length) items.push({ k: 80, t: T('Continue your guide'), s: T('{n} steps done', { n: g.steps.length }), go: 'service', args: { id } });
-    if (sum.details && !sum.details.filled) items.push({ k: 90, t: T('Save your details once'), s: T('Then every form is a copy and paste away'), go: 'details' });
+    for (const x of sum.reminders || []) if (x.left <= 14) items.push({ k: x.left, v: T('Check'), t: x.label + ' · ' + (x.left < 0 ? T('{n} days ago', { n: -x.left }) : x.left === 0 ? T('Today') : T('In {n} days', { n: x.left })), go: 'reminders' });
+    for (const d of sum.docs || []) if (d.left !== null && d.left <= 60) items.push({ k: d.left, v: T('Open'), t: T('A saved document expires soon'), go: 'locker' });
+    for (const a of sum.appsList || []) if ((a.status === 'applied' || a.status === 'waiting') && a.since > 14) items.push({ k: 50, v: T('Check'), t: (a.title || T('Application')) + ' · ' + T('Waiting for {n} days. Check its status.', { n: a.since }), go: 'apps' });
+    for (const [id, g] of Object.entries(sum.guides || {})) if (g?.steps?.length) items.push({ k: 80, v: T('Continue'), t: T('Continue your guide'), go: 'service', args: { id } });
+    if (sum.details && !sum.details.filled) items.push({ k: 90, v: T('Save'), t: T('Save your details once'), go: 'details' });
     if (!items.length) return;
     items.sort((a, b) => a.k - b.k);
     document.querySelectorAll('.foryou').forEach((n) => n.remove());
     const stack = el('div', 'foryou'); stack.append(el('div', 'fy-h', T('For you')));
     for (const it of items.slice(0, 3)) {
       const b = el('button', 'fy-card'); b.type = 'button';
-      b.append(el('b', '', it.t), el('span', '', it.s));
+      b.append(el('span', 'fy-v', it.v), el('span', 'fy-t', it.t));
       b.onclick = () => core.openScreen?.(it.go, it.args);
       stack.append(b);
     }
