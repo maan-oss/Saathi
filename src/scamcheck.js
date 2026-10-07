@@ -125,11 +125,6 @@ export function analyze(text) {
   return { level, urls, reasons: [...reasons] };
 }
 
-/** Quick test used to decide whether a free-typed message deserves a check at all. */
-export const looksRisky = (text) => {
-  const a = analyze(text);
-  return a.level === 'danger' || a.level === 'caution' || (a.level === 'safe' && a.urls.length > 0);
-};
 
 // ---- numbers nobody should type into a chat ---------------------------------------------
 const luhn = (digits) => {

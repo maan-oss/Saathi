@@ -40,7 +40,6 @@
   const errText = (code) => T(ERR[code] || N('Something went wrong. Please try again.'));
   const fmtIso = (iso) => { const d = new Date(iso + 'T00:00:00'); return isNaN(d) ? String(iso) : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); };
   const whenText = (n) => (n < 0 ? T('{n} days ago', { n: -n }) : n === 0 ? T('Today') : n === 1 ? T('Tomorrow') : T('In {n} days', { n }));
-  const toneOf = (n) => (n < 0 ? 'bad' : n <= 30 ? 'warn' : '');
   const TYPE_ICON = { pan: 'card', aadhaar: 'id', driving_licence: 'car', passport: 'passport', voter_id: 'vote', gst: 'gst' };
   const TYPE_NAME = { pan: N('PAN card'), aadhaar: N('Aadhaar'), driving_licence: N('Driving licence'), passport: N('Passport'), voter_id: N('Voter ID'), gst: N('GSTIN') };
   const typeName = (t) => T(TYPE_NAME[t] || t);

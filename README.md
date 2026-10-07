@@ -1,5 +1,7 @@
 # Saathi: WhatsApp helper for Indian government paperwork
 
+> **Going live? Start with [GO-LIVE.md](GO-LIVE.md).**
+
 Saathi lives inside WhatsApp: no app, no website. A person chats, taps buttons and lists, sends a photo, PDF or voice note, and gets guided step by step. It also keeps their details encrypted so they never type them twice. It **guides and prepares. It does not log in to government portals for anyone**: OTP and captcha always stay with the person.
 
 ## What it does

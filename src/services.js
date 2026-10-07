@@ -1069,7 +1069,6 @@ export function relevantCross(question, budget = 2400) {
 // Newer facts read from the official pages while the server runs (see livefacts.js). Empty until the first refresh.
 let LIVE = {};
 export const setLiveFacts = (m) => { LIVE = m && typeof m === 'object' ? m : {}; };
-export const liveStamp = () => Object.values(LIVE).map((x) => x?.ts || 0).reduce((a, b) => Math.max(a, b), 0);
 const liveLines = (id) => {
   const x = LIVE[id];
   if (!x?.items?.length) return [];

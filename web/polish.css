@@ -433,3 +433,26 @@ details.tips>summary .ti svg{stroke:var(--bg);width:20px;height:20px}
 :root[data-style="sky"][data-sky="night"]{--glass:rgba(22,34,62,.66)}
 :root[data-style="sky"] .fy-t{color:#1d1d1f;font-weight:450}
 :root[data-style="sky"][data-sky="night"] .fy-t{color:#f4f6fb}
+
+/* ONE SHAPE SYSTEM (Sky): pill = anything you tap or type in; 28px = any card or panel; circle = any icon tile; 20px = small notes */
+:root[data-style="sky"]{--r-pill:999px;--r-card:28px;--r-note:20px}
+:root[data-style="sky"] :is(button:not(.row-i):not(.gtile):not(.tool-card):not(.svc-card):not(.hub-cc):not(.fd-o):not(.lk2-comp),.btn,.chip,.gchip,.lk2-chip,.tag,.rm-pill,.icon-btn,.send,.seg,.seg button,.field-i,select,input:not([type=checkbox]):not([type=radio]):not([type=range]),.search-w,.composer,.meter,.l-dot){border-radius:var(--r-pill)!important}
+:root[data-style="sky"] textarea.field-i{border-radius:22px!important}
+:root[data-style="sky"] :is(.tool-card,.gtile,.svc-card,.hub-cc,.hub-clear,.g-card,.g-head,.faq,.dt-sec,.dt-meter,.lk2-comp,.rm-new,.rm-notice,.card-i,.pack,.w-hero,.langs,.scan-stage,.grp-box,.set-grp,.sheet,.fd-o,.dialog,.modal-card,.empty){border-radius:var(--r-card)!important}
+:root[data-style="sky"] :is(.note,.rm-explain,.scan-hud,.toast){border-radius:var(--r-note)!important}
+:root[data-style="sky"] :is(.tool-ic,.gtile-ic,.svc-ic,.gh-ic,.pack-ic,.ri-ic,.dt-sec-ic,.inc-ic,.rm-new-ic,.empty-ic,.scan-idle-ic,.ti,.hub-clear-ic,.hub-cc-ic,.gi-ic,.sh-ic){border-radius:50%!important}
+:root[data-style="sky"] .row-i{border-radius:0!important}
+:root[data-style="sky"] .icon-btn{width:44px;height:44px;display:grid;place-items:center}
+:root[data-style="sky"] :is(.tool-ic,.gtile-ic,.svc-ic,.pack-ic,.ri-ic,.dt-sec-ic,.inc-ic,.rm-new-ic,.hub-cc-ic,.hub-clear-ic,.ti){display:grid;place-items:center;flex:none}
+:root[data-style="sky"] :is(.ri-ic,.dt-sec-ic,.inc-ic,.rm-new-ic,.ti){width:40px;height:40px}
+:root[data-style="sky"] :is(.tool-ic,.gtile-ic,.svc-ic,.pack-ic,.hub-cc-ic){width:48px;height:48px}
+:root[data-style="sky"] :is(.g-head,.gh-card){background:var(--glass)!important;border:1px solid var(--glass-line);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);box-shadow:var(--shadow-sm)}
+:root[data-style="sky"] .g-tabs{display:flex;gap:4px;padding:5px;background:var(--glass)!important;border:1px solid var(--glass-line)!important;border-radius:999px;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);box-shadow:var(--shadow-sm);overflow:hidden}
+:root[data-style="sky"] .g-tab{flex:1;border:0!important;border-radius:999px!important;background:transparent;padding:9px 6px;display:flex;flex-direction:column;align-items:center;gap:0;line-height:1.2;box-shadow:none}
+:root[data-style="sky"] .g-tab::after,:root[data-style="sky"] .g-tab::before{display:none!important}
+:root[data-style="sky"] .g-tab[aria-selected="true"]{background:#1d1d1f;color:#fff}
+:root[data-style="sky"][data-sky="night"] .g-tab[aria-selected="true"]{background:#f5f5f7;color:#1d1d1f}
+:root[data-style="sky"] .g-tab small{opacity:.7;font-size:11.5px}
+:root[data-style="sky"] .g-tab[aria-selected="true"]{background:#1d1d1f!important;color:#fff!important}
+:root[data-style="sky"][data-sky="night"] .g-tab[aria-selected="true"]{background:#f5f5f7!important;color:#1d1d1f!important}
+:root[data-style="sky"] :is(.pack,.w-hero,.card-i,.dt-sec,.lk2-comp,.rm-new,.rm-notice,.faq,.dt-meter,.langs,.empty,.set-grp){background:var(--glass)!important;border:1px solid var(--glass-line);-webkit-backdrop-filter:blur(20px) saturate(1.2);backdrop-filter:blur(20px) saturate(1.2);box-shadow:var(--shadow-sm);color:var(--ink)}

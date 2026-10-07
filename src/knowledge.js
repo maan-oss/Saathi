@@ -99,19 +99,3 @@ export const PAN = {
   },
 };
 
-// Plain-text version handed to the AI so its answers stay inside what we verified.
-export function knowledgeText() {
-  const steps = (arr) => arr.map((s, i) => `${i + 1}. ${s.en.replace(/\*/g, '')}`).join('\n');
-  return [
-    `Last verified: ${PAN.lastVerified}. Official sites: ${PAN.officialSites.join(', ')}.`,
-    'Fees: Income Tax Department lists Rs 91 plus GST (about Rs 107) for a standard application with an Indian address, Rs 862 plus GST for a foreign address. Instant e-PAN via Aadhaar OTP on incometax.gov.in is free. Correction and reprint: about Rs 50 including GST for an Indian address (from a Protean notice, so say "about" and that the portal shows the exact fee).',
-    'Instant e-PAN eligibility: an individual with no PAN, valid Aadhaar with a linked mobile, adult, not a representative assessee under section 160, not a foreign citizen. If someone already has a PAN they cannot apply for another. It is digital only; a physical card can be requested later on Protean or UTIITSL. The OTP is 6 digits, valid 15 minutes, 3 attempts.',
-    'Having two PANs is not allowed.',
-    'Instant e-PAN (adults without a PAN, Aadhaar-linked mobile):',
-    steps(PAN.epan),
-    'Full application (minors, no Aadhaar-linked mobile, or physical card):',
-    steps(PAN.form),
-    PAN.docsList.en,
-    PAN.fixOrReprint.en.replace(/\*/g, ''),
-  ].join('\n');
-}

@@ -53,7 +53,5 @@ export function register(code, data) {
   store[code] = { messages: data.messages || {}, strings: data.strings || {} };
 }
 export const isReady = (code) => code === 'en' || code === 'hi' || Boolean(store[code]);
-export const readyCodes = () => Object.keys(store);
 export const message = (code, key) => store[code]?.messages?.[key];
 export const string = (code, en) => (en == null ? undefined : store[code]?.strings?.[hashStr(en)]);
-export const snapshot = (code) => store[code] || null;

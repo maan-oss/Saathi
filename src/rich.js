@@ -28,4 +28,3 @@ export function plain(r) {
   return String(r.body || '');
 }
 
-export const isRich = (r) => typeof r === 'object' && r !== null;

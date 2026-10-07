@@ -475,7 +475,7 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
       return true;
     }
     if (p === '/app/api/config' && req.method === 'GET') {
-      json(res, 200, { whatsapp: shell.whatsappNumber ? `https://wa.me/${shell.whatsappNumber}` : null, whatsappNumber: shell.whatsappNumber || null, voice: Boolean(shell.voice), pay: Boolean(shell.pay), link: Boolean(links), tools: Boolean(tools), privacy: '/privacy', prices: prices(), topups: config.rates?.topups || [], languages: [{ code: 'en', native: 'English', en: 'English' }, { code: 'hi', native: 'हिन्दी', en: 'Hindi' }, ...LANGS.map((l) => ({ code: l.code, native: l.native, en: l.en, beta: Boolean(l.beta) }))] });
+      json(res, 200, { whatsapp: shell.whatsappNumber ? `https://wa.me/${shell.whatsappNumber}?text=Hi` : null, whatsappNumber: shell.whatsappNumber || null, voice: Boolean(shell.voice), pay: Boolean(shell.pay), link: Boolean(links), tools: Boolean(tools), privacy: '/privacy', prices: prices(), topups: config.rates?.topups || [], languages: [{ code: 'en', native: 'English', en: 'English' }, { code: 'hi', native: 'हिन्दी', en: 'Hindi' }, ...LANGS.map((l) => ({ code: l.code, native: l.native, en: l.en, beta: Boolean(l.beta) }))] });
       return true;
     }
     // Site logos for the sources screen. Only real icons pass: a missing one is a 404 so the page shows a letter badge instead of a generic arrow.
