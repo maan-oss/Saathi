@@ -16,6 +16,9 @@
   const watch = (n) => (io ? io.observe(n) : n.classList.add('in'));
   $$('.reveal').forEach(watch);
 
+  // Same sky as the app: the page colours follow the time of day (or the device's dark mode).
+  (() => { const h = new Date().getHours(); const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.dataset.sky = dark || h >= 20 || h < 5 ? 'night' : h < 8 ? 'dawn' : h < 17 ? 'day' : 'sunset'; })();
   const nav = $('#nav');
   const onScroll = () => nav && nav.classList.toggle('scrolled', scrollY > 8);
   addEventListener('scroll', onScroll, { passive: true });

@@ -487,3 +487,22 @@ details.tips>summary .ti svg{stroke:var(--bg);width:20px;height:20px}
 :root[data-style="sky"] .sb-label{color:var(--mut);opacity:1;text-shadow:none}
 :root[data-style="sky"] .sidebar{background:rgba(238,243,250,.96)}
 :root[data-style="sky"][data-sky="night"] .sidebar{background:rgba(11,21,44,.97)}
+/* onboarding in Sky */
+:root[data-style="sky"] #onboard{background:radial-gradient(120% 50% at 50% 100%,var(--sk-glow,transparent),transparent 70%),linear-gradient(180deg,var(--sk-a) 0%,var(--sk-b) 55%,var(--sk-c) 100%)!important}
+:root[data-style="sky"] .onboard :is(h1,.ob-p,.ob-fine,.ob-skip,.ob-fine a){color:var(--onsky);text-shadow:0 1px 14px rgba(20,40,90,.2)}
+:root[data-style="sky"] .onboard .ob-p,:root[data-style="sky"] .onboard .ob-fine{opacity:.9}
+:root[data-style="sky"] .onboard .ob-art{color:#fff}
+:root[data-style="sky"] .onboard .ob-dots i{background:rgba(255,255,255,.4)}
+:root[data-style="sky"] .onboard .ob-dots i.on{background:#fff}
+:root[data-style="sky"] .onboard .langs{background:var(--glass);border:1px solid var(--glass-line);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+/* sidebar: its own colours, so text is readable in every sky and theme */
+:root[data-style="sky"] .sidebar{--ink:#1d1d1f;--mut:#5b6472;--line:rgba(60,80,120,.18);color:#1d1d1f}
+:root[data-style="sky"][data-sky="night"] .sidebar{--ink:#f4f6fb;--mut:#aab6cc;--line:rgba(255,255,255,.16);color:#f4f6fb}
+:root[data-style="sky"] .sidebar :is(.sb-item,.sb-chat,.sb-recent button,.sb-brand,.nav-i,button:not(.sb-new)){color:var(--ink)}
+:root[data-style="sky"] .sidebar .sb-new{background:#1d1d1f;color:#fff}
+:root[data-style="sky"][data-sky="night"] .sidebar .sb-new{background:#f5f5f7;color:#1d1d1f}
+:root[data-style="sky"] #onboard .ob-foot{background:none!important}
+:root[data-style="sky"] #onboard .lang[aria-checked="true"],:root[data-style="sky"] #onboard .langs [aria-checked="true"]{background:#fff!important;color:#1d1d1f!important;--ink:#1d1d1f;--mut:#5b6472}
+:root[data-style="sky"] #onboard .lang[aria-checked="true"] :is(b,small,.l-tx){color:inherit}
+:root[data-style="sky"] #onboard .lang[aria-checked="true"] small{color:#5b6472}
+:root[data-style="sky"] #onboard .langs{mask-image:none;-webkit-mask-image:none}

@@ -30,6 +30,16 @@ const holes = (s) => (String(s).match(/\{[a-zA-Z0-9_]+\}/g) || []).sort().join('
 const good = (en, tr) => typeof tr === 'string' && tr.trim() && tr.length < en.length * 4 + 40 && holes(en) === holes(tr);
 
 const inflight = new Map();
+const BUNDLE = new Map();
+/** Ready-made translations shipped with the app (src/ui/<code>.json), so these languages work without any AI key. */
+function bundled(code) {
+  if (!BUNDLE.has(code)) {
+    let d = {};
+    try { const f = fileURLToPath(new URL('./ui/' + code + '.json', import.meta.url)); if (/^[a-z]{2,4}$/.test(code) && existsSync(f)) d = JSON.parse(readFileSync(f, 'utf8')); } catch { d = {}; }
+    BUNDLE.set(code, d);
+  }
+  return BUNDLE.get(code);
+}
 
 /** Returns { en: translation } for a language code. English needs nothing. Never throws. */
 export async function uiDict(code, { llm, store }) {
@@ -42,6 +52,7 @@ export async function uiDict(code, { llm, store }) {
   try { have = store.getSetting?.(cacheKey) || {}; } catch { have = {}; }
   const out = {};
   if (code === 'hi') for (const k of all) if (good(k, HI[k])) out[k] = HI[k];
+  const pre = bundled(code); for (const k of all) if (good(k, pre[k])) out[k] = pre[k];
   for (const k of all) if (have[k] && good(k, have[k])) out[k] = have[k];
   const missing = all.filter((k) => !out[k]);
   if (!missing.length || !llm?.enabled) return out;
