@@ -10,7 +10,7 @@
   // ---- icons -------------------------------------------------------------------------------
   const I = {
     plus: 'M12 5v14M5 12h14', chev: 'M9 6l6 6-6 6', back: 'M15 6l-6 6 6 6', close: 'M6 6l12 12M18 6L6 18', check: 'M5 12.5l4.5 4.5L19 7.5',
-    card: 'M3 6h18v12H3zM3 10h18M7 15h4', id: 'M4 5h16v14H4zM8 11a2 2 0 100-4 2 2 0 000 4zM5.5 16c.5-2 5-2 5 0M14 9h4M14 13h4',
+    card: 'M3 6h18v12H3zM3 10h18M7 15h4', id: 'M3 5h18v14H3zM9.5 8a2.2 2.2 0 100 4.4 2.2 2.2 0 000-4.4zM5.8 17c.4-2 2-3 3.7-3s3.3 1 3.7 3M15 9.5h3.5M15 13h3.5M15 16.2h2',
     car: 'M5 16V11l2-5h10l2 5v5M3 16h18M7.5 13.5v.01M16.5 13.5v.01M6 16v3M18 16v3', passport: 'M6 3h12v18H6zM12 8a3 3 0 100 6 3 3 0 000-6zM9 18h6',
     vote: 'M4 14h16v6H4zM8 14L6 5h12l-2 9M9.5 9.5l1.5 1.5 3-3', gst: 'M5 4h14v16H5zM9 9h6M9 13h6M9 17h3', cert: 'M6 3h9l3 3v15H6zM9 12h6M9 16h6',
     scan: 'M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3M4 12h16', doc: 'M7 3h7l4 4v14H7zM14 3v5h4M10 13h5M10 17h5',
@@ -201,7 +201,7 @@
     screen.classList.remove('swap'); void screen.offsetWidth; screen.classList.add('swap');
   }
   function goBack() { stack.pop(); if (stack.length) render(); else hideScreen(); }
-  function hideScreen() { screen.classList.remove('on'); document.body.classList.remove('screen-open'); markActive(null); setTimeout(() => { if (!stack.length) { screen.hidden = true; screen.replaceChildren(); } }, 260); }
+  function hideScreen() { screen.classList.remove('on'); document.body.classList.remove('screen-open'); markActive(null); setTimeout(() => { if (!stack.length) { screen.hidden = true; screen.replaceChildren(); } }, 400); }
   function closeAll() { if (!stack.length) return; stack.length = 0; hideScreen(); }
   window.addEventListener('popstate', () => { if (stack.length) { stack.length = 0; hideScreen(); } });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (dialogOpen) closeDialog(); else if (stack.length) goBack(); else closeSidebar(); } });

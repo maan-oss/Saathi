@@ -9,9 +9,9 @@
 :root[data-style="sky"] .top.hk-top .hk-av,:root[data-style="sky"] .top.hk-top .hk-av *{color:#fff;stroke:#fff}
 .hk-round:hover{background:rgba(255,255,255,.8)}
 .hk-round:active,.hk-av:active{transform:scale(.92)}
-.hk-seg{position:relative;flex:1;max-width:310px;height:46px;padding:4px;border-radius:999px;display:flex;background:rgba(110,135,175,.4)}
+.hk-seg{position:relative;flex:1;max-width:310px;height:46px;padding:4px;border-radius:999px;display:grid;grid-template-columns:repeat(3,1fr);background:rgba(110,135,175,.4);margin:0 auto;min-width:0}
 .hk-thumb{position:absolute;top:4px;bottom:4px;left:4px;width:var(--w,33%);border-radius:999px;background:#111;transform:translateX(var(--x,0px));transition:transform .45s var(--hk-ease),width .45s var(--hk-ease);will-change:transform;box-shadow:0 2px 8px rgba(0,0,0,.2)}
-.hk-tab{position:relative;z-index:1;flex:1 1 auto;white-space:nowrap;background:none;border:0;border-radius:999px!important;font:600 clamp(13px,3.7vw,15px)/1 var(--sans);cursor:pointer;padding:0 12px;transition:color .25s,transform .15s}
+.hk-tab{position:relative;z-index:1;min-width:0;overflow:hidden;white-space:nowrap;text-align:center;background:none;border:0;border-radius:999px!important;font:600 clamp(13px,3.7vw,15px)/1 var(--sans);cursor:pointer;padding:0 4px;transition:color .25s,transform .15s}
 :root[data-style="sky"] .top.hk-top .hk-tab{color:rgba(29,29,31,.72)}
 :root[data-style="sky"] .top.hk-top .hk-tab.on{color:#fff}
 .hk-tab:active{transform:scale(.94)}
@@ -188,3 +188,53 @@ body.screen-open .app{visibility:hidden}
 .composer .send:not(:disabled){animation:hkpop .35s var(--hk-ease) both}
 #screen.on{animation:hkScreen .42s var(--hk-ease) both}
 @keyframes hkScreen{from{opacity:0;transform:translateY(22px) scale(.985)}to{opacity:1;transform:none}}
+
+/* ---- round 4 ---- */
+:root{--hk-spring:cubic-bezier(.34,1.45,.5,1)}
+html,body{overflow-x:hidden;overscroll-behavior-x:none}
+.app{overflow-x:hidden;touch-action:pan-y}
+.hk-pane{overflow-x:hidden}.hk-rail{touch-action:pan-x pan-y}
+.hk-thumb{transition:transform .5s var(--hk-spring),width .5s var(--hk-spring)}
+/* corner button: plus / magnifier / X morph */
+.hk-round{position:relative}
+.hk-round .hk-i{position:absolute;inset:0;display:grid;place-items:center;opacity:0;transform:rotate(-90deg) scale(.3);transition:opacity .25s,transform .45s var(--hk-spring);pointer-events:none}
+.hk-round[data-m="plus"] .hk-i.plus,.hk-round[data-m="search"] .hk-i.search,.hk-round[data-m="x"] .hk-i.x{opacity:1;transform:none}
+.hk-round[data-m="x"] .hk-i.search,.hk-round[data-m="x"] .hk-i.plus{transform:rotate(90deg) scale(.3)}
+/* search panel */
+.hk-sp{position:absolute;left:0;right:0;bottom:0;top:calc(env(safe-area-inset-top) + 70px);z-index:2;display:flex;flex-direction:column;opacity:0;transform:translateY(16px) scale(.99);pointer-events:none;transition:opacity .3s,transform .4s var(--hk-ease)}
+.app[data-search] .hk-sp{opacity:1;transform:none;pointer-events:auto}
+.app>.hk-pane,.app>.chat,.app>.dock{transition:opacity .25s}
+.app[data-search]>.hk-pane,.app[data-search]>.chat,.app[data-search]>.dock{opacity:0;pointer-events:none}
+.hk-sb{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:6px 14px 20px;display:flex;flex-direction:column;max-width:640px;width:100%;margin:0 auto;justify-content:flex-start}
+.hk-big{margin:4px 8px 12px;font:600 30px/1.1 var(--sans);letter-spacing:-.03em;color:#fff;text-shadow:0 2px 18px rgba(20,50,100,.3)}
+.hk-sbar{display:block;padding:8px 14px max(16px,env(safe-area-inset-bottom));max-width:640px;width:100%;margin:0 auto;animation:none}
+.hk-sfield{width:100%;box-sizing:border-box}
+.hk-sb .hk-svc{animation:hkrise .45s var(--d,0ms) var(--hk-ease) both}
+.hk-hint{margin:auto}
+/* home rail */
+.hk-rail{margin:0 -14px;padding:4px 22px 12px;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 22px,#000 calc(100% - 34px),transparent);mask-image:linear-gradient(90deg,transparent 0,#000 22px,#000 calc(100% - 34px),transparent)}
+.hk-rq .hk-circ{width:60px;height:60px}.hk-rq{width:74px}
+/* composer */
+.hk-sbar{animation:none}
+.trust{display:none!important}
+.hello-trust{max-width:320px;margin:10px auto 0!important;font-size:13px!important;line-height:1.4;opacity:.85}
+.composer textarea::placeholder{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.composer textarea{min-width:0}
+.composer .send,#micBtn{transition:opacity .22s,transform .38s var(--hk-spring),width .32s var(--hk-ease),margin .3s,padding .3s;overflow:hidden}
+.composer:has(textarea:placeholder-shown) .send{opacity:0;transform:scale(.3) rotate(-70deg);width:0!important;min-width:0;margin:0;padding:0;border:0;pointer-events:none}
+.composer:not(:has(textarea:placeholder-shown)) #micBtn{opacity:0;transform:scale(.3) rotate(70deg);width:0!important;min-width:0;margin:0;padding:0;pointer-events:none}
+.composer-wrap:has(#rec:not([hidden])) .composer .send{opacity:1;transform:none;width:auto!important;pointer-events:auto}
+:root[data-style] .app[data-tab="chat"]>.dock{transition:padding .5s var(--hk-spring)}
+.app[data-tab="chat"] .composer{transition:box-shadow .4s var(--hk-ease),transform .5s var(--hk-spring),background .3s}
+.app[data-tab="chat"] .composer:focus-within{transform:translateY(-3px) scale(1.01);animation:hkring .8s ease-out}
+@keyframes hkring{0%{box-shadow:0 0 0 0 rgba(255,255,255,.75)}100%{box-shadow:0 0 0 16px rgba(255,255,255,0)}}
+.app>.dock.in-r,.app>.dock.in-l{animation:hkDock .55s var(--hk-spring) both}
+@keyframes hkDock{from{opacity:0;transform:translateY(46px) scale(.96)}to{opacity:1;transform:none}}
+/* every screen opens and closes */
+#screen{opacity:0;transform:translateY(26px) scale(.985);transition:opacity .3s ease,transform .4s var(--hk-ease)}
+#screen.on{opacity:1;transform:none;animation:none}
+.dd-pop{transition:opacity .2s,transform .3s var(--hk-ease)}
+.hk-rail{padding-left:34px!important;padding-right:44px!important}
+.app[data-search] .composer,.app[data-search] .hk-comp,.app[data-search] form.composer{opacity:0!important;pointer-events:none!important;transition:opacity .2s}
+.app[data-search] .composer-wrap{opacity:0!important;pointer-events:none!important;transition:opacity .2s}
+.hk-rail{scroll-padding-left:34px;scroll-padding-right:44px}

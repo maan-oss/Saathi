@@ -819,4 +819,5 @@ export const HI = {
   "Good afternoon": "नमस्ते",
   "Good evening": "शुभ संध्या",
   "Quick start": "जल्दी शुरू करें",
+  "Ask anything": "कुछ भी पूछें",
 };

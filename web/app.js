@@ -864,7 +864,7 @@
   // ---- an empty chat: just a greeting and the box to type in ---------------------------------------
   function welcome() {
     const box = el('div', 'hello');
-    box.append(el('h1', '', T('Hi, I’m Saathi.')), el('p', '', T('What do you need help with today?')));
+    box.append(el('h1', '', T('Hi, I’m Saathi.')), el('p', '', T('What do you need help with today?')), el('p', 'hello-trust', T('Saathi guides you. You do the final steps on the official site. Never share your OTP with anyone.')));
     thread.append(box);
     forYou(box);
     input.focus({ preventScroll: true });
@@ -931,7 +931,7 @@
     Object.defineProperty(root, 'value', { get: () => cur, set: (v) => { cur = v; paint(); } });
     paint();
     let pop = null; let scrim = null; let act = -1;
-    const close = (refocus = true) => { if (!pop) return; pop.remove(); scrim.remove(); pop = scrim = null; document.removeEventListener('keydown', onKey, true); btn.setAttribute('aria-expanded', 'false'); if (refocus) btn.focus({ preventScroll: true }); };
+    const close = (refocus = true) => { if (!pop) return; { const p = pop, sc = scrim; p.classList.remove('on'); sc.style.transition = 'opacity .2s'; sc.style.opacity = '0'; setTimeout(() => { p.remove(); sc.remove(); }, 230); } pop = scrim = null; document.removeEventListener('keydown', onKey, true); btn.setAttribute('aria-expanded', 'false'); if (refocus) btn.focus({ preventScroll: true }); };
     const choose = (v) => { const changed = v !== cur; cur = v; paint(); close(); if (changed) { onChange?.(v); root.onchange?.({ target: root }); } };
     function onKey(e) {
       if (!pop) return;

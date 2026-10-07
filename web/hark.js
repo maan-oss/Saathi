@@ -4,7 +4,7 @@
   const { $, el, T } = C; const { ico } = U;
   const app = $('app'), top = document.querySelector('.top'), chat = $('chat'), screenEl = $('screen');
   const TABS = ['home', 'chat', 'guides'];
-  let cur = 'home';
+  let cur = 'home'; let searching = false;
 
   // Old header pieces stay in the page (other code looks them up) but out of sight.
   const legacy = el('div', 'hk-legacy'); legacy.hidden = true;
@@ -12,6 +12,7 @@
   top.append(legacy);
 
   const plus = el('button', 'hk-round'); plus.type = 'button';
+  for (const k of ['plus', 'search', 'x']) { const s = el('span', 'hk-i ' + k); s.append(ico(k === 'x' ? 'close' : k, 22)); plus.append(s); }
   const seg = el('div', 'hk-seg'); seg.setAttribute('role', 'tablist');
   const thumb = el('span', 'hk-thumb'); seg.append(thumb);
   const tbtn = {};
@@ -24,56 +25,23 @@
   const guides = el('section', 'hk-pane hk-guides'); guides.id = 'hkGuides';
   chat.before(home, guides);
   function moveThumb() { const b = tbtn[cur]; if (!b || !b.offsetWidth) return; thumb.style.setProperty('--x', b.offsetLeft + 'px'); thumb.style.setProperty('--w', b.offsetWidth + 'px'); }
-  new ResizeObserver(moveThumb).observe(seg); document.fonts?.ready?.then(moveThumb);
+  function fitTabs() { let s = 15; const bs = Object.values(tbtn); bs.forEach((b) => { b.style.fontSize = s + 'px'; }); while (s > 10.5 && bs.some((b) => b.scrollWidth > b.clientWidth + .5)) { s -= .5; bs.forEach((b) => { b.style.fontSize = s + 'px'; }); } moveThumb(); }
+  new ResizeObserver(fitTabs).observe(seg); document.fonts?.ready?.then(fitTabs);
   function labels() {
     tbtn.home.textContent = T('Home'); tbtn.chat.textContent = T('Chat'); tbtn.guides.textContent = T('Guides');
     av.setAttribute('aria-label', T('Profile'));
-    plusMode(); moveThumb();
+    plusMode(); fitTabs();
   }
   function plusMode() {
-    plus.replaceChildren(ico(cur === 'chat' ? 'search' : 'plus', 22));
-    plus.setAttribute('aria-label', cur === 'chat' ? T('Search') : T('New chat'));
+    plus.dataset.m = searching ? 'x' : cur === 'chat' ? 'search' : 'plus';
+    plus.setAttribute('aria-label', searching ? T('Close') : cur === 'chat' ? T('Search') : T('New chat'));
   }
-  // The pressed button glides to the middle of the screen, then turns into dust that drifts sideways while the search page comes up.
-  function dust(cx, cy, w, h) {
-    const cv = document.createElement('canvas'); const dpr = Math.min(2, devicePixelRatio || 1);
-    cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
-    Object.assign(cv.style, { position: 'fixed', inset: '0', width: '100%', height: '100%', zIndex: '99', pointerEvents: 'none' });
-    document.body.append(cv); const g = cv.getContext('2d'); g.scale(dpr, dpr);
-    const n = Math.max(140, Math.min(420, Math.round(w * h / 28))); const ps = [];
-    for (let i = 0; i < n; i++) {
-      const a = Math.random() * 6.283, r = Math.sqrt(Math.random()); const x = cx + Math.cos(a) * r * w / 2, y = cy + Math.sin(a) * r * h / 2;
-      ps.push({ x, y, vx: .5 + Math.random() * 2.3, vy: (Math.random() - .65) * 1.1, s: 1.2 + Math.random() * 2.8, life: 650 + Math.random() * 650, d: (1 - (x - (cx - w / 2)) / w) * 260, ph: Math.random() * 6.28 });
-    }
-    const t0 = performance.now();
-    (function tick(now) {
-      const t = now - t0; g.clearRect(0, 0, innerWidth, innerHeight); let live = 0;
-      for (const p of ps) {
-        const k = t - p.d; if (k < 0) { live++; g.fillStyle = 'rgba(255,255,255,.9)'; g.beginPath(); g.arc(p.x, p.y, p.s, 0, 6.283); g.fill(); continue; }
-        if (k > p.life) continue; live++;
-        const u = k / p.life; const ease = u * u;
-        const x = p.x + p.vx * k * .09 * (1 + u), y = p.y + p.vy * k * .05 + Math.sin(k / 140 + p.ph) * 4 * u;
-        g.fillStyle = `rgba(255,255,255,${(.9 * (1 - u) ** 1.4).toFixed(3)})`; g.beginPath(); g.arc(x, y, p.s * (1 - ease * .6), 0, 6.283); g.fill();
-      }
-      if (live) requestAnimationFrame(tick); else cv.remove();
-    })(t0);
-  }
-  function flySearch(from) {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches || !from.animate) return U.openScreen('search');
-    const r = from.getBoundingClientRect(); const g = from.cloneNode(true);
-    Object.assign(g.style, { position: 'fixed', left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px', margin: '0', zIndex: '98', pointerEvents: 'none', willChange: 'transform' });
-    document.body.append(g); from.style.visibility = 'hidden';
-    const cx = innerWidth / 2, cy = innerHeight * .46; const dx = cx - (r.left + r.width / 2), dy = cy - (r.top + r.height / 2);
-    const fin = () => { g.remove(); from.style.visibility = ''; };
-    g.animate([{ transform: 'none' }, { transform: `translate(${dx}px,${dy}px) scale(${r.width > 120 ? .8 : 1.15})` }], { duration: 520, easing: 'cubic-bezier(.3,.8,.25,1)', fill: 'forwards' }).finished
-      .then(() => { dust(cx, cy, r.width * (r.width > 120 ? .8 : 1.15), r.height * (r.width > 120 ? .8 : 1.15)); fin(); setTimeout(() => U.openScreen('search'), 220); }).catch(() => { fin(); U.openScreen('search'); });
-  }
-  C.flySearch = flySearch;
-  plus.onclick = () => { if (cur === 'chat') flySearch(plus); else C.newChat(); };
+  plus.onclick = () => { if (searching) closeSearch(); else if (cur === 'chat') openSearch(); else C.newChat(); };
 
   let dir = 1;
   function showTab(k, { silent } = {}) {
     if (!TABS.includes(k)) return;
+    if (searching) closeSearch();
     const from = cur; if (k === from && app.dataset.tab) return;
     dir = TABS.indexOf(k) >= TABS.indexOf(from) ? 1 : -1;
     cur = k; app.dataset.tab = k; document.body.dataset.tab = k;
@@ -81,6 +49,7 @@
     moveThumb();
     plusMode();
     const pane = k === 'home' ? home : k === 'guides' ? guides : $('chat');
+    if (k !== 'chat') pane.scrollTop = 0;
     pane.classList.remove('in-r', 'in-l'); void pane.offsetWidth; pane.classList.add(dir > 0 ? 'in-r' : 'in-l');
     const dk = document.querySelector('.dock'); if (dk && k === 'chat') { dk.classList.remove('in-r', 'in-l'); void dk.offsetWidth; dk.classList.add(dir > 0 ? 'in-r' : 'in-l'); }
     if (k === 'home') drawHome();
@@ -155,7 +124,7 @@
 
   // ---- Profile and search pages ---------------------------------------------------------------------
   const SC = U.SCREENS;
-  const floatSearch = () => { const b = el('button', 'hk-search-pill'); b.type = 'button'; b.append(ico('search', 20), el('span', '', T('Search'))); b.onclick = () => flySearch(b); return b; };
+  const floatSearch = () => { const b = el('button', 'hk-search-pill'); b.type = 'button'; b.append(ico('search', 20), el('span', '', T('Search'))); b.onclick = () => { U.closeAll(); openSearch(); }; return b; };
   SC.profile = async () => {
     const col = U.frame(T('Profile'));
     const m = await U.refreshMe().catch(() => ({}));
@@ -172,54 +141,43 @@
       el('div', 'hk-spacer'));
     const fb = el('div', 'hk-fadebar'); screenEl.append(fb, floatSearch());
   };
-  SC.search = () => {
-    screenEl.replaceChildren();
-    const wrap = el('div', 'hk-sw');
-    const body = el('div', 'hk-sb'); const hint = el('p', 'hk-hint', T('Search your chats and guides')); body.append(hint);
-    const bar = el('div', 'hk-sbar');
-    const field = el('label', 'hk-sfield'); field.append(ico('search', 20));
-    const inp = el('input'); inp.type = 'search'; inp.placeholder = T('Search'); inp.setAttribute('aria-label', T('Search')); inp.autocomplete = 'off'; field.append(inp);
-    const x = el('button', 'hk-round'); x.type = 'button'; x.setAttribute('aria-label', T('Close')); x.append(ico('close', 22)); x.onclick = U.goBack;
-    bar.append(field, x); wrap.append(body, bar); screenEl.append(wrap);
-    const run = () => {
-      const q = inp.value.trim().toLowerCase(); body.replaceChildren();
-      if (!q) {
-        const rec = C.chats.list.filter((c) => c.items.length).slice(0, 8);
-        if (!rec.length) return body.append(hint);
-        body.append(el('h2', 'hk-h2', T('Recent')));
-        const box = card('hk-flush');
-        for (const c of rec) { const b = el('button', 'hk-svc'); b.type = 'button'; const ci = el('span', 'hk-circ'); ci.append(ico('msg', 20)); const tx = el('span', 'hk-st'); tx.append(el('b', '', c.title || T('New chat'))); b.append(ci, tx, ico('chev', 18)); b.onclick = () => { U.closeAll(); C.openChat(c.id, { fromSwitch: true }); }; box.append(b); }
-        return body.append(box);
-      }
-      const out = [];
-      for (const c of C.chats.list) { const t = (c.title || '') + ' ' + c.items.map((i) => i.text || i.reply?.body || '').join(' '); if (t.toLowerCase().includes(q)) out.push([ico('msg', 20), c.title || T('New chat'), () => { U.closeAll(); C.openChat(c.id, { fromSwitch: true }); }]); }
-      for (const [id, name, ic] of U.SERVICES) if (T(name).toLowerCase().includes(q) || name.toLowerCase().includes(q)) out.push([ico(ic, 20), T(name), () => U.openScreen('service', { id })]);
-      if (!out.length) return body.append(el('p', 'hk-hint', T('Nothing found')));
-      const box = card('hk-flush');
-      for (const [i, t, go] of out.slice(0, 20)) { const b = el('button', 'hk-svc'); b.type = 'button'; const c = el('span', 'hk-circ'); c.append(i); const tx = el('span', 'hk-st'); tx.append(el('b', '', t)); b.append(c, tx, ico('chev', 18)); b.onclick = go; box.append(b); }
-      body.append(box);
-    };
-    run(); inp.addEventListener('input', run);
-    setTimeout(() => inp.focus(), 80);
-  };
+  // ---- search: a panel inside the app; the round button in the corner turns into an X while it is open -------
+  const sp = el('div', 'hk-sp'); const spBody = el('div', 'hk-sb'); const spBar = el('div', 'hk-sbar');
+  const field = el('label', 'hk-sfield'); field.append(ico('search', 20));
+  const inp = el('input'); inp.type = 'search'; inp.autocomplete = 'off'; field.append(inp); spBar.append(field);
+  sp.append(spBody, spBar); app.append(sp);
+  const hint = el('p', 'hk-hint');
+  function runSearch() {
+    const q = inp.value.trim().toLowerCase(); spBody.replaceChildren();
+    const row = (icon, t, go) => { const b = el('button', 'hk-svc'); b.type = 'button'; const c = el('span', 'hk-circ'); c.append(icon); const tx = el('span', 'hk-st'); tx.append(el('b', '', t)); b.append(c, tx, ico('chev', 18)); b.onclick = () => { closeSearch(); go(); }; return b; };
+    if (!q) {
+      const rec = C.chats.list.filter((c) => c.items.length).slice(0, 10);
+      hint.textContent = T('Search your chats and guides');
+      if (!rec.length) return spBody.append(hint);
+      const box = card('hk-flush'); spBody.append(el('h2', 'hk-big', T('Recent')), box);
+      rec.forEach((c, i) => { const r = row(ico('msg', 20), c.title || T('New chat'), () => C.openChat(c.id, { fromSwitch: true })); r.style.setProperty('--d', i * 40 + 'ms'); box.append(r); });
+      return;
+    }
+    const out = [];
+    for (const c of C.chats.list) { const t = (c.title || '') + ' ' + c.items.map((i) => i.text || i.reply?.body || '').join(' '); if (t.toLowerCase().includes(q)) out.push(row(ico('msg', 20), c.title || T('New chat'), () => C.openChat(c.id, { fromSwitch: true }))); }
+    for (const [id, name, ic] of U.SERVICES) if (T(name).toLowerCase().includes(q) || name.toLowerCase().includes(q)) out.push(row(ico(ic, 20), T(name), () => U.openScreen('service', { id })));
+    if (!out.length) { hint.textContent = T('Nothing found'); return spBody.append(hint); }
+    const box = card('hk-flush'); box.append(...out.slice(0, 20)); spBody.append(box);
+  }
+  function openSearch() { if (searching) return; searching = true; inp.placeholder = T('Search'); inp.value = ''; runSearch(); spBody.scrollTop = 0; app.dataset.search = '1'; plusMode(); setTimeout(() => { if (searching) inp.focus({ preventScroll: true }); }, 220); }
+  function closeSearch() { if (!searching) return; searching = false; delete app.dataset.search; inp.blur(); plusMode(); }
+  inp.addEventListener('input', runSearch);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && searching) closeSearch(); });
 
   // ---- swipe between tabs (the page follows your finger a little, then slides) ----------------------------
   let sx = 0, sy = 0, st = 0, ok = false, mv = false;
-  const live = () => (cur === 'chat' ? [chat, document.querySelector('.dock')] : [cur === 'home' ? home : guides]).filter(Boolean);
-  const nudge = (px, ease) => live().forEach((n) => { n.style.transition = ease ? 'transform .3s cubic-bezier(.22,.9,.28,1)' : 'none'; n.style.transform = px ? `translateX(${px}px)` : ''; });
   app.addEventListener('touchstart', (e) => {
     const t = e.touches[0]; sx = t.clientX; sy = t.clientY; st = Date.now(); mv = false;
     ok = e.touches.length === 1 && !document.body.classList.contains('screen-open') && !e.target.closest('input,textarea,.pop,.dd-pop,.chips,pre,table,[data-noswipe]');
   }, { passive: true });
-  app.addEventListener('touchmove', (e) => {
-    if (!ok) return; const t = e.touches[0]; const dx = t.clientX - sx, dy = t.clientY - sy;
-    if (!mv && Math.abs(dx) > 14 && Math.abs(dx) > Math.abs(dy) * 1.6) mv = true;
-    if (mv) { const i = TABS.indexOf(cur); const edge = (dx > 0 && i === 0) || (dx < 0 && i === TABS.length - 1); nudge(dx * (edge ? .12 : .38), false); }
-  }, { passive: true });
   app.addEventListener('touchend', (e) => {
     if (!ok) return; ok = false;
     const t = e.changedTouches[0]; const dx = t.clientX - sx, dy = t.clientY - sy;
-    if (mv) nudge(0, true);
     if (Date.now() - st > 800 || Math.abs(dx) < 56 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
     const i = TABS.indexOf(cur) + (dx < 0 ? 1 : -1);
     if (i >= 0 && i < TABS.length) showTab(TABS[i]);
@@ -227,6 +185,7 @@
   seg.addEventListener('keydown', (e) => { const i = TABS.indexOf(cur) + (e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0); if (i >= 0 && i < TABS.length && i !== TABS.indexOf(cur)) { showTab(TABS[i]); tbtn[TABS[i]].focus(); } });
 
   document.addEventListener('saathi:relabel', () => { labels(); guides.dataset.done = ''; built = false; if (cur === 'guides') drawGuides(); if (cur === 'home') drawHome(); });
+  new MutationObserver(() => { if (!document.body.classList.contains('screen-open')) { home.scrollTop = 0; guides.scrollTop = 0; } }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   labels();
   showTab('home');
   app.dataset.hk = '1';
