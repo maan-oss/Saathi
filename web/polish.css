@@ -436,7 +436,7 @@ details.tips>summary .ti svg{stroke:var(--bg);width:20px;height:20px}
 
 /* ONE SHAPE SYSTEM (Sky): pill = anything you tap or type in; 28px = any card or panel; circle = any icon tile; 20px = small notes */
 :root[data-style="sky"]{--r-pill:999px;--r-card:28px;--r-note:20px}
-:root[data-style="sky"] :is(button:not(.row-i):not(.gtile):not(.tool-card):not(.svc-card):not(.hub-cc):not(.fd-o):not(.lk2-comp),.btn,.chip,.gchip,.lk2-chip,.tag,.rm-pill,.icon-btn,.send,.seg,.seg button,.field-i,select,input:not([type=checkbox]):not([type=radio]):not([type=range]),.search-w,.composer,.meter,.l-dot){border-radius:var(--r-pill)!important}
+:root[data-style="sky"] :is(button:not(.row-i):not(.gtile):not(.tool-card):not(.svc-card):not(.hub-cc):not(.fd-o):not(.lk2-comp):not(.sb-item):not(.dd-o),.btn,.chip,.gchip,.lk2-chip,.tag,.rm-pill,.icon-btn,.send,.seg,.seg button,.field-i,select,input:not([type=checkbox]):not([type=radio]):not([type=range]),.search-w,.composer,.meter,.l-dot){border-radius:var(--r-pill)!important}
 :root[data-style="sky"] textarea.field-i{border-radius:22px!important}
 :root[data-style="sky"] :is(.tool-card,.gtile,.svc-card,.hub-cc,.hub-clear,.g-card,.g-head,.faq,.dt-sec,.dt-meter,.lk2-comp,.rm-new,.rm-notice,.card-i,.pack,.w-hero,.langs,.scan-stage,.grp-box,.set-grp,.sheet,.fd-o,.dialog,.modal-card,.empty){border-radius:var(--r-card)!important}
 :root[data-style="sky"] :is(.note,.rm-explain,.scan-hud,.toast){border-radius:var(--r-note)!important}
@@ -587,3 +587,37 @@ details.tips>summary .ti svg{stroke:var(--bg);width:20px;height:20px}
 :root[data-style="sky"][data-sky="night"] .sb-foot .sb-item{background:rgba(255,255,255,.1);color:#f4f6fb}
 :root[data-style="sky"][data-sky="night"] .sb-foot .sb-item .sb-ic{color:#f4f6fb}
 :root[data-style="sky"][data-sky="night"] .sb-foot .sb-item:hover{background:rgba(255,255,255,.2)}
+
+/* ===== Round 3: modelled on Hark's own screens (cloud sky, big soft cards, hairline rows, dark navy bubbles) ===== */
+:root[data-style="sky"]{--r-card:36px;--r-note:24px}
+/* painted-cloud sky: soft white banks drifting over the gradient */
+:root[data-style="sky"] body::before{content:"";position:fixed;inset:-10% -10% -10% -10%;z-index:-1;pointer-events:none;filter:blur(26px);background:
+ radial-gradient(38% 14% at 16% 14%,rgba(255,255,255,.34),transparent 72%),
+ radial-gradient(46% 12% at 82% 26%,rgba(255,255,255,.26),transparent 72%),
+ radial-gradient(55% 15% at 28% 58%,rgba(255,255,255,.26),transparent 72%),
+ radial-gradient(40% 12% at 88% 78%,rgba(255,255,255,.22),transparent 72%),
+ radial-gradient(50% 10% at 10% 92%,rgba(255,255,255,.2),transparent 72%)}
+:root[data-style="sky"][data-sky="night"] body::before{background:
+ radial-gradient(40% 12% at 18% 22%,rgba(150,175,220,.14),transparent 72%),
+ radial-gradient(50% 12% at 80% 48%,rgba(150,175,220,.12),transparent 72%),
+ radial-gradient(55% 14% at 30% 80%,rgba(214,170,130,.16),transparent 72%)}
+:root[data-style="sky"][data-sky="dawn"] body::before,:root[data-style="sky"][data-sky="sunset"] body::before{opacity:.8}
+/* the menu: one calm card, a small grey header, hairline rows */
+:root[data-style="sky"] .sidebar{border:0;border-radius:var(--r-card);background:rgba(236,243,250,.9);box-shadow:0 20px 70px rgba(10,25,60,.28)}
+:root[data-style="sky"][data-sky="night"] .sidebar{background:rgba(14,26,52,.92)}
+:root[data-style="sky"] .sb-head{padding:18px 20px 6px 24px}
+:root[data-style="sky"] .sb-brand{font:600 15px var(--sans);color:var(--mut);letter-spacing:0}
+:root[data-style="sky"] .sb-new{margin:8px 20px 6px;justify-content:center;border-radius:16px!important;min-height:48px;background:#fff;color:#1d1d1f;border:1px solid rgba(60,80,120,.12);box-shadow:0 1px 2px rgba(20,30,60,.08);font-weight:500}
+:root[data-style="sky"][data-sky="night"] .sb-new{background:rgba(255,255,255,.92);color:#1d1d1f}
+:root[data-style="sky"] .sb-scroll{display:block;padding:4px 20px}
+:root[data-style="sky"] .sb-scroll>.sb-item,:root[data-style="sky"] .sb-foot .sb-item{flex-direction:row;align-items:center;gap:14px;min-height:54px;width:100%;padding:10px 4px;border:0;border-top:1px solid var(--line);border-radius:0!important;background:transparent;font-size:17px;font-weight:450}
+:root[data-style="sky"] .sb-scroll>.sb-item .sb-ic,:root[data-style="sky"] .sb-foot .sb-item .sb-ic{width:24px;height:auto;border-radius:0;background:none;color:var(--mut)}
+:root[data-style="sky"] .sb-scroll>.sb-item:hover,:root[data-style="sky"] .sb-scroll>.sb-item.active,:root[data-style="sky"] .sb-foot .sb-item:hover{background:transparent;color:var(--ink);font-weight:650}
+:root[data-style="sky"] .sb-recent{border-top:1px solid var(--line);margin:0;padding:4px 0;max-height:22vh}
+:root[data-style="sky"] .sb-foot{display:block;border-top:0;padding:0 20px max(14px,env(safe-area-inset-bottom))}
+:root[data-style="sky"] .sb-fine{padding:10px 4px 0;border-top:1px solid var(--line)}
+:root[data-style="sky"][data-sky="night"] .sb-scroll>.sb-item,:root[data-style="sky"][data-sky="night"] .sb-foot .sb-item{background:transparent}
+/* cards: Hark's big soft panels */
+:root[data-style="sky"] :is(.tool-card,.gtile,.svc-card,.hub-cc,.g-card,.g-head,.faq,.dt-sec,.card-i,.pack,.w-hero,.langs,.set-grp,.sheet,.dialog,.modal-card,.empty){border-radius:var(--r-card)!important}
+:root[data-style="sky"]:not([data-sky="night"]) :is(.pack,.w-hero,.card-i,.dt-sec,.lk2-comp,.rm-new,.faq,.dt-meter,.langs,.empty,.set-grp,.g-card,.g-head,.tool-card,.hub-cc,.svc-card,.gtile){background:rgba(236,243,250,.82)!important;border:0!important}
+:root[data-style="sky"][data-sky="night"] .sb-scroll>.sb-item .sb-ic,:root[data-style="sky"][data-sky="night"] .sb-foot .sb-item .sb-ic{background:none;color:#aab6cc}
