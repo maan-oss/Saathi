@@ -877,14 +877,15 @@
     if (sum.details && !sum.details.filled) items.push({ k: 90, t: T('Save your details once'), s: T('Then every form is a copy and paste away'), go: 'details' });
     if (!items.length) return;
     items.sort((a, b) => a.k - b.k);
-    const stack = el('div', 'foryou');
+    document.querySelectorAll('.foryou').forEach((n) => n.remove());
+    const stack = el('div', 'foryou'); stack.append(el('div', 'fy-h', T('For you')));
     for (const it of items.slice(0, 3)) {
       const b = el('button', 'fy-card'); b.type = 'button';
       b.append(el('b', '', it.t), el('span', '', it.s));
       b.onclick = () => core.openScreen?.(it.go, it.args);
       stack.append(b);
     }
-    after.append(stack);
+    document.getElementById('app').append(stack);
   }
 
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});

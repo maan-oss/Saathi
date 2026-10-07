@@ -285,6 +285,7 @@ export const HI = {
   'Style': 'शैली',
   'Classic': 'क्लासिक',
   'Sky': 'आसमान',
+  'For you': 'आपके लिए',
   'What you need': 'आपको क्या चाहिए',
   'Fill it': 'भरें',
   'A saved document expires soon': 'एक सहेजा दस्तावेज़ जल्द ख़त्म होगा',
