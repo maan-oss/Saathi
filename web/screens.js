@@ -457,15 +457,18 @@
   // Changing the language: the bot's own texts, then the app's words. The AI answers keep following whatever you write in.
   async function applyLanguage(l, { reload = true } = {}) {
     showDialog({ title: T('Setting up {lang}', { lang: l.en }), body: l.code === 'en' || l.code === 'hi' ? T('One moment…') : T('The first time a language is used it takes up to a minute. Later it is instant.'), busy: true });
-    const [r, n] = await Promise.all([
-      api('/app/api/lang', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ code: l.code }) }),
-      C.loadUI(l.code, { wait: 90000 }),
-    ]);
+    const prev = C.uiLang();
+    const n = await C.loadUI(l.code, { wait: 90000 });
+    if (!n) { await C.loadUI(prev); closeDialog(); toast(T('This language needs Saathi’s AI, which is not switched on yet. Hindi and English work now.')); return false; }
+    const r = await api('/app/api/lang', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ code: l.code }) });
     closeDialog();
     if (!r.ok || !r.j.ok) { toast(T('Could not change the language. Please try again.')); return false; }
-    if (!n) { toast(T('This language needs Saathi’s AI, which is not switched on yet. Hindi and English work now.')); return false; }
     store.set('saathi.lang', l.code);
-    if (reload) location.reload();
+    if (reload) {
+      // Redraw in place: no page reload, so it also works where browser storage is blocked.
+      C.applyStatic(); closeAll(); try { buildSidebar(); } catch { /* sidebar redraws on next open */ }
+      C.newChat(); openScreen('settings');
+    }
     return true;
   }
   SCREENS.language = async () => {

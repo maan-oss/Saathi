@@ -29,8 +29,9 @@ const hiSrc = read('../src/ui-hi.js').replace(/^export\s+/gm, '');
 const engine = `const Engine = (() => {
 ${hiSrc}
 const HI_DICT = HI;
+const UI_DICTS = ${JSON.stringify(Object.fromEntries(['gu','bn','ta','te','mr','kn','ml','pa'].map((c) => [c, JSON.parse(read('../src/ui/' + c + '.json'))])))};
 ${ORDER.map(wrap).join('\n')}
-return { HI_DICT, LANGS: M_i18n.LANGS, SERVICES: M_services.SERVICES, LAST_VERIFIED: M_services.LAST_VERIFIED, createBot: M_flow.createBot, createTools: M_tools.createTools, CostGuard: M_costguard.CostGuard, createTranslator: M_translate.createTranslator, classifyUrl: M_scamcheck.classifyUrl, extractUrls: M_scamcheck.extractUrls, redact: M_scamcheck.redact, balance: M_billing.balance, inr: M_billing.inr, activePack: M_billing.activePack };
+return { HI_DICT, UI_DICTS, LANGS: M_i18n.LANGS, SERVICES: M_services.SERVICES, LAST_VERIFIED: M_services.LAST_VERIFIED, createBot: M_flow.createBot, createTools: M_tools.createTools, CostGuard: M_costguard.CostGuard, createTranslator: M_translate.createTranslator, classifyUrl: M_scamcheck.classifyUrl, extractUrls: M_scamcheck.extractUrls, redact: M_scamcheck.redact, balance: M_billing.balance, inr: M_billing.inr, activePack: M_billing.activePack };
 })();`;
 
 const html = read('../web/index.html');

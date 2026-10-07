@@ -534,3 +534,5 @@ details.tips>summary .ti svg{stroke:var(--bg);width:20px;height:20px}
 :root[data-style="sky"] .dd-pop{background:rgba(238,243,250,.97);--ink:#1d1d1f;--mut:#5b6472;--line:rgba(60,80,120,.2);--bg:transparent;--bg2:rgba(255,255,255,.7)}
 :root[data-style="sky"][data-sky="night"] .dd-pop{background:rgba(12,22,46,.98);--ink:#f4f6fb;--mut:#aab6cc;--line:rgba(255,255,255,.18);--bg2:rgba(255,255,255,.08)}
 :root[data-style="sky"] #onboard .dd-btn{color:var(--ink)}
+/* Sky by day: always the light palette, even if the device or viewer is in dark mode */
+:root[data-style="sky"]:not([data-sky="night"]){--bg:#FBFBFD;--bg2:#F1F4F9;--ink:#1d1d1f;--mut:#5b6472;--line:rgba(60,80,120,.18);--tint:#EEF1F6;--tint2:#E3E8F0;--glass:rgba(255,255,255,.72);--glass-line:rgba(255,255,255,.5);color-scheme:light}

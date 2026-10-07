@@ -85,16 +85,18 @@
     code = code || uiLang();
     if (code === 'en') { UI = {}; document.documentElement.lang = 'en'; return 1; }
     const ck = 'saathi.ui.' + code;
-    try { const c = JSON.parse(store.get(ck) || 'null'); if (c && c.n > 20) UI = c.s; } catch { /* fetch below */ }
+    let got = null;
+    try { const c = JSON.parse(store.get(ck) || 'null'); if (c && c.n > 20) got = c.s; } catch { /* fetch below */ }
     try {
       const ctl = new AbortController();
       const t = setTimeout(() => ctl.abort(), opts.wait || 8000);
       const r = await fetch('/app/api/ui?lang=' + encodeURIComponent(code), { signal: ctl.signal });
       clearTimeout(t);
       const j = await r.json();
-      if (j && j.strings && Object.keys(j.strings).length) { UI = j.strings; store.set(ck, JSON.stringify({ n: Object.keys(UI).length, s: UI })); }
-    } catch { /* keep the cached or English text */ }
-    document.documentElement.lang = code;
+      if (j && j.strings && Object.keys(j.strings).length > 20) { got = j.strings; store.set(ck, JSON.stringify({ n: Object.keys(got).length, s: got })); }
+    } catch { /* keep the cached text */ }
+    if (!got) return 0;
+    UI = got; document.documentElement.lang = code;
     return Object.keys(UI).length;
   }
   /** Translate the fixed words in index.html. */
