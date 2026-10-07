@@ -796,6 +796,7 @@
   const clearThread = () => { thread.replaceChildren(); document.querySelectorAll('.suggest, .hello').forEach((g) => g.remove()); };
 
   function openChat(id, { fromSwitch = false } = {}) {
+    core.showTab?.('chat');
     const c = chats.list.find((x) => x.id === id);
     if (!c) return newChat();
     chats.cur = c.id; store.set(HIST_KEY, JSON.stringify(chats));
@@ -811,6 +812,7 @@
     core.onChats?.();
   }
   function newChat() {
+    core.showTab?.('chat');
     chats.cur = null; store.set(HIST_KEY, JSON.stringify(chats));
     clearThread(); welcome();
     if (engineChat) { engineReset(); markEngine(null); }
@@ -828,6 +830,7 @@
   function clearChats() { chats = { cur: null, list: [] }; store.del(HIST_KEY); markEngine(null); core.onChats?.(); }
   /** Start a chat about one service: the assistant opens with what it knows and offers questions that make sense for that service. */
   function openServiceChat(svcId, name, intro, chips) {
+    core.showTab?.('chat');
     clearThread();
     makeChat(svcId, name); saveChats();
     if (engineChat) engineReset();
@@ -867,10 +870,11 @@
     input.focus({ preventScroll: true });
   }
   // Up to three "next" cards from the person's own account (Sky style shows them; Classic hides them with CSS).
-  async function forYou(after) {
-    if (!store.get('saathi.onboarded')) return;
+  let core_fy = null;
+  async function fyData() {
+    if (!store.get('saathi.onboarded')) return null;
     const r = await api('/app/api/t', { method: 'POST', headers: { 'content-type': 'application/json', 'x-saathi': '1' }, body: JSON.stringify({ op: 'summary', args: {} }) }).catch(() => null);
-    if (!r?.ok || !r.j?.ok || !after.isConnected) return;
+    if (!r?.ok || !r.j?.ok) return null;
     const sum = r.j.data || {}; const items = [];
     for (const x of sum.reminders || []) if (x.left <= 14) items.push({ k: x.left, v: T('Check'), t: x.label + ' · ' + (x.left < 0 ? T('{n} days ago', { n: -x.left }) : x.left === 0 ? T('Today') : T('In {n} days', { n: x.left })), go: 'reminders' });
     for (const d of sum.docs || []) if (d.left !== null && d.left <= 60) items.push({ k: d.left, v: T('Open'), t: T('A saved document expires soon'), go: 'locker' });
@@ -892,6 +896,12 @@
     const off = (new Date().getDate() + (hour > 12 ? 2 : 0)) % ideas.length;
     for (let i = 0; i < ideas.length; i++) items.push({ k: 200 + i, ...ideas[(i + off) % ideas.length] });
     items.sort((a, b) => a.k - b.k);
+    return { sum, items };
+  }
+  core_fy = fyData;
+  async function forYou(after) {
+    const d = await fyData(); if (!d || !after.isConnected) return;
+    const items = d.items;
     document.querySelectorAll('.foryou').forEach((n) => n.remove());
     const stack = el('div', 'foryou'); stack.append(el('div', 'fy-h', T('For you')));
     for (const it of items.slice(0, 4)) {
@@ -963,7 +973,7 @@
   // What the screens (sidebar, settings, wallet, onboarding...) use.
   const core = window.SaathiCore = {
     $, el, svg, api, dropdown, toast, store, tab, HIST_KEY, sid, rupee, send, copyText, welcome, boot, setWallet, applyTheme, applyStyle, applyScale, richText, renderReply, fixUrl,
-    T, N, uiLang, loadUI, applyStatic, openChat, newChat, deleteChat, clearChats, openServiceChat, randomHex, mergeChats,
+    T, N, uiLang, loadUI, applyStatic, fyData, openChat, newChat, deleteChat, clearChats, openServiceChat, randomHex, mergeChats,
     get wallet() { return walletNow; },
     get prices() { return pricesNow; },
     set prices(v) { pricesNow = v; },

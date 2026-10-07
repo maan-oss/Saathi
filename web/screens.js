@@ -155,6 +155,7 @@
       }
       top.querySelector('.brand')?.after(tn);
     }
+    document.dispatchEvent(new Event('saathi:relabel'));
   }
   function openSidebar() { sb.classList.add('on'); scrim.classList.add('on'); $('menuBtn').setAttribute('aria-expanded', 'true'); }
   function closeSidebar() { sb.classList.remove('on'); scrim.classList.remove('on'); $('menuBtn').setAttribute('aria-expanded', 'false'); }

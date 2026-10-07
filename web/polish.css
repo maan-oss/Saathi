@@ -436,7 +436,7 @@ details.tips>summary .ti svg{stroke:var(--bg);width:20px;height:20px}
 
 /* ONE SHAPE SYSTEM (Sky): pill = anything you tap or type in; 28px = any card or panel; circle = any icon tile; 20px = small notes */
 :root[data-style="sky"]{--r-pill:999px;--r-card:28px;--r-note:20px}
-:root[data-style="sky"] :is(button:not(.row-i):not(.gtile):not(.tool-card):not(.svc-card):not(.hub-cc):not(.fd-o):not(.lk2-comp):not(.sb-item):not(.dd-o),.btn,.chip,.gchip,.lk2-chip,.tag,.rm-pill,.icon-btn,.send,.seg,.seg button,.field-i,select,input:not([type=checkbox]):not([type=radio]):not([type=range]),.search-w,.composer,.meter,.l-dot){border-radius:var(--r-pill)!important}
+:root[data-style="sky"] :is(button:not(.row-i):not(.gtile):not(.tool-card):not(.svc-card):not(.hub-cc):not(.fd-o):not(.lk2-comp):not(.sb-item):not(.dd-o):not(.hk-tile):not(.hk-wide):not(.hk-svc):not(.hk-row):not(.hk-round):not(.hk-av):not(.hk-tab),.btn,.chip,.gchip,.lk2-chip,.tag,.rm-pill,.icon-btn,.send,.seg,.seg button,.field-i,select,input:not([type=checkbox]):not([type=radio]):not([type=range]),.search-w,.composer,.meter,.l-dot){border-radius:var(--r-pill)!important}
 :root[data-style="sky"] textarea.field-i{border-radius:22px!important}
 :root[data-style="sky"] :is(.tool-card,.gtile,.svc-card,.hub-cc,.hub-clear,.g-card,.g-head,.faq,.dt-sec,.dt-meter,.lk2-comp,.rm-new,.rm-notice,.card-i,.pack,.w-hero,.langs,.scan-stage,.grp-box,.set-grp,.sheet,.fd-o,.dialog,.modal-card,.empty){border-radius:var(--r-card)!important}
 :root[data-style="sky"] :is(.note,.rm-explain,.scan-hud,.toast){border-radius:var(--r-note)!important}

@@ -14,7 +14,7 @@ export function uiKeys() {
   if (keys) return keys;
   const found = new Set();
   const un = (x) => x.replace(/\\'/g, "'").replace(/\\n/g, '\n');
-  for (const f of ['app.js', 'screens.js', 'tools.js', 'guides.js']) {
+  for (const f of ['app.js', 'screens.js', 'tools.js', 'guides.js', 'hark.js']) {
     const p = join(WEB_DIR, f);
     if (!existsSync(p)) continue;
     const src = readFileSync(p, 'utf8');
