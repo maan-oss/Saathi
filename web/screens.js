@@ -146,6 +146,15 @@
     foot.append(fine);
     sb.append(head, nc, scroll, foot);
     renderRecents();
+    // Top navigation (wide screens): the same places as the menu card, always one tap away.
+    const top = document.querySelector('.top'); top?.querySelector('.topnav')?.remove();
+    if (top) {
+      const tn = el('nav', 'topnav'); tn.setAttribute('aria-label', 'Saathi');
+      for (const [k, label, go] of [['home', T('Home'), () => { closeAll(); C.newChat(); }], ['tools', T('Today'), () => openScreen('tools')], ['services', T('Guides'), () => openScreen('services')], ['details', T('My details'), () => openScreen('details')], ['locker', T('My locker'), () => openScreen('locker')]]) {
+        const b = el('button', 'tn' + (k === 'home' ? ' active' : ''), label); b.type = 'button'; b.dataset.k = k; b.onclick = go; tn.append(b);
+      }
+      top.querySelector('.brand')?.after(tn);
+    }
   }
   function openSidebar() { sb.classList.add('on'); scrim.classList.add('on'); $('menuBtn').setAttribute('aria-expanded', 'true'); }
   function closeSidebar() { sb.classList.remove('on'); scrim.classList.remove('on'); $('menuBtn').setAttribute('aria-expanded', 'false'); }
@@ -153,7 +162,7 @@
   $('wallet').onclick = () => openScreen('wallet');
   const walletText = $('walletText');
   new MutationObserver(() => { const b = $('sbBal'); if (b) b.textContent = walletText.textContent; }).observe(walletText, { childList: true, characterData: true, subtree: true });
-  const markActive = (key) => { for (const [k, b] of Object.entries(sbItems)) b.classList.toggle('active', k === key); };
+  const markActive = (key) => { for (const [k, b] of Object.entries(sbItems)) b.classList.toggle('active', k === key); document.querySelectorAll('.topnav .tn').forEach((b) => b.classList.toggle('active', b.dataset.k === (key || 'home'))); };
 
   // ---- screen frame ----------------------------------------------------------------------------
   const screen = $('screen');
