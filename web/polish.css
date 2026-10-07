@@ -361,7 +361,7 @@ details.tips>summary .ti svg{stroke:var(--bg);width:20px;height:20px}
 :root[data-style="sky"][data-sky="dawn"]{--sky1:#e9d5df;--sky2:#f5e6e0;--sky3:#fbf4ea}
 :root[data-style="sky"][data-sky="day"]{--sky1:#bcd9f2;--sky2:#dcebf7;--sky3:#f7f8f6}
 :root[data-style="sky"][data-sky="sunset"]{--sky1:#f1c9a5;--sky2:#f6dfc8;--sky3:#fbf1e4}
-:root[data-style="sky"][data-sky="night"]{--sky1:#1b2347;--sky2:#242b52;--sky3:#2d3057;--bg:#161a33;--bg2:#1f2447;--ink:#f1f2fa;--mut:#a4a9c7;--line:rgba(255,255,255,.14);--glass:rgba(34,40,78,.62);--glass-line:rgba(255,255,255,.12);color-scheme:dark}
+:root[data-style="sky"][data-sky="night"]{--sky1:#1a1b1e;--sky2:#131417;--sky3:#0e0f11;--bg:#131417;--bg2:#1e1f23;--ink:#f3f3f1;--mut:#a3a4a8;--line:rgba(255,255,255,.14);--glass:rgba(38,39,43,.7);--glass-line:rgba(255,255,255,.1);color-scheme:dark}
 :root[data-style="sky"] body{background:linear-gradient(180deg,var(--sky1),var(--sky2) 55%,var(--sky3)) fixed;color:var(--ink)}
 :root[data-style="sky"] body::before,:root[data-style="sky"] body::after{content:"";position:fixed;inset:-10% -20%;pointer-events:none;z-index:-1;background:radial-gradient(ellipse 28% 8% at 20% 22%,rgba(255,255,255,.55),transparent 70%),radial-gradient(ellipse 34% 9% at 72% 34%,rgba(255,255,255,.42),transparent 70%),radial-gradient(ellipse 24% 7% at 45% 12%,rgba(255,255,255,.4),transparent 70%);animation:cloud 90s linear infinite alternate}
 :root[data-style="sky"] body::after{animation-duration:140s;animation-direction:alternate-reverse;opacity:.7;transform:scale(1.2)}
@@ -390,3 +390,7 @@ details.tips>summary .ti svg{stroke:var(--bg);width:20px;height:20px}
 :root[data-style="sky"] .screen .frame-h,:root[data-style="sky"] .screen header{background:transparent}
 :root[data-style="sky"] .sc-body,:root[data-style="sky"] .sc-head,:root[data-style="sky"] .sc-top{background:transparent!important}
 :root[data-style="sky"] .search-w,:root[data-style="sky"] .field-i,:root[data-style="sky"] .seg{background:var(--glass);border-color:var(--glass-line)}
+
+:root[data-style="sky"] body.screen-open .top{visibility:hidden}
+:root[data-style="sky"] .seg button[aria-pressed="true"],:root[data-style="sky"] .seg .on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+:root[data-style="sky"] .sc-head{background:var(--glass);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
