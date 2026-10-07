@@ -366,9 +366,7 @@
       return c;
     }
     function openAdd(pre) {
-      const sel = el('select', 'field-i'); sel.setAttribute('aria-label', T('Document type'));
-      for (const t of types) { const o = el('option', '', typeName(t.type)); o.value = t.type; sel.append(o); }
-      if (pre && types.some((t) => t.type === pre)) sel.value = pre;
+      const sel = C.dropdown({ label: T('Document type'), options: types.map((t) => [t.type, typeName(t.type)]), value: pre && types.some((t) => t.type === pre) ? pre : undefined });
       const num = textInput('', '', 'text'); num.autocapitalize = 'characters'; num.setAttribute('aria-label', T('Number'));
       const exp = el('input', 'field-i'); exp.type = 'date';
       const expF = field(T('Expiry date'), exp);
@@ -730,9 +728,7 @@
     };
 
     function openForm(a) {
-      const sel = el('select', 'field-i'); sel.setAttribute('aria-label', T('Service'));
-      for (const [id, name] of [...U.SERVICES, ['other', N('Something else')]]) { const o = el('option', '', T(name)); o.value = id; sel.append(o); }
-      sel.value = a?.svc || (S.__svc || 'pan');
+      const sel = C.dropdown({ label: T('Service'), options: [...U.SERVICES, ['other', N('Something else')]].map(([id, name]) => [id, T(name)]), value: a?.svc || (S.__svc || 'pan') });
       const nameOf = (id) => (id === 'other' ? '' : T((svcById(id) || [0, ''])[1]));
       let touched = Boolean(a);
       const title = textInput(T('Name (for example, PAN correction)'), a?.title || nameOf(sel.value)); title.maxLength = 60;
@@ -765,8 +761,7 @@
     const stage = el('div', 'ph-stage'); const info = el('p', 'mut small center');
     const pick = btn('btn pri xl', '', () => file.click()); pick.append(ico('photo', 20), el('span', '', T('Choose a photo')));
     const sizeSeg = seg([['20', '20 KB'], ['50', '50 KB'], ['100', '100 KB'], ['200', '200 KB'], ['500', '500 KB']], '100', (v) => { kb = Number(v); });
-    const dimSel = el('select', 'field-i'); dimSel.setAttribute('aria-label', T('Size in pixels'));
-    for (const [v, l] of [['keep', N('Keep the size')], ['413x531', N('Passport photo, 3.5 × 4.5 cm')], ['512x512', N('Square, 512 × 512')], ['custom', N('Custom size')]]) { const o = el('option', '', T(l)); o.value = v; dimSel.append(o); }
+    const dimSel = C.dropdown({ label: T('Size in pixels'), options: [['keep', T('Keep the size')], ['413x531', T('Passport photo, 3.5 × 4.5 cm')], ['512x512', T('Square, 512 × 512')], ['custom', T('Custom size')]], value: 'keep' });
     const wI = textInput('', '', 'numeric'); wI.placeholder = T('Width px'); const hI = textInput('', '', 'numeric'); hI.placeholder = T('Height px');
     const custom = el('div', 'two'); custom.append(wI, hI); custom.hidden = true;
     dimSel.onchange = () => { custom.hidden = dimSel.value !== 'custom'; };

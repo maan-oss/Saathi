@@ -747,12 +747,10 @@
       dob.oninput = () => { about.dob = dob.value; showAge(); syncNext(); }; showAge();
       const g = seg([['male', T('Male')], ['female', T('Female')], ['other', T('Other')]], about.gender, (v) => { about.gender = v; syncNext(); });
       const gw = el('div', 'fld'); gw.append(el('span', 'fld-l', T('Gender')), g);
-      const st = el('input', 'field-i'); st.type = 'text'; st.setAttribute('list', 'obStates'); st.autocomplete = 'off'; st.placeholder = T('Your state'); st.value = about.state; st.oninput = () => { about.state = st.value; syncNext(); hint.textContent = ''; hint.className = 'fld-h'; };
-      const dl = el('datalist'); dl.id = 'obStates'; for (const n of STATE_LIST) { const o = el('option'); o.value = n; dl.append(o); }
       const hint = el('small', 'fld-h');
-      st.onchange = async () => { const v = st.value.trim(); if (!v) return; const r = await checkState(v); if (r.ok && r.data.name) { st.value = about.state = r.data.name; hint.textContent = ''; } else if (r.ok) { hint.textContent = T('I don’t know a state like that.'); hint.className = 'fld-h bad'; hint.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } };
+      const st = C.dropdown({ label: T('State'), search: true, placeholder: T('Your state'), options: STATE_LIST.map((n) => [n, n]), value: about.state || '', onChange: (v) => { about.state = v; hint.textContent = ''; hint.className = 'fld-h'; syncNext(); } });
       const err = el('p', 'fld-err'); err.hidden = true; err.setAttribute('role', 'alert'); aboutErr = err;
-      form.append(fld(T('Full name'), nm), fld(T('Date of birth'), dob, age), gw, fld(T('State'), st, hint), dl, err);
+      form.append(fld(T('Full name'), nm), fld(T('Date of birth'), dob, age), gw, fld(T('State'), st, hint), err);
       d.append(form);
       return d;
     }

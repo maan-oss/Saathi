@@ -907,9 +907,60 @@
   chat.addEventListener('scroll', onChatScroll, { passive: true });
   grow();
 
+  // A calm custom picker instead of the browser's own: a button that opens a list (a bottom sheet on phones).
+  // It behaves like a <select>: read and set .value, and listen with .onchange.
+  function dropdown({ options, value, label, search, placeholder, onChange }) {
+    const root = el('div', 'dd'); const btn = el('button', 'dd-btn'); btn.type = 'button'; btn.setAttribute('aria-haspopup', 'listbox'); btn.setAttribute('aria-expanded', 'false'); if (label) btn.setAttribute('aria-label', label);
+    const txt = el('span', 'dd-t'); const chev = el('span', 'dd-c'); chev.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    btn.append(txt, chev); root.append(btn);
+    let cur = value !== undefined && value !== null ? value : (options[0] ? options[0][0] : '');
+    const nameOf = (v) => { const o = options.find((x) => x[0] === v); return o ? o[1] : ''; };
+    const paint = () => { const n = nameOf(cur); txt.textContent = n || placeholder || ''; txt.classList.toggle('ph', !n); };
+    Object.defineProperty(root, 'value', { get: () => cur, set: (v) => { cur = v; paint(); } });
+    paint();
+    let pop = null; let scrim = null; let act = -1;
+    const close = (refocus = true) => { if (!pop) return; pop.remove(); scrim.remove(); pop = scrim = null; document.removeEventListener('keydown', onKey, true); btn.setAttribute('aria-expanded', 'false'); if (refocus) btn.focus({ preventScroll: true }); };
+    const choose = (v) => { const changed = v !== cur; cur = v; paint(); close(); if (changed) { onChange?.(v); root.onchange?.({ target: root }); } };
+    function onKey(e) {
+      if (!pop) return;
+      const items = [...pop.querySelectorAll('.dd-o')];
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); }
+      else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); if (!items.length) return; act = (act + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length; items.forEach((n, i) => n.classList.toggle('act', i === act)); items[act].scrollIntoView({ block: 'nearest' }); }
+      else if (e.key === 'Enter' && act >= 0 && items[act]) { e.preventDefault(); items[act].click(); }
+    }
+    function open() {
+      if (pop) return close();
+      scrim = el('div', 'dd-scrim'); scrim.onclick = () => close();
+      pop = el('div', 'dd-pop'); pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', label || '');
+      const phone = innerWidth < 600;
+      const head = el('div', 'dd-h'); if (phone) head.append(el('span', 'dd-grip'));
+      let q = null; if (search) { q = el('input', 'dd-q'); q.type = 'search'; q.placeholder = T('Search'); q.autocomplete = 'off'; head.append(q); }
+      const list = el('div', 'dd-list'); list.setAttribute('role', 'listbox');
+      const draw = () => {
+        const f = q ? q.value.trim().toLowerCase() : ''; list.replaceChildren(); act = -1;
+        const hit = options.filter((o) => !f || String(o[1]).toLowerCase().includes(f));
+        for (const [v, l] of hit) {
+          const o = el('button', 'dd-o' + (v === cur ? ' on' : '')); o.type = 'button'; o.setAttribute('role', 'option'); o.setAttribute('aria-selected', String(v === cur));
+          o.append(el('span', '', l)); if (v === cur) { const k = el('span', 'dd-k'); k.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'; o.append(k); }
+          o.onclick = () => choose(v); list.append(o);
+        }
+        if (!hit.length) list.append(el('div', 'dd-none', T('Nothing found')));
+      };
+      if (q) q.oninput = draw;
+      draw(); pop.append(head, list);
+      document.body.append(scrim, pop);
+      btn.setAttribute('aria-expanded', 'true');
+      if (!phone) { const r = btn.getBoundingClientRect(); const below = innerHeight - r.bottom; const up = below < 300 && r.top > below; pop.style.left = Math.max(8, Math.min(r.left, innerWidth - Math.max(r.width, 260) - 8)) + 'px'; pop.style.width = Math.max(r.width, 260) + 'px'; pop.style.maxHeight = Math.max(180, Math.min(360, (up ? r.top : below) - 16)) + 'px'; if (up) pop.style.bottom = (innerHeight - r.top + 6) + 'px'; else pop.style.top = (r.bottom + 6) + 'px'; }
+      document.addEventListener('keydown', onKey, true);
+      requestAnimationFrame(() => { pop?.classList.add('on'); scrim?.classList.add('on'); const on = list.querySelector('.on'); if (on) on.scrollIntoView({ block: 'center' }); if (q && !phone) q.focus({ preventScroll: true }); });
+    }
+    btn.onclick = open;
+    return root;
+  }
+
   // What the screens (sidebar, settings, wallet, onboarding...) use.
   const core = window.SaathiCore = {
-    $, el, svg, api, toast, store, tab, HIST_KEY, sid, rupee, send, copyText, welcome, boot, setWallet, applyTheme, applyStyle, applyScale, richText, renderReply, fixUrl,
+    $, el, svg, api, dropdown, toast, store, tab, HIST_KEY, sid, rupee, send, copyText, welcome, boot, setWallet, applyTheme, applyStyle, applyScale, richText, renderReply, fixUrl,
     T, N, uiLang, loadUI, applyStatic, openChat, newChat, deleteChat, clearChats, openServiceChat, randomHex, mergeChats,
     get wallet() { return walletNow; },
     get prices() { return pricesNow; },
