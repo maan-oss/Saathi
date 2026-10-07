@@ -42,7 +42,7 @@
   const root = document.documentElement;
   const applyTheme = (t) => { if (t === 'light' || t === 'dark') root.dataset.theme = t; else delete root.dataset.theme; if (typeof skyPhase === 'function') skyPhase(); };
   const applyScale = (n) => root.style.setProperty('--scale', String(n));
-  const applyStyle = (v) => { if (v !== 'classic') root.dataset.style = 'sky'; else { delete root.dataset.style; delete root.dataset.sky; } skyPhase(); };
+  const applyStyle = () => { root.dataset.style = 'sky'; skyPhase(); };
   // Sky style: the backdrop follows the viewer's own clock (dawn, day, sunset, night), like the Hark app.
   function skyPhase() {
     if (root.dataset.style !== 'sky') return;

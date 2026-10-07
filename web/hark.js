@@ -27,16 +27,31 @@
   float.onclick = () => { showTab('chat'); C.focusInput?.(); };
   app.append(float);
 
+  function moveThumb() { const b = tbtn[cur]; if (!b || !b.offsetWidth) return; thumb.style.setProperty('--x', b.offsetLeft + 'px'); thumb.style.setProperty('--w', b.offsetWidth + 'px'); }
+  new ResizeObserver(moveThumb).observe(seg); document.fonts?.ready?.then(moveThumb);
   function labels() {
     tbtn.home.textContent = T('Home'); tbtn.chat.textContent = T('Chat'); tbtn.guides.textContent = T('Guides');
     av.setAttribute('aria-label', T('Profile')); float.lastChild.textContent = T('Ask Saathi');
-    plusMode();
+    plusMode(); moveThumb();
   }
   function plusMode() {
     plus.replaceChildren(ico(cur === 'chat' ? 'search' : 'plus', 22));
     plus.setAttribute('aria-label', cur === 'chat' ? T('Search') : T('New chat'));
   }
-  plus.onclick = () => { if (cur === 'chat') U.openScreen('search'); else { C.newChat(); } };
+  // The pressed button flies to the middle of the screen, dissolves sideways, and then the search box rises.
+  function flySearch(from) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches || !from.animate) return U.openScreen('search');
+    const r = from.getBoundingClientRect(); const g = from.cloneNode(true);
+    Object.assign(g.style, { position: 'fixed', left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px', margin: '0', zIndex: '99', pointerEvents: 'none', willChange: 'transform,opacity' });
+    document.body.append(g); from.style.visibility = 'hidden';
+    const cx = innerWidth / 2 - (r.left + r.width / 2), cy = innerHeight / 2 - (r.top + r.height / 2);
+    const mid = `translate(${cx}px,${cy}px) scale(1.12)`;
+    const a = g.animate([{ transform: 'none' }, { transform: mid }], { duration: 420, easing: 'cubic-bezier(.22,.9,.28,1)', fill: 'forwards' });
+    a.finished.then(() => g.animate([{ transform: mid, opacity: 1, filter: 'blur(0px)' }, { transform: `translate(${cx + 70}px,${cy}px) scale(3.6,.55)`, opacity: 0, filter: 'blur(8px)' }], { duration: 360, easing: 'ease-in', fill: 'forwards' }).finished)
+      .then(() => { g.remove(); from.style.visibility = ''; U.openScreen('search'); }).catch(() => { g.remove(); from.style.visibility = ''; U.openScreen('search'); });
+  }
+  C.flySearch = flySearch;
+  plus.onclick = () => { if (cur === 'chat') flySearch(plus); else C.newChat(); };
 
   let dir = 1;
   function showTab(k, { silent } = {}) {
@@ -45,62 +60,57 @@
     dir = TABS.indexOf(k) >= TABS.indexOf(from) ? 1 : -1;
     cur = k; app.dataset.tab = k; document.body.dataset.tab = k;
     TABS.forEach((t, i) => { tbtn[t].classList.toggle('on', t === k); tbtn[t].setAttribute('aria-selected', String(t === k)); });
-    seg.style.setProperty('--i', String(TABS.indexOf(k)));
+    moveThumb();
     plusMode();
     const pane = k === 'home' ? home : k === 'guides' ? guides : $('chat');
     pane.classList.remove('in-r', 'in-l'); void pane.offsetWidth; pane.classList.add(dir > 0 ? 'in-r' : 'in-l');
     const dk = document.querySelector('.dock'); if (dk && k === 'chat') { dk.classList.remove('in-r', 'in-l'); void dk.offsetWidth; dk.classList.add(dir > 0 ? 'in-r' : 'in-l'); }
-    if (k === 'home' && !silent) drawHome();
+    if (k === 'home') drawHome();
     if (k === 'guides' && !guides.dataset.done) drawGuides();
     if (k === 'chat') requestAnimationFrame(() => { chat.scrollTop = chat.scrollHeight; });
   }
   C.showTab = showTab;
 
-  // ---- Home: a feed of big soft cards ----------------------------------------------------------
+  // ---- Home: what you can do right now ---------------------------------------------------------------
   const card = (cls) => el('div', 'hk-card ' + (cls || ''));
   const wide = (cls, text, go) => { const b = el('button', 'hk-wide ' + cls, text); b.type = 'button'; b.onclick = go; return b; };
-  const tile = (label, value, go) => { const b = el('button', 'hk-tile'); b.type = 'button'; b.append(el('small', '', label), el('b', '', value)); b.onclick = go; return b; };
-  async function drawHome() {
-    const d = await C.fyData?.().catch(() => null);
-    const sum = d?.sum || {};
-    home.replaceChildren();
-    const brand = card('hk-brand');
-    brand.append(el('div', 'hk-logo', 'saathi'), el('p', '', T('Ask anything about government paperwork, in your language.')));
-    const two = el('div', 'hk-two'); two.append(wide('dark', T('Ask Saathi'), () => { showTab('chat'); C.focusInput?.(); }), wide('', T('Start a guide'), () => showTab('guides')));
-    brand.append(two);
-    const today = card(); today.append(el('h2', '', T('Today')));
-    const grid = el('div', 'hk-tiles');
-    grid.append(
-      tile(T('Reminders'), String((sum.reminders || []).length), () => U.openScreen('reminders')),
-      tile(T('My locker'), String(sum.locker || 0), () => U.openScreen('locker')),
-      tile(T('Applications'), String(sum.apps || 0), () => U.openScreen('apps')),
-      tile(T('Wallet'), $('walletText').textContent || '₹0', () => U.openScreen('wallet')),
-    );
-    today.append(grid);
-    home.append(brand, today);
-    const items = (d?.items || []).slice(0, 4);
-    if (items.length) {
-      const fy = card(); fy.append(el('h2', '', T('For you')));
-      const list = el('div', 'hk-list');
-      for (const it of items) {
-        const b = el('button', 'hk-row'); b.type = 'button';
-        b.append(el('span', 'hk-v', it.v), el('span', 'hk-t', it.t)); b.append(ico('chev', 18));
-        b.onclick = () => U.openScreen(it.go, it.args); list.append(b);
-      }
-      fy.append(list); home.append(fy);
+  const greet = () => { const h = new Date().getHours(); return h < 12 ? T('Good morning') : h < 17 ? T('Good afternoon') : T('Good evening'); };
+  let fyBox = null, fyList = null, built = false, lastItems = null;
+  function paintFy(items) {
+    if (!fyBox) return;
+    fyBox.hidden = !items.length; fyList.replaceChildren();
+    for (const it of items.slice(0, 4)) {
+      const b = el('button', 'hk-row'); b.type = 'button';
+      b.append(el('span', 'hk-v', it.v), el('span', 'hk-t', it.t), ico('chev', 18));
+      b.onclick = () => U.openScreen(it.go, it.args); fyList.append(b);
     }
-    const g = card(); g.append(el('h2', '', T('Guides')));
-    const stack = el('div', 'hk-stack');
-    for (const [, , ic] of U.SERVICES.slice(0, 5)) { const c = el('span', 'hk-circ'); c.append(ico(ic, 20)); stack.append(c); }
-    g.append(stack, el('p', '', T('Step by step help for PAN, Aadhaar, passport and more.')), wide('light', T('See all guides'), () => showTab('guides')));
-    const s = card(); s.append(el('h2', '', T('Got a strange call or message?')), wide('light', T('Check if it is a scam'), () => U.openScreen('check')));
-    home.append(g, s);
-    [...home.children].forEach((c, i) => c.style.setProperty('--d', i * 60 + 'ms'));
+  }
+  function buildHome() {
+    built = true; home.replaceChildren();
+    const hi = card('hk-hello'); hi.append(el('h1', '', greet()), el('p', '', T('What do you need help with today?')));
+    const ask = el('button', 'hk-ask'); ask.type = 'button'; ask.append(ico('msg', 20), el('span', '', T('Ask Saathi anything')), ico('mic', 20));
+    ask.onclick = () => { showTab('chat'); C.focusInput?.(); }; hi.append(ask);
+    fyBox = card(); fyBox.hidden = true; fyList = el('div', 'hk-list'); fyBox.append(el('h2', '', T('For you')), fyList);
+    const q = card(); q.append(el('h2', '', T('Quick start')));
+    const grid = el('div', 'hk-qs');
+    const pick = ['pan', 'aadhaar', 'dl', 'passport', 'voter'].map((id) => { const s = U.SERVICES.find((x) => x[0] === id); return [s[2], T(s[1]), () => U.openScreen('service', { id })]; });
+    for (const [ic, label, go] of [...pick, ['scan', T('Scan'), () => U.openScreen('scan')], ['doc', T('Resize'), () => U.openScreen('photo')], ['warn', T('Check if it is a scam'), () => U.openScreen('check')]]) {
+      const b = el('button', 'hk-q'); b.type = 'button'; const c = el('span', 'hk-circ'); c.append(ico(ic, 22)); b.append(c, el('span', '', label)); b.onclick = go; grid.append(b);
+    }
+    q.append(grid);
+    home.append(hi, fyBox, q);
+    if (lastItems) paintFy(lastItems);
+    home.classList.add('fresh'); [...home.children].forEach((c, i) => c.style.setProperty('--d', i * 70 + 'ms')); setTimeout(() => home.classList.remove('fresh'), 1200);
+  }
+  async function drawHome() {
+    if (!built) buildHome();
+    const d = await C.fyData?.().catch(() => null);
+    if (d) { lastItems = d.items; paintFy(d.items); }
   }
 
   // ---- Guides tab ---------------------------------------------------------------------------------
   async function drawGuides() {
-    guides.replaceChildren(); guides.dataset.done = '1';
+    guides.replaceChildren(); guides.dataset.done = '1'; guides.classList.add('fresh'); setTimeout(() => guides.classList.remove('fresh'), 1200);
     guides.append(el('h1', 'hk-h1', T('Guides')));
     const d = await U.loadServices().catch(() => ({}));
     const box = card('hk-flush');
@@ -125,7 +135,7 @@
 
   // ---- Profile and search pages ---------------------------------------------------------------------
   const SC = U.SCREENS;
-  const floatSearch = () => { const b = el('button', 'hk-search-pill'); b.type = 'button'; b.append(ico('search', 20), el('span', '', T('Search'))); b.onclick = () => U.openScreen('search'); return b; };
+  const floatSearch = () => { const b = el('button', 'hk-search-pill'); b.type = 'button'; b.append(ico('search', 20), el('span', '', T('Search'))); b.onclick = () => flySearch(b); return b; };
   SC.profile = async () => {
     const col = U.frame(T('Profile'));
     const m = await U.refreshMe().catch(() => ({}));
@@ -166,22 +176,30 @@
     setTimeout(() => inp.focus(), 80);
   };
 
-  // ---- swipe between tabs ---------------------------------------------------------------------------
-  let sx = 0, sy = 0, st = 0, ok = false;
+  // ---- swipe between tabs (the page follows your finger a little, then slides) ----------------------------
+  let sx = 0, sy = 0, st = 0, ok = false, mv = false;
+  const live = () => (cur === 'chat' ? [chat, document.querySelector('.dock')] : [cur === 'home' ? home : guides]).filter(Boolean);
+  const nudge = (px, ease) => live().forEach((n) => { n.style.transition = ease ? 'transform .3s cubic-bezier(.22,.9,.28,1)' : 'none'; n.style.transform = px ? `translateX(${px}px)` : ''; });
   app.addEventListener('touchstart', (e) => {
-    const t = e.touches[0]; sx = t.clientX; sy = t.clientY; st = Date.now();
+    const t = e.touches[0]; sx = t.clientX; sy = t.clientY; st = Date.now(); mv = false;
     ok = e.touches.length === 1 && !document.body.classList.contains('screen-open') && !e.target.closest('input,textarea,.pop,.dd-pop,.chips,pre,table,[data-noswipe]');
+  }, { passive: true });
+  app.addEventListener('touchmove', (e) => {
+    if (!ok) return; const t = e.touches[0]; const dx = t.clientX - sx, dy = t.clientY - sy;
+    if (!mv && Math.abs(dx) > 14 && Math.abs(dx) > Math.abs(dy) * 1.6) mv = true;
+    if (mv) { const i = TABS.indexOf(cur); const edge = (dx > 0 && i === 0) || (dx < 0 && i === TABS.length - 1); nudge(dx * (edge ? .12 : .38), false); }
   }, { passive: true });
   app.addEventListener('touchend', (e) => {
     if (!ok) return; ok = false;
     const t = e.changedTouches[0]; const dx = t.clientX - sx, dy = t.clientY - sy;
-    if (Date.now() - st > 700 || Math.abs(dx) < 56 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    if (mv) nudge(0, true);
+    if (Date.now() - st > 800 || Math.abs(dx) < 56 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
     const i = TABS.indexOf(cur) + (dx < 0 ? 1 : -1);
     if (i >= 0 && i < TABS.length) showTab(TABS[i]);
   }, { passive: true });
   seg.addEventListener('keydown', (e) => { const i = TABS.indexOf(cur) + (e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0); if (i >= 0 && i < TABS.length && i !== TABS.indexOf(cur)) { showTab(TABS[i]); tbtn[TABS[i]].focus(); } });
 
-  document.addEventListener('saathi:relabel', () => { labels(); guides.dataset.done = ''; if (cur === 'guides') drawGuides(); if (cur === 'home') drawHome(); });
+  document.addEventListener('saathi:relabel', () => { labels(); guides.dataset.done = ''; built = false; if (cur === 'guides') drawGuides(); if (cur === 'home') drawHome(); });
   labels();
   showTab('home');
   app.dataset.hk = '1';

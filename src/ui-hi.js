@@ -815,4 +815,8 @@ export const HI = {
   "Wallet balance": "वॉलेट बैलेंस",
   "Top up": "टॉप अप करें",
   "Search your chats and guides": "अपनी चैट और गाइड खोजें",
+  "Good morning": "सुप्रभात",
+  "Good afternoon": "नमस्ते",
+  "Good evening": "शुभ संध्या",
+  "Quick start": "जल्दी शुरू करें",
 };
