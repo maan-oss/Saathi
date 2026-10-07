@@ -1,4 +1,4 @@
-// Saathi landing page. Plain script, no libraries. Without JavaScript the page is still fully readable.
+// Saathi landing page. Plain script, no libraries. Without JavaScript every section still reads.
 (() => {
   'use strict';
   const $ = (s, r = document) => r.querySelector(s);
@@ -8,34 +8,58 @@
   const save = (k, v) => { try { localStorage.setItem(k, v); } catch { /* private mode */ } };
   const keep = (k, v) => { try { sessionStorage.setItem(k, v); } catch { /* private mode */ } };
 
-  // ---- Scroll reveal ---------------------------------------------------------
-  document.documentElement.classList.add('js');
-  const io = 'IntersectionObserver' in window ? new IntersectionObserver((es) => {
-    for (const e of es) if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-  }, { threshold: 0.12, rootMargin: '0px 0px -5% 0px' }) : null;
-  const watch = (n) => (io ? io.observe(n) : n.classList.add('in'));
-  $$('.reveal').forEach(watch);
+  // ---- Header pill: the black tab follows the part of the page you are reading ----------------
+  const seg = $('.hk-seg'), thumb = seg && $('.hk-thumb', seg), tabs = seg ? $$('.hk-tab', seg) : [];
+  const place = () => {
+    const on = tabs.find((t) => t.classList.contains('on')) || tabs[0];
+    if (!thumb || !on || !on.offsetWidth) return;
+    thumb.style.setProperty('--x', on.offsetLeft + 'px');
+    thumb.style.setProperty('--w', on.offsetWidth + 'px');
+  };
+  const show = (k) => {
+    tabs.forEach((t) => {
+      const on = t.dataset.k === k;
+      t.classList.toggle('on', on);
+      if (on) t.setAttribute('aria-current', 'location'); else t.removeAttribute('aria-current');
+    });
+    place();
+  };
+  if (seg) {
+    // A tab click holds the pill on that tab while the page scrolls there, so it does not flicker past every section.
+    let hold = false, raf = 0, holdTimer = 0;
+    tabs.forEach((t) => t.addEventListener('click', () => { hold = true; clearTimeout(holdTimer); show(t.dataset.k); holdTimer = setTimeout(() => { hold = false; }, 1100); }));
+    const sections = $$('[data-tab]');
+    const spy = () => {
+      raf = 0;
+      if (hold) return;
+      const y = innerHeight * 0.45;
+      let k = null;
+      for (const s of sections) { const r = s.getBoundingClientRect(); if (r.top <= y && r.bottom > y) k = s.dataset.tab; }
+      if (k) show(k);
+    };
+    const queue = () => { if (!raf) raf = requestAnimationFrame(spy); };
+    addEventListener('scroll', queue, { passive: true });
+    addEventListener('resize', queue);
+    if ('ResizeObserver' in window) new ResizeObserver(place).observe(seg);
+    document.fonts?.ready?.then(() => { place(); spy(); });
+    show('home');
+    // Read the layout once the page has loaded, not while it is still being parsed.
+    if (document.readyState === 'complete') spy(); else addEventListener('load', spy, { once: true });
+  }
 
-  // The page's colours follow the time of day (or the device's dark mode), same as the app.
-  (() => { const h = new Date().getHours(); const dark = matchMedia('(prefers-color-scheme: dark)').matches;
-    document.documentElement.dataset.sky = dark || h >= 20 || h < 5 ? 'night' : h < 8 ? 'dawn' : h < 17 ? 'day' : 'sunset'; })();
-
-  // ---- Get started: a real three-step onboarding ----------------------------------
+  // ---- Get started: a real three-step onboarding (same data the bot uses) ----------------------
   const ob = $('#start');
   if (ob) {
     const steps = $$('.ob-step', ob), dots = $$('#obDots i'), count = $('#obCount');
     const back = $('#obBack'), next = $('#obNext'), go = $('#obGo');
     const svcWrap = $('#obSvc'), svcName = $('#obSvcName'), feeEl = $('#obFee'), docsEl = $('#obDocs');
     const siteRow = $('#obSiteRow'), siteA = $('#obSite'), flag = $('#obFlag');
+    const docIcon = () => $('#tplDoc').content.firstElementChild.cloneNode(true);
     let step = 1, lang = 'en', services = null, chosen = null; // chosen: service object, 'other', or null
 
-    const setStep = (n, dir) => {
+    const setStep = (n) => {
       step = n;
-      steps.forEach((s) => {
-        const on = Number(s.dataset.step) === n;
-        s.hidden = !on;
-        s.classList.toggle('back', on && dir < 0);
-      });
+      steps.forEach((s) => { s.hidden = Number(s.dataset.step) !== n; });
       dots.forEach((d, i) => d.classList.toggle('on', i === n - 1));
       count.textContent = `Step ${n} of 3`;
       back.hidden = n === 1;
@@ -43,8 +67,10 @@
       go.hidden = n !== 3;
       next.disabled = n === 2 && chosen === null;
       if (n === 3) fillStep3();
-      const focusTarget = steps[n - 1]?.querySelector('h2');
-      if (focusTarget && dir) { focusTarget.setAttribute('tabindex', '-1'); focusTarget.focus({ preventScroll: true }); }
+    };
+    const focusStep = () => {
+      const h = steps[step - 1]?.querySelector('h2');
+      if (h) h.focus({ preventScroll: true });
     };
 
     // Step 1: language. Only English and Hindi here; the app has the rest.
@@ -53,24 +79,25 @@
       $$('[data-lang]', ob).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
     }));
 
-    // Step 2: service tiles, loaded from the same data the bot uses.
+    // Step 2: service rows, loaded from the app's own service list.
     const pick = (b) => {
       $$('[data-svc]', ob).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-      chosen = b.dataset.svc ? services?.find((s) => s.id === b.dataset.svc) || null : 'other';
-      if (b.dataset.svc === '') chosen = 'other';
+      chosen = b.dataset.svc === '' ? 'other' : services?.find((s) => s.id === b.dataset.svc) || null;
       next.disabled = chosen === null;
     };
-    const tileFor = (sv) => {
-      const b = el('button', 'tile', null); b.type = 'button'; b.dataset.svc = sv.id; b.setAttribute('aria-pressed', 'false');
-      b.append(el('b', '', sv.name));
+    const rowFor = (sv) => {
+      const b = el('button', 'hk-svc'); b.type = 'button'; b.dataset.svc = sv.id; b.setAttribute('aria-pressed', 'false');
+      const c = el('span', 'hk-circ'); c.append(docIcon());
+      const t = el('span', 'hk-st'); t.append(el('b', '', sv.name));
+      b.append(c, t);
       b.addEventListener('click', () => pick(b));
       return b;
     };
     const loadServices = () => fetch('/app/api/services').then((r) => (r.ok ? r.json() : Promise.reject())).then((d) => {
       services = d.services || [];
-      svcWrap.replaceChildren(...services.map(tileFor));
+      svcWrap.replaceChildren(...services.map(rowFor));
     }).catch(() => {
-      svcWrap.replaceChildren(el('p', 'sm', 'Could not load the list just now. Pick “Something else”, or open the app.'));
+      svcWrap.replaceChildren(el('p', 'tiny', 'Could not load the list just now. Pick “Something else”, or open the app.'));
     });
     const other = $('[data-svc=""]', ob);
     if (other) other.addEventListener('click', () => pick(other));
@@ -91,7 +118,7 @@
       const m = f.match(/^[^.]{6,60}\./);
       feeEl.textContent = m ? m[0] : f;
       const rest = m ? f.slice(m[0].length).trim() : '';
-      if (rest) feeEl.append(el('div', 'sm', rest));
+      if (rest) feeEl.append(el('div', 'tiny', rest));
       const lines = (sv.docs || []).filter((l) => /^[•\-*]/.test(l)).map((l) => l.replace(/^[•\-*]\s*/, ''));
       const head = (sv.docs || []).find((l) => !/^[•\-*]/.test(l));
       docsEl.replaceChildren(...(lines.length ? lines.slice(0, 7) : [head || 'Ask Saathi for the list']).map((l) => el('li', '', l)));
@@ -108,13 +135,13 @@
       if (chosen && chosen !== 'other') keep('saathi.open', chosen.id);
     });
 
-    next.addEventListener('click', () => { if (step < 3) setStep(step + 1, 1); });
-    back.addEventListener('click', () => { if (step > 1) setStep(step - 1, -1); });
-    setStep(1, 0);
+    next.addEventListener('click', () => { if (step < 3) { setStep(step + 1); focusStep(); } });
+    back.addEventListener('click', () => { if (step > 1) { setStep(step - 1); focusStep(); } });
+    setStep(1);
     loadServices();
   }
 
-  // ---- Scam checker (uses the same rules as the bot; nothing is saved) --------
+  // ---- Scam checker (same rules as the bot; nothing is saved, no link is opened) -------------
   const chkIn = $('#chkIn'), chkGo = $('#chkGo'), chkOut = $('#chkOut'), chkHint = $('#chkHint');
   const bold = (parent, text) => {
     // Turns *word* into <b>word</b> without ever using innerHTML.
@@ -140,7 +167,8 @@
       chkOut.hidden = false;
       chkHint.textContent = 'Never paste an OTP or card number.';
     } catch (e) {
-      chkOut.hidden = false; chkOut.dataset.l = 'none'; chkOut.replaceChildren(el('p', 'vt', e.message === 'slow' ? 'Too many checks. Try again in a minute.' : 'Could not check just now. Try again, or open the app.'));
+      chkOut.hidden = false; chkOut.dataset.l = 'none';
+      chkOut.replaceChildren(el('p', 'vt', e.message === 'slow' ? 'Too many checks. Try again in a minute.' : 'Could not check just now. Try again, or open the app.'));
     } finally { chkGo.disabled = false; chkGo.textContent = 'Check it'; }
   }
   if (chkGo) {
@@ -149,7 +177,7 @@
     for (const b of $$('.try button')) b.addEventListener('click', () => { chkIn.value = b.dataset.ex; runCheck(); });
   }
 
-  // ---- Locker demo: locked until you tap, hides again on its own -----------------
+  // ---- Locker demo: locked until you tap, hides again on its own -----------------------------
   const vcard = $('#vcard'), vBtn = $('#vBtn'), vBody = $('#vBody'), vIc = $('#vIc'), vBar = $('#vBar');
   if (vcard) {
     let timer = null;
@@ -160,6 +188,7 @@
       vBody.replaceChildren(el('span', 'mask', '••••••234F'));
       vIc.textContent = '🔒';
       vBtn.textContent = 'Unlock';
+      const bar = $('i', vBar); bar.style.transition = 'none'; bar.style.transform = 'scaleX(0)';
     };
     const open = () => {
       vcard.dataset.state = 'open';
@@ -174,9 +203,8 @@
     vBtn.addEventListener('click', () => (vcard.dataset.state === 'open' ? lock() : open()));
   }
 
-  // ---- From the server: WhatsApp button and real prices ---------------------------
+  // ---- From the server: real prices (the section stays hidden if the server has none) --------
   fetch('/app/api/config').then((r) => (r.ok ? r.json() : Promise.reject())).then((c) => {
-    if (c.whatsapp && /^https:\/\/wa\.me\/\d+$/.test(c.whatsapp)) { const w = $('#waBtn'); if (w) { w.href = c.whatsapp; w.hidden = false; } }
     const p = c.prices, sec = $('#price');
     if (!p || !sec) return;
     const items = [['A message', p.msgPaise], ['An AI answer', p.aiPaise], ['A document check', p.scanPaise], ['A copy sheet', p.sheetPaise], ['A voice note', p.voicePaise], ['A reminder', p.remindPaise]]
@@ -184,19 +212,17 @@
     if (!items.length) return;
     $('#priceLede').textContent = `New people start with ${rupees(p.trialPaise)} and ${p.freeMsgsPerDay} free messages a day. After that, each action costs a little. No subscription.`;
     const rows = $('#rcRows'); rows.replaceChildren();
-    items.forEach(([label, v], i) => {
-      const r = el('div', 'rc-r'); r.setAttribute('role', 'listitem'); r.style.transitionDelay = 0.15 + i * 0.09 + 's';
-      r.append(el('span', '', label), el('span', 'dots'), el('b', '', rupees(v)));
+    for (const [label, v] of items) {
+      const r = el('div', 'hk-row'); r.setAttribute('role', 'listitem');
+      r.append(el('span', 'hk-t', label), el('span', 'hk-v', rupees(v)));
       rows.append(r);
-    });
+    }
     if (p.pack) $('#packNote').textContent = `Or a ${p.pack.days}-day PAN pack for ${rupees(p.pack.paise)}: ${p.pack.scans} document checks, ${p.pack.ai} AI answers, ${p.pack.voice} voice notes and ${p.pack.remind} reminders.`;
     sec.hidden = false;
-    $$('.reveal', sec).forEach(watch);
-    watch($('#receipt'));
   }).catch(() => {});
 })();
 
-// ---- FAQ answers open with a real height animation ----------------------------------------------------------------------
+// ---- FAQ answers open with one height animation (no second animation on the arrow) ----------
 (() => {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   document.addEventListener('click', (e) => {
@@ -207,9 +233,8 @@
     const startH = d.offsetHeight; const opening = !d.open;
     d.style.overflow = 'hidden'; if (opening) d.open = true;
     const endH = opening ? d.scrollHeight : sum.offsetHeight;
-    d.classList.toggle('opening', opening);
     const a = d.animate({ height: [startH + 'px', endH + 'px'] }, { duration: opening ? 380 : 280, easing: 'cubic-bezier(.2,.8,.2,1)' });
-    d._a = a; a.onfinish = () => { d._a = null; d.style.overflow = ''; d.classList.remove('opening'); if (!opening) d.open = false; };
+    d._a = a; a.onfinish = () => { d._a = null; d.style.overflow = ''; if (!opening) d.open = false; };
   });
 })();
 

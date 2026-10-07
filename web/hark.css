@@ -241,9 +241,6 @@ html,body{overflow-x:hidden;overscroll-behavior-x:none}
 .app[data-search] main.chat{opacity:0!important;pointer-events:none;transition:opacity .2s}.app main.chat{transition:opacity .25s}
 /* fields: no black outline, tidy multi-line box */
 input:focus,input:focus-visible,select:focus,select:focus-visible,textarea:focus,textarea:focus-visible,.field-i:focus,.field-i:focus-visible{outline:none!important}
-.field-i:focus,.field-i:focus-visible{border-color:rgba(255,255,255,.95)!important;box-shadow:0 0 0 4px rgba(255,255,255,.55),0 6px 18px rgba(20,30,60,.10)!important}
-:root[data-sky="night"] .field-i:focus,:root[data-sky="night"] .field-i:focus-visible{border-color:rgba(255,255,255,.5)!important;box-shadow:0 0 0 4px rgba(255,255,255,.18)!important}
 textarea.field-i,:root[data-style] textarea.field-i{border-radius:20px!important;padding:14px 18px;min-height:96px;line-height:1.5;display:block;width:100%;box-sizing:border-box;resize:none;overflow:auto;-webkit-appearance:none;appearance:none}
-.search-w:focus-within{border-color:rgba(255,255,255,.9)}
 .search-w input,.search-w input:focus{outline:none;box-shadow:none}
 html body #screen textarea.field-i,html body textarea.field-i{border-radius:20px!important}
