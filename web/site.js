@@ -8,46 +8,15 @@
   const save = (k, v) => { try { localStorage.setItem(k, v); } catch { /* private mode */ } };
   const keep = (k, v) => { try { sessionStorage.setItem(k, v); } catch { /* private mode */ } };
 
-  // ---- Header pill: the black tab follows the part of the page you are reading ----------------
-  const seg = $('.hk-seg'), thumb = seg && $('.hk-thumb', seg), tabs = seg ? $$('.hk-tab', seg) : [];
-  const place = () => {
-    const on = tabs.find((t) => t.classList.contains('on')) || tabs[0];
-    if (!thumb || !on || !on.offsetWidth) return;
-    thumb.style.setProperty('--x', on.offsetLeft + 'px');
-    thumb.style.setProperty('--w', on.offsetWidth + 'px');
-  };
-  const show = (k) => {
-    tabs.forEach((t) => {
-      const on = t.dataset.k === k;
-      t.classList.toggle('on', on);
-      if (on) t.setAttribute('aria-current', 'location'); else t.removeAttribute('aria-current');
-    });
-    place();
-  };
-  if (seg) {
-    // A tab click holds the pill on that tab while the page scrolls there, so it does not flicker past every section.
-    let hold = false, raf = 0, holdTimer = 0;
-    tabs.forEach((t) => t.addEventListener('click', () => { hold = true; clearTimeout(holdTimer); show(t.dataset.k); holdTimer = setTimeout(() => { hold = false; }, 1100); }));
-    const sections = $$('[data-tab]');
-    const spy = () => {
-      raf = 0;
-      if (hold) return;
-      const y = innerHeight * 0.45;
-      let k = null;
-      for (const s of sections) { const r = s.getBoundingClientRect(); if (r.top <= y && r.bottom > y) k = s.dataset.tab; }
-      if (k) show(k);
-    };
-    const queue = () => { if (!raf) raf = requestAnimationFrame(spy); };
-    addEventListener('scroll', queue, { passive: true });
-    addEventListener('resize', queue);
-    if ('ResizeObserver' in window) new ResizeObserver(place).observe(seg);
-    document.fonts?.ready?.then(() => { place(); spy(); });
-    show('home');
-    // Read the layout once the page has loaded, not while it is still being parsed.
-    if (document.readyState === 'complete') spy(); else addEventListener('load', spy, { once: true });
+  // ---- Header: a dark bar once the sky of the hero is behind you ----------------------------------
+  const nav = $('#nav');
+  if (nav) {
+    const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 24);
+    addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
   }
 
-  // ---- Get started: a real three-step onboarding (same data the bot uses) ----------------------
+  // ---- Get started: a real three-step onboarding (same data the bot uses) ------------------------
   const ob = $('#start');
   if (ob) {
     const steps = $$('.ob-step', ob), dots = $$('#obDots i'), count = $('#obCount');
@@ -69,7 +38,7 @@
       if (n === 3) fillStep3();
     };
     const focusStep = () => {
-      const h = steps[step - 1]?.querySelector('h2');
+      const h = steps[step - 1]?.querySelector('h3');
       if (h) h.focus({ preventScroll: true });
     };
 
@@ -86,9 +55,9 @@
       next.disabled = chosen === null;
     };
     const rowFor = (sv) => {
-      const b = el('button', 'hk-svc'); b.type = 'button'; b.dataset.svc = sv.id; b.setAttribute('aria-pressed', 'false');
-      const c = el('span', 'hk-circ'); c.append(docIcon());
-      const t = el('span', 'hk-st'); t.append(el('b', '', sv.name));
+      const b = el('button', 'srow'); b.type = 'button'; b.dataset.svc = sv.id; b.setAttribute('aria-pressed', 'false');
+      const c = el('span', 'circ'); c.append(docIcon());
+      const t = el('span', 'st'); t.append(el('b', '', sv.name));
       b.append(c, t);
       b.addEventListener('click', () => pick(b));
       return b;
@@ -141,7 +110,7 @@
     loadServices();
   }
 
-  // ---- Scam checker (same rules as the bot; nothing is saved, no link is opened) -------------
+  // ---- Scam checker (same rules as the bot; nothing is saved, no link is opened) ----------------
   const chkIn = $('#chkIn'), chkGo = $('#chkGo'), chkOut = $('#chkOut'), chkHint = $('#chkHint');
   const bold = (parent, text) => {
     // Turns *word* into <b>word</b> without ever using innerHTML.
@@ -177,8 +146,8 @@
     for (const b of $$('.try button')) b.addEventListener('click', () => { chkIn.value = b.dataset.ex; runCheck(); });
   }
 
-  // ---- Locker demo: locked until you tap, hides again on its own -----------------------------
-  const vcard = $('#vcard'), vBtn = $('#vBtn'), vBody = $('#vBody'), vIc = $('#vIc'), vBar = $('#vBar');
+  // ---- Locker demo: locked until you tap, hides again on its own -------------------------------
+  const vcard = $('#vcard'), vBtn = $('#vBtn'), vBody = $('#vBody'), vBar = $('#vBar');
   if (vcard) {
     let timer = null;
     const SAMPLE = 'ABCPE1234F';
@@ -186,14 +155,12 @@
       clearTimeout(timer);
       vcard.dataset.state = 'locked';
       vBody.replaceChildren(el('span', 'mask', '••••••234F'));
-      vIc.textContent = '🔒';
       vBtn.textContent = 'Unlock';
       const bar = $('i', vBar); bar.style.transition = 'none'; bar.style.transform = 'scaleX(0)';
     };
     const open = () => {
       vcard.dataset.state = 'open';
       vBody.replaceChildren(el('span', 'val', SAMPLE));
-      vIc.textContent = '🔓';
       vBtn.textContent = 'Hide';
       const bar = $('i', vBar);
       bar.style.transition = 'none'; bar.style.transform = 'scaleX(1)';
@@ -203,8 +170,11 @@
     vBtn.addEventListener('click', () => (vcard.dataset.state === 'open' ? lock() : open()));
   }
 
-  // ---- From the server: real prices (the section stays hidden if the server has none) --------
+  // ---- From the server: real prices, and the WhatsApp link (sections stay hidden if the server has none)
   fetch('/app/api/config').then((r) => (r.ok ? r.json() : Promise.reject())).then((c) => {
+    if (c.whatsapp && /^https:\/\/wa\.me\//.test(c.whatsapp)) {
+      for (const a of $$('[data-wa]')) { a.href = c.whatsapp; a.hidden = false; }
+    }
     const p = c.prices, sec = $('#price');
     if (!p || !sec) return;
     const items = [['A message', p.msgPaise], ['An AI answer', p.aiPaise], ['A document check', p.scanPaise], ['A copy sheet', p.sheetPaise], ['A voice note', p.voicePaise], ['A reminder', p.remindPaise]]
@@ -213,8 +183,8 @@
     $('#priceLede').textContent = `New people start with ${rupees(p.trialPaise)} and ${p.freeMsgsPerDay} free messages a day. After that, each action costs a little. No subscription.`;
     const rows = $('#rcRows'); rows.replaceChildren();
     for (const [label, v] of items) {
-      const r = el('div', 'hk-row'); r.setAttribute('role', 'listitem');
-      r.append(el('span', 'hk-t', label), el('span', 'hk-v', rupees(v)));
+      const r = el('div', 'rrow'); r.setAttribute('role', 'listitem');
+      r.append(el('span', 'rt', label), el('span', 'rv', rupees(v)));
       rows.append(r);
     }
     if (p.pack) $('#packNote').textContent = `Or a ${p.pack.days}-day PAN pack for ${rupees(p.pack.paise)}: ${p.pack.scans} document checks, ${p.pack.ai} AI answers, ${p.pack.voice} voice notes and ${p.pack.remind} reminders.`;
@@ -222,7 +192,7 @@
   }).catch(() => {});
 })();
 
-// ---- FAQ answers open with one height animation (no second animation on the arrow) ----------
+// ---- FAQ answers open with one height animation (no second animation on the arrow) ----------------
 (() => {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   document.addEventListener('click', (e) => {

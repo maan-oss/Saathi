@@ -29,6 +29,8 @@ const STATIC = {
   '/fonts/instrument.woff2': ['fonts/instrument-sans-latin-standard-normal.woff2', 'font/woff2'],
   '/fonts/devanagari.woff2': ['fonts/noto-sans-devanagari-devanagari-700-normal.woff2', 'font/woff2'],
   '/fonts/bricolage.woff2': ['fonts/bricolage-grotesque-latin-wght-normal.woff2', 'font/woff2'],
+  '/fonts/serif.woff2': ['fonts/instrument-serif-latin-400-normal.woff2', 'font/woff2'],
+  '/fonts/serif-italic.woff2': ['fonts/instrument-serif-latin-400-italic.woff2', 'font/woff2'],
   '/': ['site.html', 'text/html; charset=utf-8'],
   '/app': ['index.html', 'text/html; charset=utf-8'],
   '/site.css': ['site.css', 'text/css; charset=utf-8'],

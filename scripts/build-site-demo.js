@@ -44,12 +44,10 @@ window.fetch = async (path, opts = {}) => {
 const html = read('../web/site.html');
 let body = html.slice(html.indexOf('<a class="skip"'), html.indexOf('<script src="/site.js"'));
 const logo = 'data:image/svg+xml;base64,' + Buffer.from(read('../web/logo.svg')).toString('base64');
-body = body.replaceAll('/logo.svg', logo).replaceAll('href="/app"', `href="${APP}" target="_blank" rel="noopener"`).replaceAll('href="/privacy"', 'href="#faq"').replace('href="/"', 'href="#main"');
-const css = (read('../web/hark.css') + '\n' + read('../web/site.css')).replace(/@font-face\{[^}]*\}\n?/g, '').replaceAll('"Bricolage"', '"Bricolage Grotesque"');
-// The live page sets the sky and the body class from /sky.js and the page's own markup; the demo has no server, so it does the same here.
-const setup = "(function(){try{var d=document.documentElement;d.dataset.style='sky';var h=new Date().getHours(),dark=matchMedia('(prefers-color-scheme: dark)').matches;d.dataset.sky=dark||h>=20||h<5?'night':h<8?'dawn':h<17?'day':'sunset';document.body.classList.add('landing');}catch(e){}})();";
+body = body.replaceAll('/logo.svg', logo).replace(/href="\/app(\?[^"]*)?"/g, (m, q) => `href="${APP}${q || ''}" target="_blank" rel="noopener"`).replaceAll('href="/privacy"', 'href="#faq"').replace('href="/"', 'href="#main"');
+const css = read('../web/site.css').replace(/@font-face\{[^}]*\}\n?/g, '').replaceAll('"Bricolage"', '"Bricolage Grotesque"');
 const js = read('../web/site.js').replace("go.href = '/app?service=' + encodeURIComponent(sv.id);", `go.href = '${APP}'; go.target = '_blank'; go.rel = 'noopener';`);
-const fonts = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:wght@400..700&family=Noto+Sans+Devanagari:wght@700&display=swap">';
+const fonts = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:wght@400..700&family=Instrument+Serif:ital@0;1&family=Noto+Sans+Devanagari:wght@700&display=swap">';
 mkdirSync(new URL('../demo/', import.meta.url), { recursive: true });
-writeFileSync(new URL('../demo/saathi-site.html', import.meta.url), `<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Saathi</title>\n${fonts}\n<style>${css}</style>\n<script>${setup}</script>\n<body class="landing">\n${body}\n<script>${bundle}\n${js}</script>\n`);
+writeFileSync(new URL('../demo/saathi-site.html', import.meta.url), `<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Saathi</title>\n${fonts}\n<style>${css}</style>\n<body class="landing">\n${body}\n<script>${bundle}\n${js}</script>\n`);
 console.log('built demo/saathi-site.html');
