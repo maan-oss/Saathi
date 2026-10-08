@@ -127,7 +127,9 @@ test('Stripe Checkout request uses INR paise and our reference (fake network)', 
   assert.equal(form.get('line_items[0][price_data][unit_amount]'), '5000');
   assert.equal(form.get('line_items[0][price_data][currency]'), 'inr');
   assert.equal(form.get('client_reference_id'), 'sv_1');
-  assert.equal(form.get('success_url'), 'https://saathi.example/app?topup=paid');
+  assert.equal(form.get('success_url'), 'https://saathi.example/app?topup=paid&pay=sv_1');
+  assert.equal(form.get('cancel_url'), 'https://saathi.example/app?topup=cancelled&pay=sv_1');
+  assert.equal(form.get('branding_settings[display_name]'), 'Saathi');
   assert.equal(seen.init.headers.authorization, 'Bearer sk_test_x');
   await assert.rejects(createPayments({ stripeSecretKey: 'k' }, async () => ({})).createLink({ ref: 'sv_2', paise: 100, note: 'n' }), /PUBLIC_URL/);
   assert.equal(createPayments({}), null);
@@ -148,4 +150,27 @@ test('every button title fits WhatsApp (20) and every list row fits (24 / 72), i
     }
     assert.ok(table.menu_btn.length <= 20);
   }
+});
+
+test('the person goes back to the origin they paid from, only if it is one of ours', async () => {
+  const { returnBase } = await import('../src/payments.js');
+  assert.equal(returnBase('https://saathi-site-acme-7340.vercel.app', 'https://saathi-acme-7340.vercel.app'), 'https://saathi-site-acme-7340.vercel.app');
+  assert.equal(returnBase('https://saathi-acme-7340.vercel.app/', 'https://saathi-acme-7340.vercel.app'), 'https://saathi-acme-7340.vercel.app');
+  assert.equal(returnBase('https://evil.example', 'https://saathi-acme-7340.vercel.app'), 'https://saathi-acme-7340.vercel.app');
+  assert.equal(returnBase('not a url', 'https://saathi-acme-7340.vercel.app'), 'https://saathi-acme-7340.vercel.app');
+  assert.equal(returnBase(undefined, 'https://saathi.example/'), 'https://saathi.example');
+});
+
+test('a Checkout refused for branding is retried plain, so a payment still starts', async () => {
+  const calls = [];
+  const p = createPayments({ stripeSecretKey: 'sk_test_x', publicUrl: 'https://saathi.example' }, async (url, init) => {
+    calls.push(new URLSearchParams(init.body));
+    if (calls.length === 1) return { ok: false, status: 400, json: async () => ({ error: { message: 'Invalid branding_settings[border_style]' } }) };
+    return { ok: true, json: async () => ({ url: 'https://checkout.stripe.com/c/pay/cs_2', id: 'cs_2' }) };
+  });
+  const r = await p.createLink({ ref: 'sv_3', paise: 2000, note: 'n' });
+  assert.equal(r.url, 'https://checkout.stripe.com/c/pay/cs_2');
+  assert.equal(calls.length, 2);
+  assert.equal(calls[0].get('branding_settings[display_name]'), 'Saathi');
+  assert.equal(calls[1].get('branding_settings[display_name]'), null);
 });

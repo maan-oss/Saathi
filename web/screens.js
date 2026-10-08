@@ -335,35 +335,16 @@
     col.append(h.length ? activityRows(h) : empty('clock', T('No activity yet'), T('Charges, top-ups and refunds will appear here.')));
   };
 
-  // ---- payment: shared by add money and packs ----------------------------------------------------
-  // Opens the Stripe page, then watches the wallet until `done(wallet)` says the payment has landed.
-  function startPayment(col, { url, paise, title, done, successTitle, successText }) {
-    col.replaceChildren();
-    const card = el('section', 'card-i paycard');
-    const spin = el('div', 'spin'); spin.append(el('i'));
-    card.append(spin, el('h3', '', title), el('p', 'mut', T('Open the secure Stripe page to pay {amt}. Come back here when you are done. This page updates by itself.', { amt: rupee(paise) })));
-    const href = /^https:\/\//.test(url) ? url : 'https://' + url.replace(/^\/\//, '');
-    const a = el('a', 'btn pri xl', T('Open Stripe to pay {amt}', { amt: rupee(paise) })); a.href = href; a.target = '_blank'; a.rel = 'noopener noreferrer nofollow';
-    const status = el('p', 'status', T('Waiting for your payment…'));
-    const check = btn('btn', T('I have paid, check now'), () => tick(true));
-    const cancel = btn('link-btn', T('Cancel'), () => { clearInterval(timer); goBack(); });
-    card.append(a, status, check, cancel); col.append(card);
-    let n = 0;
-    const tick = async (manual) => {
-      const m = await refreshMe();
-      if (m.wallet && done(m.wallet)) { clearInterval(timer); success(m.wallet); }
-      else if (manual) status.textContent = T('Not received yet. It can take a minute after you pay.');
-      else if (++n > 100) { clearInterval(timer); status.textContent = T('Still waiting. If you paid, tap the button above in a moment.'); }
-    };
-    const timer = setInterval(() => { if (!document.hidden) tick(false); }, 3000);
-    const success = (w) => {
-      col.replaceChildren();
-      const ok = el('section', 'card-i success'); const c = el('div', 'ok-ic'); c.append(ico('check', 34));
-      ok.append(c, el('h3', '', successTitle), el('p', 'mut', successText(w)), btn('btn pri xl', T('Done'), () => { stack.length = 0; hideScreen(); }));
-      col.append(ok);
-    };
-    const stop = new MutationObserver(() => { if (!document.body.contains(card)) { clearInterval(timer); stop.disconnect(); } });
-    stop.observe(col, { childList: true });
+  // ---- payment: straight to Stripe, then back here ----------------------------------------------
+  // The server creates the payment and gives us Stripe's page; we send the person there at once. When Stripe brings
+  // them back (see payreturn) the server says whether that one payment is paid. The balance is never used as proof.
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const payError = (code) => (code === 'slow_down' ? T('Too many tries. Wait a minute and try again.') : code === 'payments_off' ? T('Top-ups are not switched on yet.') : T('We could not start that payment. Nothing was charged. Please try again.'));
+  async function payOut(paise, pack, onErr) {
+    const r = await api('/app/api/topup', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ paise, ...(pack ? { pack } : {}), origin: location.origin }) });
+    const url = r.ok && r.j?.url;
+    if (!url || !/^https:\/\/checkout\.stripe\.com\//.test(url)) return onErr(payError(r.j?.error));
+    location.assign(url); // same tab: the Stripe page, then straight back to Saathi
   }
   const errBox = (stage, text) => { stage.replaceChildren(); const e = el('div', 'note bad'); e.append(ico('warn', 18), el('span', '', text)); stage.append(e); };
 
@@ -379,6 +360,7 @@
     const grid = el('div', 'amounts');
     const sum = el('section', 'card-i sumcard');
     const pay = btn('btn pri xl', '');
+    const stage = el('div', 'pay-stage');
     const draw = () => {
       for (const b of grid.children) b.setAttribute('aria-pressed', String(Number(b.dataset.p) === chosen));
       sum.replaceChildren();
@@ -389,19 +371,98 @@
       pay.textContent = T('Pay {amt} securely', { amt: rupee(chosen) });
     };
     for (const a of amounts) { const b = btn('amt', rupee(a)); b.dataset.p = String(a); b.onclick = () => { chosen = a; draw(); }; grid.append(b); }
-    const stage = el('div', 'pay-stage');
-    pay.onclick = async () => {
-      const before = C.wallet?.paise || 0; const amt = chosen;
-      pay.disabled = true; pay.textContent = T('Preparing your payment…');
-      const r = await engine({ type: 'reply', id: 'pay_' + amt, title: rupee(amt) });
-      pay.disabled = false; draw();
-      const { rep, url } = findPayLink(r.j.replies);
-      if (!r.ok || !url) return errBox(stage, plain(rep[0]?.body) || T('We could not start that payment. Nothing was charged. Please try again.'));
-      startPayment(col, { url, paise: amt, title: T('Complete your payment'), done: (w) => w.paise > before, successTitle: T('Payment received'), successText: (w) => T('{amt} added. Your balance is now {bal}.', { amt: rupee(w.paise - before), bal: w.balance }) });
+    pay.onclick = () => {
+      pay.disabled = true; pay.textContent = T('Opening Stripe…');
+      payOut(chosen, null, (msg) => { pay.disabled = false; draw(); errBox(stage, msg); });
     };
     col.append(grid, sum, pay, stage, note(T('You pay on Stripe with your card. Saathi never sees your card number.'), 'lock'));
     draw();
   };
+
+  // Counts the balance up like a win on a machine: quick steps that slow down, each step flashes, then it lands.
+  function countUp(node, from, to, onStep, ms = 1900) {
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const t0 = performance.now(); let last = null;
+    const tick = (now) => {
+      const t = reduce ? 1 : Math.min(1, (now - t0) / ms);
+      const e = 1 - Math.pow(1 - t, 4);
+      const v = t >= 1 ? to : Math.round((from + (to - from) * e) / 100) * 100;
+      if (v !== last) {
+        last = v; node.textContent = rupee(v); onStep?.(v);
+        node.classList.remove('tick'); void node.offsetWidth; node.classList.add('tick');
+      }
+      if (t < 1) requestAnimationFrame(tick); else node.classList.add('done');
+    };
+    requestAnimationFrame(tick);
+  }
+  function checkRing() {
+    const wrap = el('div', 'pay-ring');
+    const s = document.createElementNS(SVGNS, 'svg'); s.setAttribute('viewBox', '0 0 80 80'); s.setAttribute('aria-hidden', 'true');
+    const c = document.createElementNS(SVGNS, 'circle'); c.setAttribute('cx', '40'); c.setAttribute('cy', '40'); c.setAttribute('r', '36');
+    const p2 = document.createElementNS(SVGNS, 'path'); p2.setAttribute('d', 'M25 41 L35 51 L56 29');
+    s.append(c, p2); wrap.append(s); return wrap;
+  }
+
+  // Back from Stripe: /app?topup=paid&pay=REF or /app?topup=cancelled&pay=REF.
+  SCREENS.payreturn = async ({ ref, cancelled }) => {
+    const col = frame(T('Payment'));
+    const stage = el('div', 'pay-stage'); col.append(stage);
+    const again = () => { stack.length = 0; openScreen('topup'); };
+    if (cancelled) {
+      stage.append(waitBox(T('Payment cancelled'), T('Nothing was charged.'), btn('btn pri xl', T('Back to Add money'), again)));
+      return;
+    }
+    if (!ref) { stage.append(waitBox(T('We could not find that payment'), T('Your balance is in the wallet. If you paid, it shows there shortly.'), btn('btn pri xl', T('Open wallet'), () => { stack.length = 0; openScreen('wallet'); }))); return; }
+
+    const celebrate = (j) => {
+      stage.replaceChildren();
+      const to = j.wallet ? j.wallet.paise : 0;
+      const from = j.before != null ? j.before : Math.max(0, to - j.paise);
+      const card = el('section', 'card-i success pay-win');
+      const done = btn('btn pri xl', T('Done'), () => { stack.length = 0; hideScreen(); });
+      if (j.pack) {
+        // A pack is paid for and switched on from the wallet, so the balance is not counted up.
+        const on = j.wallet?.pack;
+        card.append(checkRing(), el('h3', '', T('Payment received')), el('p', 'mut', on ? T('{name} is on until {date}.', { name: packName(on.id, on.name), date: fmtDate(on.until) }) : T('Your pack is on.')), done);
+        stage.append(card);
+        return;
+      }
+      const num = el('div', 'pay-num', rupee(from));
+      const chip = el('span', 'pay-chip', '+' + rupee(j.paise));
+      const bal = el('div', 'pay-bal'); bal.append(el('p', 'pay-lbl', T('Your balance')), num, chip);
+      card.append(checkRing(), el('h3', '', T('Payment received')), el('p', 'mut', T('{amt} added to your wallet.', { amt: rupee(j.paise) })), bal, done);
+      stage.append(card);
+      const walletText = document.getElementById('walletText');
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) chip.classList.add('on');
+      countUp(num, from, to, (v) => { if (walletText) walletText.textContent = rupee(v); }, 1900);
+      setTimeout(() => { C.setWallet?.(j.wallet); }, 2000);
+    };
+    const confirm = async () => {
+      stage.replaceChildren(waitBox(T('Confirming your payment'), T('Stripe is confirming it. This usually takes a few seconds. Keep this page open.')));
+      const t0 = Date.now(); let why = 'slow';
+      while (document.body.contains(col) && Date.now() - t0 < 60000) {
+        const r = await api('/app/api/pay?ref=' + encodeURIComponent(ref)).catch(() => ({ ok: false, status: 0 }));
+        if (r.status === 404) { why = 'missing'; break; }
+        if (r.ok && r.j?.status === 'paid') return celebrate(r.j);
+        if (r.ok && r.j?.status === 'failed') { why = 'failed'; break; }
+        await new Promise((res) => setTimeout(res, 1500));
+      }
+      if (!document.body.contains(col)) return;
+      const text = why === 'missing' ? T('We cannot find this payment in this browser. If you paid, your balance will show in the wallet shortly.')
+        : why === 'failed' ? T('This payment did not go through. Nothing was charged.')
+        : T('Stripe has not confirmed it yet. Your balance updates as soon as it does.');
+      stage.replaceChildren(waitBox(why === 'failed' ? T('Payment not completed') : T('Still confirming'), text, btn('btn pri xl', why === 'failed' ? T('Try again') : T('Check again'), () => (why === 'failed' ? again() : confirm()))));
+    };
+    confirm();
+  };
+  // A card with a title, a line of text and one action. Used while we wait, and when something needs a decision.
+  function waitBox(title, text, action) {
+    const card = el('section', 'card-i paycard');
+    if (!action) { const spin = el('div', 'spin'); spin.append(el('i')); card.append(spin); }
+    card.append(el('h3', '', title), el('p', 'mut', text));
+    if (action) card.append(action);
+    return card;
+  }
 
   // ---- packs -------------------------------------------------------------------------------------
   const PACK_TAG = { pan_pack: N('Most popular'), pack_month: N('Best value') };
@@ -424,13 +485,18 @@
         const ul = el('ul', 'incl');
         for (const [k, t] of [['msg', T('Unlimited guide messages')], ['doc', T('Unlimited form sheets')], ['camera', T('{n} document checks', { n: pk.scans })], ['spark', T('{n} AI answers', { n: pk.ai })], ['mic', T('{n} voice notes', { n: pk.voice })], ['bell', T('{n} reminders', { n: pk.remind })]]) { const li = el('li'); const c = el('span', 'inc-ic'); c.append(ico(k, 16)); li.append(c, el('span', '', t)); ul.append(li); }
         const enough = (w?.paise || 0) >= pk.paise; const need = Math.max(1000, Math.ceil((pk.paise - (w?.paise || 0)) / 100) * 100);
-        const buy = btn('btn ' + (PACK_TAG[pk.id] ? 'pri' : 'ink') + ' xl', enough ? T('Get it for {amt} from your wallet', { amt: rupee(pk.paise) }) : T('Pay {amt} and get it', { amt: rupee(need) }), () => buyPack(pk, buy, need));
+        const buy = btn('btn ' + (PACK_TAG[pk.id] ? 'pri' : 'ink') + ' xl', enough ? T('Get it for {amt} from your wallet', { amt: rupee(pk.paise) }) : T('Pay {amt} and get it', { amt: rupee(need) }), () => buyPack(pk, buy));
         card.append(top, price, ul, buy); holder.append(card);
       }
       holder.append(note(T('Packs are paid from your wallet. If you are short, you pay only the difference on Stripe and the pack starts by itself.'), 'wallet'));
     };
-    const buyPack = async (pk, button, need) => {
-      const beforeUntil = C.wallet?.pack?.until || 0; const beforeBal = C.wallet?.paise || 0;
+    const buyPack = async (pk, button) => {
+      const beforeUntil = C.wallet?.pack?.until || 0; const have = C.wallet?.paise || 0;
+      if (have < pk.paise) {
+        // Short: pay the difference on Stripe. The pack starts by itself once that payment is in.
+        const need = Math.max(1000, Math.ceil((pk.paise - have) / 100) * 100);
+        return payOut(need, pk.id, (msg) => errBox(stage, msg));
+      }
       button.disabled = true; const old = button.textContent; button.textContent = T('One moment…');
       const r = await engine({ type: 'reply', id: 'buypack_' + pk.id, title: pk.name });
       button.disabled = false; button.textContent = old;
@@ -440,14 +506,10 @@
         ok.append(c, el('h3', '', T('{name} is on', { name: packName(pk.id, pk.name) })), el('p', 'mut', T('It runs until {date}. Enjoy.', { date: fmtDate(m.wallet.pack.until) })), btn('btn pri xl', T('Done'), () => { stack.length = 0; hideScreen(); }));
         col.append(ok); return;
       }
-      const { rep, url } = findPayLink(r.j.replies);
-      if (!r.ok || !url) return errBox(stage, plain(rep.at(-1)?.body) || T('We could not start that payment. Nothing was charged. Please try again.'));
-      startPayment(col, {
-        url, paise: need, title: T('Complete your payment'),
-        done: (w) => Boolean(w.pack && w.pack.id === pk.id && w.pack.until > beforeUntil) || w.paise >= beforeBal + need,
-        successTitle: T('Payment received'),
-        successText: (w) => (w.pack && w.pack.id === pk.id ? T('{name} is on until {date}.', { name: packName(pk.id, pk.name), date: fmtDate(w.pack.until) }) : T('{amt} added. Open Packs again to get it.', { amt: rupee(need) })),
-      });
+      // The wallet changed while we were buying: the chat may have made a Stripe link instead. Use it if so.
+      const { url } = findPayLink(r.j?.replies);
+      if (url && /^https:\/\/checkout\.stripe\.com\//.test(url)) return location.assign(url);
+      errBox(stage, T('We could not start that payment. Nothing was charged. Please try again.'));
     };
     draw(C.wallet);
     const m = await refreshMe(); if (m.wallet && stack.at(-1)?.name === 'packs') draw(m.wallet);

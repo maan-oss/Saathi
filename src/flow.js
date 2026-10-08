@@ -1477,7 +1477,7 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
     if (!u.firstPaidAt) u.firstPaidAt = firstPaidAt;
     const referral = u.referrerId ? { referrerId: u.referrerId, paise: referralBonus(paise, firstPaidAt), paymentId } : null;
     store.putUser(rec.userId, u);
-    store.putPayment(ref, { userId: rec.userId, paise, status: 'paid', paymentId, ts: rec.ts, paidAt: Date.now(), ...(rec.packId ? { packId: rec.packId } : {}) });
+    store.putPayment(ref, { userId: rec.userId, paise, status: 'paid', paymentId, ts: rec.ts, paidAt: Date.now(), ...(rec.packId ? { packId: rec.packId } : {}), ...(Number.isInteger(rec.before) ? { before: rec.before } : {}) });
     return { ok: true, userId: rec.userId, phone: rec.phone, lang: u.lang || 'en', paise, balance: r.balance, packOn, referral };
   }
 

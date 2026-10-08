@@ -127,11 +127,14 @@ body.screen-open .app{visibility:hidden}
 :root[data-style="sky"] .lang.on .l-dot{background:#111;border-color:#111;color:#fff}
 
 /* more motion */
-#screen.on .sc-col>*{animation:hkrise .5s var(--hk-ease) both}
-#screen.on .sc-col>*:nth-child(2){animation-delay:.05s}#screen.on .sc-col>*:nth-child(3){animation-delay:.1s}#screen.on .sc-col>*:nth-child(4){animation-delay:.15s}#screen.on .sc-col>*:nth-child(5){animation-delay:.2s}#screen.on .sc-col>*:nth-child(n+6){animation-delay:.25s}
+/* one motion per open: the screen fades in, and its contents rise from the top, in order (no sliding column on top) */
+#screen .sc-col{animation:none!important}
+#screen.swap .sc-col>*{animation:hkrise .5s var(--hk-ease) both}
+#screen.swap .sc-col>*:nth-child(2){animation-delay:.04s}#screen.swap .sc-col>*:nth-child(3){animation-delay:.08s}#screen.swap .sc-col>*:nth-child(4){animation-delay:.12s}#screen.swap .sc-col>*:nth-child(5){animation-delay:.16s}#screen.swap .sc-col>*:nth-child(n+6){animation-delay:.2s}
 .hk-sbar{animation:hkBar .6s var(--hk-ease) both}
 @keyframes hkBar{from{opacity:0;transform:translateY(-34vh) scale(.88);filter:blur(6px)}60%{filter:blur(0)}to{opacity:1;transform:none}}
-.chips .chip,.hk-row,.hk-svc{animation:hkrise .45s var(--hk-ease) both}
+.chips .chip{animation:hkrise .45s var(--hk-ease) both}
+/* rows inside a card rise with the card: no second motion on each row */
 .hk-av:active{animation:hkpulse .4s}
 @keyframes hkpulse{50%{transform:scale(.88)}}
 .hk-tab:not(.on):hover{color:#000}
@@ -164,7 +167,7 @@ body.screen-open .app{visibility:hidden}
 .hk-strip .hk-h2{margin:0 8px;font-size:17px}
 .hk-rail{display:flex;gap:14px;overflow-x:auto;padding:4px 8px 8px;margin:0 -14px;padding-left:22px;scroll-snap-type:x proximity;scrollbar-width:none;overscroll-behavior-x:contain}
 .hk-rail::-webkit-scrollbar{display:none}
-.hk-rq{flex:none;width:78px;display:flex;flex-direction:column;align-items:center;gap:8px;border:0;background:none;padding:0;cursor:pointer;scroll-snap-align:start;color:#fff;font:600 12.5px/1.2 var(--sans);text-align:center;text-shadow:0 1px 10px rgba(20,50,100,.4);animation:hkpop2 .6s var(--d,0ms) var(--hk-ease) both;transition:transform .2s var(--hk-ease)}
+.hk-rq{flex:none;width:78px;display:flex;flex-direction:column;align-items:center;gap:8px;border:0;background:none;padding:0;cursor:pointer;scroll-snap-align:start;color:#fff;font:600 12.5px/1.2 var(--sans);text-align:center;text-shadow:0 1px 10px rgba(20,50,100,.4);animation:none;transition:transform .2s var(--hk-ease)}
 .hk-rq:active{transform:scale(.9)}
 .hk-rq .hk-circ{width:64px;height:64px;border:0;background:rgba(255,255,255,.94);color:#1d1d1f;box-shadow:0 6px 18px rgba(30,60,110,.18);transition:transform .25s var(--hk-ease)}
 .hk-rq:hover .hk-circ{transform:translateY(-3px)}
@@ -231,7 +234,7 @@ html,body{overflow-x:hidden;overscroll-behavior-x:none}
 .app>.dock.in-r,.app>.dock.in-l{animation:hkDock .55s var(--hk-spring) both}
 @keyframes hkDock{from{opacity:0;transform:translateY(46px) scale(.96)}to{opacity:1;transform:none}}
 /* every screen opens and closes */
-#screen{opacity:0;transform:translateY(26px) scale(.985);transition:opacity .3s ease,transform .4s var(--hk-ease)}
+#screen{opacity:0;transform:none;transition:opacity .22s ease}
 #screen.on{opacity:1;transform:none;animation:none}
 .dd-pop{transition:opacity .2s,transform .3s var(--hk-ease)}
 .hk-rail{padding-left:34px!important;padding-right:44px!important}
@@ -301,3 +304,8 @@ input:focus,input:focus-visible,textarea:focus,textarea:focus-visible,select:foc
 /* ---- invite a friend (wallet) ---- */
 .grp-box.invite{padding:16px 18px}
 .invite-link{margin:10px 0 12px;font-size:14px;word-break:break-all;color:var(--ink)}
+
+/* ---- one motion per open (the welcome, the screens, the tabs) ----
+   The welcome overlay only fades. Each welcome step slides in once; the things on that step stay still. */
+#onboard.onboard{transform:none!important;transition:opacity .35s ease!important}
+#onboard .ob-slide>*{animation:none!important}

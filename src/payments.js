@@ -10,29 +10,63 @@ import crypto from 'node:crypto';
 export const CURRENCY = 'inr';
 const TOLERANCE_SECONDS = 300; // Stripe's own default: refuse signatures older than five minutes
 const PAID_EVENTS = new Set(['checkout.session.completed', 'checkout.session.async_payment_succeeded']);
+// Other origins the app is served from (the landing site proxies /app). A person is sent back to the origin they paid
+// from, because their session lives in that origin's browser storage.
+export const APP_ORIGINS = ['https://saathi-site-acme-7340.vercel.app'];
+// Stripe's Checkout page, in Saathi's colours. Dropped (with the custom message) if Stripe ever refuses them.
+const BRANDING = {
+  'branding_settings[display_name]': 'Saathi',
+  'branding_settings[background_color]': '#FFFFFF',
+  'branding_settings[button_color]': '#1D1D1F',
+  'branding_settings[border_style]': 'rounded',
+  'custom_text[submit][message]': 'Your wallet gets the money as soon as Stripe confirms. You will be brought back to Saathi automatically.',
+};
+
+/** The address Stripe sends the person back to: their own origin if it is one of ours, else PUBLIC_URL. */
+export function returnBase(origin, publicUrl) {
+  const home = String(publicUrl || '').replace(/\/+$/, '');
+  let homeOrigin = '';
+  try { homeOrigin = new URL(home).origin; } catch { /* no PUBLIC_URL: createLink refuses below */ }
+  let o = '';
+  try { o = new URL(String(origin || '')).origin; } catch { /* none sent */ }
+  return o && (o === homeOrigin || APP_ORIGINS.includes(o)) ? o : home;
+}
 
 export function createPayments(config, fetchFn = fetch) {
   if (!config.stripeSecretKey) return null;
   const base = config.stripeBase || 'https://api.stripe.com';
   return {
-    async createLink({ ref, paise, note }) {
+    /** A Checkout page for one top-up. `ref` comes back on the webhook, so the payment is credited to the right person. */
+    async createLink({ ref, paise, note, origin }) {
       if (!config.publicUrl) throw new Error('PUBLIC_URL is not set, so Stripe cannot send people back to Saathi');
-      const form = new URLSearchParams({
+      const back = returnBase(origin, config.publicUrl);
+      const fields = {
         mode: 'payment',
         client_reference_id: ref,
-        success_url: `${config.publicUrl}/app?topup=paid`,
-        cancel_url: `${config.publicUrl}/app?topup=cancelled`,
+        success_url: `${back}/app?topup=paid&pay=${encodeURIComponent(ref)}`,
+        cancel_url: `${back}/app?topup=cancelled&pay=${encodeURIComponent(ref)}`,
         'line_items[0][quantity]': '1',
         'line_items[0][price_data][currency]': CURRENCY,
         'line_items[0][price_data][unit_amount]': String(paise),
         'line_items[0][price_data][product_data][name]': note,
         'phone_number_collection[enabled]': 'true', // so the receipt can be sent to a phone
-      });
-      const res = await fetchFn(`${base}/v1/checkout/sessions`, {
-        method: 'POST',
-        headers: { authorization: `Bearer ${config.stripeSecretKey}`, 'content-type': 'application/x-www-form-urlencoded' },
-        body: form.toString(),
-      });
+      };
+      const send = async (extra) => {
+        const form = new URLSearchParams({ ...fields, ...extra });
+        return fetchFn(`${base}/v1/checkout/sessions`, {
+          method: 'POST',
+          headers: { authorization: `Bearer ${config.stripeSecretKey}`, 'content-type': 'application/x-www-form-urlencoded' },
+          body: form.toString(),
+        });
+      };
+      let res = await send(BRANDING);
+      if (res.status === 400) {
+        // A branding value Stripe does not take must not stop a payment: try again with the plain page.
+        let detail = '';
+        try { detail = (await res.json())?.error?.message || ''; } catch { /* no readable body */ }
+        if (/branding|custom_text/i.test(detail)) res = await send({});
+        else throw new Error(`stripe 400${detail ? ': ' + detail : ''}`);
+      }
       if (!res.ok) {
         let detail = '';
         try { detail = (await res.json())?.error?.message || ''; } catch { /* no readable body */ }

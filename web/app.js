@@ -863,6 +863,15 @@
     else welcome();
     core.openPending?.();
     core.onChats?.();
+    // Back from Stripe (/app?topup=paid&pay=REF, or topup=cancelled): the payment screen checks it with the server.
+    try {
+      const q = new URLSearchParams(location.search);
+      if (q.get('topup')) {
+        const ref = q.get('pay') || '';
+        history.replaceState(null, '', location.pathname);
+        core.openScreen?.('payreturn', { ref: /^sv_[a-z0-9]+$/i.test(ref) ? ref : '', cancelled: q.get('topup') === 'cancelled' });
+      }
+    } catch { /* no address bar here: nothing to show */ }
     const { ok, j } = await api('/app/api/me').catch(() => ({ ok: false }));
     if (ok) setWallet(j.wallet);
   }

@@ -213,6 +213,7 @@ const web = createWeb({
   vault,
   guard,
   links,
+  payments,
   shell: { whatsappNumber: config.whatsappNumber, voice: stt.enabled, pay: Boolean(payments) },
 });
 

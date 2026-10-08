@@ -50,7 +50,9 @@
     plusMode();
     const pane = k === 'home' ? home : k === 'guides' ? guides : $('chat');
     if (k !== 'chat') pane.scrollTop = 0;
-    pane.classList.remove('in-r', 'in-l'); void pane.offsetWidth; pane.classList.add(dir > 0 ? 'in-r' : 'in-l');
+    // The first time Home or Guides opens, its cards rise in one by one; the pane does not also slide in (one motion, not two).
+    const firstOpen = (k === 'home' && !built) || (k === 'guides' && !guides.dataset.done);
+    if (!firstOpen) { pane.classList.remove('in-r', 'in-l'); void pane.offsetWidth; pane.classList.add(dir > 0 ? 'in-r' : 'in-l'); }
     const dk = document.querySelector('.dock'); if (dk && k === 'chat') { dk.classList.remove('in-r', 'in-l'); void dk.offsetWidth; dk.classList.add(dir > 0 ? 'in-r' : 'in-l'); }
     if (k === 'home') drawHome();
     if (k === 'guides' && !guides.dataset.done) drawGuides();
@@ -125,21 +127,24 @@
   // ---- Profile and search pages ---------------------------------------------------------------------
   const SC = U.SCREENS;
   const floatSearch = () => { const b = el('button', 'hk-search-pill'); b.type = 'button'; b.append(ico('search', 20), el('span', '', T('Search'))); b.onclick = () => { U.closeAll(); openSearch(); }; return b; };
-  SC.profile = async () => {
+  SC.profile = () => {
+    // Everything is drawn at once from what we already know, so nothing waits on the network. The balance is
+    // refreshed in place afterwards. The rows rise in order from the top; the title and the bottom button come in with them.
     const col = U.frame(T('Profile'));
-    const m = await U.refreshMe().catch(() => ({}));
-    const bal = card('hk-prof'); bal.append(el('p', '', T('Wallet balance')), el('div', 'hk-logo', $('walletText').textContent || '₹0'));
+    const balText = el('div', 'hk-logo', C.wallet?.balance || $('walletText').textContent || '₹0');
+    const bal = card('hk-prof'); bal.append(el('p', '', T('Wallet balance')), balText);
     bal.append(wide('dark', T('Top up'), () => U.openScreen('topup')));
     const g = (...r) => U.group(null, ...r);
     const lang = C.uiLang();
     col.append(bal,
       g(U.row({ icon: 'user', title: T('My details'), onclick: () => U.openScreen('details') }), U.row({ icon: 'bell', title: T('Reminders'), onclick: () => U.openScreen('reminders') }), U.row({ icon: 'lock', title: T('My locker'), onclick: () => U.openScreen('locker') }), U.row({ icon: 'apps', title: T('Applications'), onclick: () => U.openScreen('apps') })),
-      g(U.row({ icon: 'wallet', title: T('Wallet'), value: m.wallet?.balance, onclick: () => U.openScreen('wallet') }), U.row({ icon: 'pack', title: T('Packs'), onclick: () => U.openScreen('packs') }), U.row({ icon: 'clock', title: T('Transaction history'), onclick: () => U.openScreen('activity') })),
+      g(U.row({ icon: 'wallet', title: T('Wallet'), value: C.wallet?.balance, onclick: () => U.openScreen('wallet') }), U.row({ icon: 'pack', title: T('Packs'), onclick: () => U.openScreen('packs') }), U.row({ icon: 'clock', title: T('Transaction history'), onclick: () => U.openScreen('activity') })),
       g(U.row({ icon: 'msg', title: T('Chats'), onclick: () => U.openScreen('chats') }), U.row({ icon: 'globe', title: T('Language'), value: lang === 'en' ? 'English' : lang, onclick: () => U.openScreen('language') }), U.row({ icon: 'sliders', title: T('Settings'), onclick: () => U.openScreen('settings') }), U.row({ icon: 'shield', title: T('Privacy notice'), onclick: () => U.openScreen('privacy') })),
       g(U.row({ icon: 'help', title: T('Help and support'), onclick: () => U.openScreen('help') }), U.row({ icon: 'backup', title: T('Backup and restore'), onclick: () => U.openScreen('backup') })),
       el('p', 'mut small center about', T('Saathi 1.0 · Independent, not a government website')),
       el('div', 'hk-spacer'));
     const fb = el('div', 'hk-fadebar'); screenEl.append(fb, floatSearch());
+    U.refreshMe().then((m) => { if (m?.wallet) balText.textContent = m.wallet.balance; }).catch(() => {});
   };
   // ---- search: a panel inside the app; the round button in the corner turns into an X while it is open -------
   const sp = el('div', 'hk-sp'); const spBody = el('div', 'hk-sb'); const spBar = el('div', 'hk-sbar');

@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 import { classifyUrl, extractUrls, analyze, sensitiveKind } from './scamcheck.js';
 import { t } from './messages.js';
 import { SERVICES, LAST_VERIFIED, L10 } from './services.js';
-import { balance, activePack, inr, freeLeft, freeAiLeft } from './billing.js';
+import { balance, activePack, inr, freeLeft, freeAiLeft, grantTrial, rates } from './billing.js';
 import { LANGS, langDef } from './i18n.js';
 import { uiDict } from './uistrings.js';
 
@@ -110,7 +110,7 @@ export function limiter(max, windowMs) {
 
 const ALLOWED_UPLOAD = /^(image\/(jpeg|png|webp|heic|heif)|application\/pdf|audio\/(webm|ogg|mp4|mpeg|wav|x-m4a|aac)|video\/(webm|mp4))(;.*)?$/i;
 
-export function createWeb({ store, config, media, converse, enqueue, shell = {}, llm = null, vault = null, guard = null, links = null }) {
+export function createWeb({ store, config, media, converse, enqueue, shell = {}, llm = null, vault = null, guard = null, links = null, payments = null }) {
   const tools = vault && guard ? createTools({ store, vault, llm, guard, config }) : null;
   const okTool = limiter(120, 60_000);
   const okToolIp = limiter(600, 60_000);
@@ -309,6 +309,49 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
     });
   }
 
+  // ---- add money and packs, from the app ----
+  // The server makes the payment and returns Stripe's page. The app sends the person there straight away.
+  // "Paid" is only ever said by the server, from Stripe's signed webhook, for this one payment (see payStatus).
+  function ensureUser(uid) {
+    let u = store.getUser(uid);
+    if (u) return u;
+    u = { state: 'new', lang: null };
+    if (store.hadTrial?.(uid)) u.trialGiven = true;
+    else { grantTrial(u, config); store.markTrial?.(uid); }
+    store.putUser(uid, u);
+    return u;
+  }
+  async function topupStart(req, res, sid) {
+    if (!okCheck(ipOf(req))) return json(res, 429, { error: 'slow_down' });
+    if (!payments) return json(res, 503, { error: 'payments_off' });
+    let b = {};
+    try { b = JSON.parse((await readRaw(req, 2_000)).toString('utf8')); } catch { return json(res, 400, { error: 'bad_request' }); }
+    const paise = Number(b.paise);
+    const rt = rates(config);
+    const okAmount = rt.topups.includes(paise) || (Number.isInteger(paise) && paise % 100 === 0 && paise >= 1000 && paise <= 500000);
+    const packId = typeof b.pack === 'string' && rt.packs[b.pack] ? b.pack : null;
+    if (!okAmount || (b.pack && !packId)) return json(res, 400, { error: 'bad_amount' });
+    const uid = uidOf(sid);
+    const before = balance(ensureUser(uid)); // what the person has before this payment (a new person's welcome credit included)
+    const ref = `sv_${Date.now().toString(36)}${crypto.randomBytes(5).toString('hex')}`;
+    store.putPayment(ref, { userId: uid, paise, status: 'pending', ts: Date.now(), before, ...(packId ? { packId } : {}) });
+    try {
+      const { url } = await payments.createLink({ ref, paise, note: packId ? 'Saathi pack' : 'Saathi wallet top-up', origin: b.origin });
+      return json(res, 200, { url, ref });
+    } catch (e) {
+      console.error('payment link error:', e.message);
+      store.putPayment(ref, { userId: uid, paise, status: 'failed', ts: Date.now(), ...(packId ? { packId } : {}) });
+      return json(res, 502, { error: 'stripe' });
+    }
+  }
+  /** Where a payment stands. Only the person who started it can read it. */
+  function payStatus(url, res, sid) {
+    const ref = String(url.searchParams.get('ref') || '');
+    const rec = /^sv_[a-z0-9]+$/.test(ref) ? store.getPayment(ref) : null;
+    if (!rec || rec.userId !== uidOf(sid)) return json(res, 404, { error: 'not_found' });
+    const u = store.getUser(rec.userId);
+    json(res, 200, { status: rec.status, paise: rec.paise, before: Number.isInteger(rec.before) ? rec.before : null, pack: rec.packId || null, wallet: u ? walletInfo(u) : null });
+  }
   function walletInfo(u) {
     const pack = activePack(u);
     return {
@@ -550,6 +593,8 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
       else if (p === '/app/api/t' && req.method === 'POST') await tool(req, res, sid);
       else if (p === '/app/api/link' && req.method === 'POST') await link(req, res, sid);
       else if (p === '/app/api/poll' && req.method === 'GET') poll(req, res, url, sid);
+      else if (p === '/app/api/topup' && req.method === 'POST') await topupStart(req, res, sid);
+      else if (p === '/app/api/pay' && req.method === 'GET') payStatus(url, res, sid);
       else if (p === '/app/api/lang' && req.method === 'POST') {
         let b2 = {};
         try { b2 = JSON.parse((await readRaw(req, 1_000)).toString('utf8')); } catch { /* falls to bad_lang */ }
