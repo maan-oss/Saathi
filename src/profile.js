@@ -9,7 +9,8 @@ export const FIELDS = [
   { key: 'father_name', type: 'text', label: { en: "Father's name", hi: 'पिता का नाम' } },
   { key: 'gender', type: 'choice', options: ['male', 'female', 'other'], label: { en: 'Gender', hi: 'लिंग' } },
   { key: 'state', type: 'text', label: { en: 'State', hi: 'राज्य' } },
-  { key: 'address', type: 'longtext', label: { en: 'Address', hi: 'पता' } },
+  { key: 'address', type: 'text', label: { en: 'Street, house no. and area', hi: 'गली, मकान नंबर और इलाका' } },
+  { key: 'city', type: 'text', label: { en: 'City or town', hi: 'शहर या कस्बा' } },
   { key: 'pincode', type: 'pin', label: { en: 'PIN code', hi: 'पिन कोड' } },
   { key: 'mother_name', type: 'text', label: { en: "Mother's name", hi: 'माता का नाम' } },
   { key: 'mobile', type: 'phone', label: { en: 'Mobile number', hi: 'मोबाइल नंबर' } },
@@ -81,7 +82,9 @@ export function normField(key, value, now = Date.now()) {
     case 'state':
       return findState(v)?.name || null;
     case 'address':
-      return v.length >= 8 && v.length <= 250 ? v : null;
+      return v.length >= 8 && v.length <= 200 ? v : null;
+    case 'city':
+      return v.length >= 2 && v.length <= 60 && !/\d/.test(v) ? v : null;
     case 'pincode': {
       const d = v.replace(/\s/g, '');
       return /^[1-9]\d{5}$/.test(d) ? d : null;

@@ -287,3 +287,13 @@ input:focus,input:focus-visible,textarea:focus,textarea:focus-visible,select:foc
 .composer:focus-within,.search-w:focus-within,.field-i:focus,.field-i:focus-visible,.dd-btn:focus-visible{border-color:var(--line)!important}
 :root[data-style="sky"] .composer,:root[data-style="sky"] .composer:focus-within,:root[data-style="sky"] .search-w:focus-within,:root[data-style="sky"] .field-i:focus{border-color:rgba(255,255,255,.14)!important;box-shadow:var(--shadow)!important}
 .field-i:focus,.field-i:focus-visible,.dd-btn:focus-visible,.dd-q:focus{box-shadow:none!important}
+
+/* ---- reminders: open and close with motion ---- */
+@keyframes rmOpen{from{opacity:0;transform:translateY(-8px);clip-path:inset(0 0 100% 0)}to{opacity:1;transform:none;clip-path:inset(0 0 0 0)}}
+@keyframes rmClose{from{opacity:1;transform:none;clip-path:inset(0 0 0 0)}to{opacity:0;transform:translateY(-8px);clip-path:inset(0 0 100% 0)}}
+.rm-body{animation:rmOpen .32s var(--hk-ease,ease) both;transform-origin:top}
+.rm-item.closing .rm-body{animation:rmClose .2s ease-in both;pointer-events:none}
+.rm-item .rm-chev{transition:transform .28s var(--hk-ease,ease)}
+.rm-item.open .rm-chev{transform:rotate(90deg)}
+.rm-head{transition:background .2s ease}
+@media (prefers-reduced-motion:reduce){.rm-body,.rm-item.closing .rm-body{animation-duration:.01s}}

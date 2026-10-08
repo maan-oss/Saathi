@@ -407,7 +407,7 @@
   // ---- my details ---------------------------------------------------------------------------------------------
   const SECTIONS = () => [
     [T('Identity'), 'user', ['full_name', 'dob', 'gender']], [T('Family'), 'people', ['father_name', 'mother_name']],
-    [T('Contact'), 'phone', ['mobile', 'email']], [T('Address'), 'card', ['address', 'state', 'pincode']],
+    [T('Contact'), 'phone', ['mobile', 'email']], [T('Address'), 'card', ['address', 'city', 'state', 'pincode']],
   ];
 
   S.details = async () => {
@@ -450,6 +450,7 @@
           inp = el('div', 'seg'); inp.setAttribute('role', 'group'); inp.value = f.value;
           for (const o of f.options) { const b = btn('', optionLabel(o), null); b.setAttribute('aria-pressed', String(f.value === o.id)); b.onclick = () => { inp.value = inp.value === o.id ? '' : o.id; for (const x of inp.children) x.setAttribute('aria-pressed', 'false'); if (inp.value) b.setAttribute('aria-pressed', 'true'); }; inp.append(b); }
         } else if (f.type === 'longtext') { inp = el('textarea', 'field-i'); inp.rows = 3; inp.value = f.value; }
+        else if (f.key === 'state') { inp = C.dropdown({ label: fieldLabel(f), search: true, placeholder: T('Choose your state'), options: (U.STATE_LIST || []).map((n) => [n, n]), value: f.value || '' }); }
         else { inp = el('input', 'field-i'); inp.type = 'text'; inp.value = f.value; inp.autocomplete = 'off'; inp.spellcheck = false; if (f.type === 'phone' || f.type === 'pin') inp.inputMode = 'numeric'; if (f.type === 'email') inp.inputMode = 'email'; if (f.type === 'date') inp.placeholder = 'DD/MM/YYYY'; }
         inputs[f.key] = inp;
         const wrap = el('div', 'fld dt-f'); const lab = el('div', 'fld-row'); lab.append(el('span', 'fld-l', fieldLabel(f)));
@@ -567,7 +568,12 @@
       if (r.repeat) right.append(el('span', 'tag', T('Yearly')));
       const chev = ico('chev', 18); chev.classList.add('rm-chev'); right.append(chev);
       head.append(ic, tx, right);
-      head.onclick = () => { openId = open ? null : r.id; draw(); };
+      head.onclick = () => {
+        if (!open) { openId = r.id; draw(); return; }
+        // Close with motion: play the exit, then redraw the list with nothing open.
+        w.classList.add('closing');
+        setTimeout(() => { if (openId === r.id) { openId = null; draw(); } }, 200);
+      };
       w.append(head);
       if (!open) return w;
       const body = el('div', 'rm-body');

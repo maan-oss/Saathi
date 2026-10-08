@@ -642,7 +642,10 @@
       row({ icon: 'shield', title: T('Privacy notice'), onclick: () => openScreen('privacy') }),
       ...inst,
     ));
-    col.append(group(T('Help'), row({ icon: 'help', title: T('Help and support'), onclick: () => openScreen('help') })));
+    col.append(group(T('Help'),
+      row({ icon: 'help', title: T('Help and support'), onclick: () => openScreen('help') }),
+      row({ icon: 'help', title: T('Show the welcome again'), onclick: () => { store.del('saathi.onboarded'); location.reload(); } }),
+    ));
     col.append(group(T('Data'),
       row({ icon: 'chatx', title: T('Delete all my chats'), onclick: confirmClearChats }),
       row({ icon: 'trash', title: T('Delete all my data'), sub: T('Removes saved details, locker, reminders and wallet'), danger: true, onclick: confirmDelete }),

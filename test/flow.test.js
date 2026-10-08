@@ -362,7 +362,7 @@ test('form (WhatsApp Flow) path: sends a form with saved values, cleans what com
   await say('1');
   const form = (await tap('fill'))[0];
   assert.equal(form.kind, 'form');
-  assert.deepEqual(form.fields.map((f) => f.key), ['full_name', 'dob', 'father_name', 'gender', 'state', 'address', 'pincode', 'mother_name', 'mobile', 'email']);
+  assert.deepEqual(form.fields.map((f) => f.key), ['full_name', 'dob', 'father_name', 'gender', 'state', 'address', 'city', 'pincode', 'mother_name', 'mobile', 'email']);
   const bad = await run({ type: 'form', id: 'details', values: { full_name: 'asha devi', dob: '1990-02-05', father_name: 'Ram Lal', gender: 'female', address: '12 Gandhi Road, Jaipur', pincode: '3020' } });
   assert.match(plain(bad.replies[0]), /PIN code/);
   assert.equal(bad.replies.at(-1).kind, 'form');

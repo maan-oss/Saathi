@@ -17,7 +17,7 @@
     const r = await api('/app/api/t', { method: 'POST', headers: JSON_H, body: JSON.stringify({ op, args }) }).catch(() => ({ ok: false, j: {} }));
     return { ok: Boolean(r.ok && r.j.ok), data: r.j.data, error: r.j.error || (r.ok ? null : 'network') };
   }
-  const SENS = new Set(['dob', 'father_name', 'mother_name', 'address', 'pincode', 'mobile', 'email']);
+  const SENS = new Set(['dob', 'father_name', 'mother_name', 'address', 'city', 'pincode', 'mobile', 'email']);
   const inr = (n) => '₹' + Math.round(n).toLocaleString('en-IN');
   const todayIso = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 
@@ -202,8 +202,7 @@
       const opts = el('div', 'fd-opts');
       if (question.type === 'yn') { opts.append(btn('fd-o', T('Yes'), () => answer('y')), btn('fd-o', T('No'), () => answer('n'))); }
       else if (question.type === 'state') {
-        const inp = el('input', 'field-i'); inp.type = 'text'; inp.placeholder = T('Your state'); inp.setAttribute('list', 'gStates'); inp.autocomplete = 'off';
-        const dl = el('datalist'); dl.id = 'gStates'; for (const s of U.STATE_LIST || []) { const o = el('option'); o.value = s; dl.append(o); }
+        const inp = C.dropdown({ label: T('State'), search: true, placeholder: T('Your state'), options: (U.STATE_LIST || []).map((n) => [n, n]), value: '' });
         const err = el('small', 'fld-h bad'); err.textContent = '';
         const go = btn('btn pri', T('Continue'), async () => {
           const v = inp.value.trim(); if (!v) return;
@@ -214,9 +213,8 @@
           if (!f.data.name) { err.textContent = T('I don’t know a state like that.'); return; }
           answer(f.data.name);
         });
-        inp.onkeydown = (e) => { if (e.key === 'Enter') go.click(); };
-        inp.oninput = () => { err.textContent = ''; };
-        opts.classList.add('col'); opts.append(inp, dl, err, go);
+        inp.onchange = () => { err.textContent = ''; };
+        opts.classList.add('col'); opts.append(inp, err, go);
       } else for (const o of question.options) opts.append(btn('fd-o', o.label, () => answer(o.id)));
       card.append(opts);
       if (order.length) card.append(btn('link-btn fd-back', T('Back'), async () => { const k = order[order.length - 1]; const next = { ...P.ans }; delete next[k]; P.ans = next; save(); const r = await askRoute(next); question = r?.question || null; order = Object.keys(next); drawPane(); }));
@@ -475,14 +473,14 @@
             inp = el('div', 'seg'); inp.setAttribute('role', 'group'); inp.value = '';
             for (const o of f.options) { const b = btn('', T(o.en)); b.setAttribute('aria-pressed', 'false'); b.onclick = () => { inp.value = inp.value === o.id ? '' : o.id; for (const x of inp.children) x.setAttribute('aria-pressed', 'false'); if (inp.value) b.setAttribute('aria-pressed', 'true'); }; inp.append(b); }
           } else if (f.type === 'longtext') { inp = el('textarea', 'field-i'); inp.rows = 2; }
-          else { inp = el('input', 'field-i'); inp.type = 'text'; inp.autocomplete = 'off'; inp.spellcheck = false; if (f.type === 'date') inp.placeholder = T('DD/MM/YYYY'); if (f.type === 'phone' || f.type === 'pin') inp.inputMode = 'numeric'; if (f.key === 'state') { inp.setAttribute('list', 'gStates2'); } }
+          else if (f.key === 'state') { inp = C.dropdown({ label: T('State'), search: true, placeholder: T('Choose your state'), options: (U.STATE_LIST || []).map((n) => [n, n]), value: '' }); }
+          else { inp = el('input', 'field-i'); inp.type = 'text'; inp.autocomplete = 'off'; inp.spellcheck = false; if (f.type === 'date') inp.placeholder = T('DD/MM/YYYY'); if (f.type === 'phone' || f.type === 'pin') inp.inputMode = 'numeric'; }
           inputs[f.key] = inp;
           left.append(inp);
           r.append(left);
         }
         box.append(r);
       });
-      if (inputs.state) { const dl = el('datalist'); dl.id = 'gStates2'; for (const s of U.STATE_LIST || []) { const o = el('option'); o.value = s; dl.append(o); } box.append(dl); }
       pane.append(box);
       if (Object.keys(inputs).length) {
         const er = el('p', 'fld-err'); er.hidden = true; er.setAttribute('role', 'alert');
