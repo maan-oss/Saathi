@@ -816,7 +816,7 @@
         const a = el('div', 'ob-art sm'); a.innerHTML = ART.lang;
         const copy = el('div', 'ob-copy'); view.append(a, copy);
         const holder = el('div', 'ob-langs2');
-        copy.append(el('h1', 'sm', C.uiLang() === 'en' && langObj.code === 'en' ? 'Choose your language · भाषा चुनें' : T('Choose your language')), el('p', 'ob-p', T('The whole app will show in it. You can change it any time in Settings.')), holder);
+        copy.append(el('h1', 'sm', T('Choose your language')), el('p', 'ob-p', T('The whole app will show in it. You can change it any time in Settings.')), holder);
         langPicker(holder, { current: langObj.code, onPick: (l) => { langObj = l; next.textContent = T('Continue in {lang}', { lang: l.en }); } });
         next.textContent = T('Continue in {lang}', { lang: langObj.en });
       } else if (step === 1) { view = aboutView(); next.textContent = T('Continue'); syncNext(); }

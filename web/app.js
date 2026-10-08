@@ -841,11 +841,16 @@
 
   // ---- start ------------------------------------------------------------------------------
   async function boot() {
+    // A first visit gets the welcome before anything else. The home shell stays hidden (body.ob-open) until the welcome is done.
+    const firstRun = !store.get('saathi.onboarded');
+    if (firstRun) document.body.classList.add('ob-open');
+    await loadUI(uiLang()); applyStatic();
+    if (firstRun) core.onboarding();
     let cfg = {};
     try { cfg = (await api('/app/api/config')).j || {}; } catch { /* offline */ }
     pricesNow = cfg.prices || null;
     core.cfg = cfg;
-    await loadUI(uiLang()); applyStatic(); core.rebuild?.();
+    core.rebuild?.();
     if (SR || (cfg.voice && window.MediaRecorder && navigator.mediaDevices?.getUserMedia)) micBtn.hidden = false;
     document.addEventListener('visibilitychange', async () => {
       if (document.hidden) return;
@@ -859,8 +864,7 @@
     const pendingRef = store.get('saathi.ref');
     if (pendingRef) api('/app/api/t', { method: 'POST', headers: { 'content-type': 'application/json', 'x-saathi': '1' }, body: JSON.stringify({ op: 'ref.set', args: { code: pendingRef } }) })
       .then((r) => { if (r.ok && r.j?.data?.done) store.del?.('saathi.ref'); }).catch(() => {});
-    if (!store.get('saathi.onboarded')) core.onboarding();
-    else welcome();
+    if (!firstRun) welcome();
     core.openPending?.();
     core.onChats?.();
     // Back from Stripe (/app?topup=paid&pay=REF, or topup=cancelled): the payment screen checks it with the server.

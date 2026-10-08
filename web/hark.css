@@ -2,6 +2,8 @@
 .hk-legacy{display:none!important}
 /* Until hark.js has built the Sky shell (it sets data-hk on #app), the old static markup stays hidden: no Classic flash on open or reload. */
 #app:not([data-hk]){visibility:hidden}
+/* A first visit: the welcome opens before the home shell, so the shell stays hidden until the welcome is done. */
+body.ob-open .app{visibility:hidden}
 :root{--hk-ink:#1d1d1f;--hk-mut:#5d6675;--hk-card:rgba(238,244,251,.86);--hk-tile:rgba(255,255,255,.78);--hk-ease:cubic-bezier(.22,.9,.28,1)}
 .hk-top{display:flex!important;align-items:center;gap:10px;justify-content:space-between;max-width:640px;width:100%;margin:0 auto;padding:max(12px,env(safe-area-inset-top)) 14px 8px!important;background:transparent!important;border:0!important;position:relative;z-index:3}
 .hk-round,.hk-av{flex:none;width:46px;height:46px;border-radius:50%!important;display:grid;place-items:center;padding:0;border:0;cursor:pointer;transition:transform .18s var(--hk-ease),background .2s}
