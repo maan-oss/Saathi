@@ -1,6 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
+    { "source": "/fonts/instrument.woff2", "destination": "/fonts/instrument-sans-latin-standard-normal.woff2" },
+    { "source": "/fonts/devanagari.woff2", "destination": "/fonts/noto-sans-devanagari-devanagari-700-normal.woff2" },
+    { "source": "/fonts/bricolage.woff2", "destination": "/fonts/bricolage-grotesque-latin-wght-normal.woff2" },
+    { "source": "/fonts/serif.woff2", "destination": "/fonts/instrument-serif-latin-400-normal.woff2" },
+    { "source": "/fonts/serif-italic.woff2", "destination": "/fonts/instrument-serif-latin-400-italic.woff2" },
+    { "source": "/favicon.ico", "destination": "/icon-192.png" },
     { "source": "/privacy", "destination": "https://saathi-vert-psi.vercel.app/privacy" },
     { "source": "/app", "destination": "https://saathi-vert-psi.vercel.app/app" },
     { "source": "/app/:path*", "destination": "https://saathi-vert-psi.vercel.app/app/:path*" }
