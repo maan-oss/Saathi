@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    { "source": "/privacy", "destination": "https://saathi-vert-psi.vercel.app/privacy" },
+    { "source": "/app", "destination": "https://saathi-vert-psi.vercel.app/app" },
+    { "source": "/app/:path*", "destination": "https://saathi-vert-psi.vercel.app/app/:path*" }
+  ]
+}
