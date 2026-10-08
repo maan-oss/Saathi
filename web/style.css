@@ -267,7 +267,7 @@ button:active:not(:disabled){transform:scale(.97)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--mint:#2FB983;--mint2:#1D3F34}}
 :root[data-theme="dark"]{--mint:#2FB983;--mint2:#1D3F34}
 body{font-family:var(--sans)}
-.top{background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);position:relative;z-index:2}
+.top{background:color-mix(in srgb,var(--bg) 88%,transparent);position:relative;z-index:2}
 .word{font:800 22px/1 var(--display);letter-spacing:-.03em}
 .word-hi{font:700 15px/1 var(--display)}
 .txt{font:17px/1.65 var(--serif);font-variation-settings:"opsz" 14}
@@ -346,7 +346,7 @@ body{font-family:var(--sans)}
   --bg:#262624; --bg2:#30302E; --ink:#F0EEE6; --mut:#A6A39A; --line:#3D3D3A; --green:#5BB58D; --green-ink:#7CCBA5; --on-green:#10261B; --tint:#30302E; --tint2:#3D3D3A; --mint:#30302E; --mint2:#30302E}}
 :root[data-theme="dark"]{--bg:#262624; --bg2:#30302E; --ink:#F0EEE6; --mut:#A6A39A; --line:#3D3D3A; --green:#5BB58D; --green-ink:#7CCBA5; --on-green:#10261B; --tint:#30302E; --tint2:#3D3D3A; --mint:#30302E; --mint2:#30302E}
 body{font-family:var(--sans)}
-.top{background:var(--bg);backdrop-filter:none;border-bottom:0}
+.top{background:var(--bg);border-bottom:0}
 .word{font:500 22px/1 var(--serif);letter-spacing:-.01em}
 .word-hi{font:500 15px/1 var(--serif);color:var(--mut)}
 .pill{background:transparent;border-color:var(--line)}
@@ -471,7 +471,7 @@ body{font-family:var(--sans)}
 @media (prefers-reduced-motion:reduce){.reveal-v,.sheet-row,.sheet,.tile,.chip,.row,.txt p,.hero h1,.hero>p{animation:none!important}}
 
 /* ===== popups: settings sheet, toast, attach menu ===== */
-.modal{background:rgba(31,30,29,.38);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:opacity .3s var(--out),visibility 0s .3s}
+.modal{background:rgba(31,30,29,.38);transition:opacity .3s var(--out),visibility 0s .3s}
 .modal.on{transition:opacity .3s var(--out)}
 .panel{position:relative;width:min(520px,100%);background:var(--bg);border:1px solid var(--line);border-bottom:0;border-radius:22px 22px 0 0;box-shadow:0 -12px 60px rgba(31,30,29,.18);padding:26px 22px calc(24px + env(safe-area-inset-bottom));transform:translateY(40px) scale(.985);opacity:0;transition:transform .5s var(--out),opacity .3s var(--out)}
 .modal.on .panel{transform:none;opacity:1}

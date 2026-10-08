@@ -840,4 +840,12 @@ export const HI = {
   "Payment not completed": "भुगतान पूरा नहीं हुआ",
   "Still confirming": "अभी पुष्टि हो रही है",
   "Check again": "फिर जाँचें",
+  "Referral bonus": "रेफ़रल बोनस",
+  "Invite a friend": "किसी दोस्त को बुलाएँ",
+  "Getting your link…": "आपका लिंक आ रहा है…",
+  "Copy my invite link": "मेरा आमंत्रण लिंक कॉपी करें",
+  "You earn 30% of what they add in their first month, and 10% after that.": "वे पहले महीने में जितना जोड़ेंगे, उसका 30% आपको मिलेगा, उसके बाद 10%।",
+  "Your link is not ready yet. Try again in a moment.": "आपका लिंक अभी तैयार नहीं है। थोड़ी देर में फिर कोशिश करें।",
+  "Show the welcome again": "स्वागत संदेश फिर से दिखाएँ",
+  "Choose your state": "अपना राज्य चुनें",
 };

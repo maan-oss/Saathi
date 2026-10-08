@@ -108,7 +108,6 @@ Know the limits before launch:
 | `npm run doctor` | Checks each connection using your `.env` |
 | `npm run setup` | Writes `.env` with generated secrets and asks for keys. Local only. Never commit `.env`. |
 | `npm run translate` | Pre-generates the machine-translated languages (needs an AI key) |
-| `npm run build:site-demo` | Writes `demo/saathi-site.html`, a one-file preview of the landing page |
 
 ## Ongoing
 

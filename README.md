@@ -32,7 +32,7 @@ npm run simulate    # chat with the bot in the terminal
 - `api/index.js`: Vercel entry point (preview only, see SETUP.md). `render.yaml`, `Dockerfile`, `.dockerignore`: the Render deployment.
 - `flows/details.flow.json`: the WhatsApp Flow for the details form, uploaded to Meta.
 - `assets/saathi-profile.png`: the WhatsApp profile photo.
-- `scripts/`: setup, doctor, simulate, translate, build-site-demo. `test/`: the tests.
+- `scripts/`: setup, doctor, simulate, translate. `test/`: the tests.
 
 ## Money
 

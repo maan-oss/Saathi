@@ -1,5 +1,7 @@
 /* Hark-style shell: round + button, Home | Chat | Guides pill, avatar, frosted card feed, white/pale-blue chat. */
 .hk-legacy{display:none!important}
+/* Until hark.js has built the Sky shell (it sets data-hk on #app), the old static markup stays hidden: no Classic flash on open or reload. */
+#app:not([data-hk]){visibility:hidden}
 :root{--hk-ink:#1d1d1f;--hk-mut:#5d6675;--hk-card:rgba(238,244,251,.86);--hk-tile:rgba(255,255,255,.78);--hk-ease:cubic-bezier(.22,.9,.28,1)}
 .hk-top{display:flex!important;align-items:center;gap:10px;justify-content:space-between;max-width:640px;width:100%;margin:0 auto;padding:max(12px,env(safe-area-inset-top)) 14px 8px!important;background:transparent!important;border:0!important;position:relative;z-index:3}
 .hk-round,.hk-av{flex:none;width:46px;height:46px;border-radius:50%!important;display:grid;place-items:center;padding:0;border:0;cursor:pointer;transition:transform .18s var(--hk-ease),background .2s}
@@ -65,7 +67,7 @@
 .hk-float svg{color:var(--hk-ink)}
 
 /* chat bubbles: white assistant, pale-blue you */
-:root[data-style="sky"] .msg.botrow .bot{background:rgba(255,255,255,.96);color:#1d1d1f;border-radius:30px;padding:14px 20px;-webkit-backdrop-filter:none;backdrop-filter:none;--ink:#1d1d1f;--mut:#5d6675;--line:rgba(0,0,0,.1);box-shadow:0 1px 0 rgba(255,255,255,.4)}
+:root[data-style="sky"] .msg.botrow .bot{background:rgba(255,255,255,.96);color:#1d1d1f;border-radius:30px;padding:14px 20px;--ink:#1d1d1f;--mut:#5d6675;--line:rgba(0,0,0,.1);box-shadow:0 1px 0 rgba(255,255,255,.4)}
 :root[data-style="sky"] .msg.botrow .bot a{color:#0b57c9}
 :root[data-style="sky"] .msg.botrow .bot:has(.err,.sheet,.pack,.g-card,.vault){background:transparent;padding:0;box-shadow:none}
 :root[data-style="sky"] body .msg.me .bubble-me{background:rgba(196,216,242,.78)!important;color:#1d1d1f!important;border:0!important;border-radius:30px!important;padding:13px 20px}
@@ -121,7 +123,7 @@ body.screen-open .app{visibility:hidden}
 @media (max-height:520px){:root[data-style="sky"] .app[data-tab="chat"] .hello p{display:none}}
 
 /* language list: the search bar no longer lets rows show through; chosen row is clear in every phase */
-:root[data-style="sky"] .search-w{position:sticky;top:0;z-index:3;background:var(--glass)!important;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+:root[data-style="sky"] .search-w{position:sticky;top:0;z-index:3;background:var(--glass)!important;}
 :root[data-style="sky"] .langs{overflow:visible;margin-top:10px}
 :root[data-style="sky"] .lang.on{background:rgba(255,255,255,.92)!important;--ink:#1d1d1f;--mut:#5b6472;color:#1d1d1f}
 :root[data-style="sky"] .lang.on .l-dot{background:#111;border-color:#111;color:#fff}
@@ -257,7 +259,7 @@ html body #screen textarea.field-i,html body textarea.field-i{border-radius:20px
   #onboard .ob-slide{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:center;width:100%;margin:0;padding:0;text-align:center}
   #onboard .ob-slide.from-r{animation:obr .5s var(--out) both}
   #onboard .ob-slide.from-l{animation:obl .5s var(--out) both}
-  :root #onboard.onboard .ob-slide .ob-art{grid-column:1;width:auto;max-width:none;margin:0;min-height:min(560px,64vh);display:grid;place-items:center;padding:32px;border-radius:32px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);box-shadow:0 30px 70px rgba(6,14,36,.28);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+  :root #onboard.onboard .ob-slide .ob-art{grid-column:1;width:auto;max-width:none;margin:0;min-height:min(560px,64vh);display:grid;place-items:center;padding:32px;border-radius:32px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);box-shadow:0 30px 70px rgba(6,14,36,.28);}
   #onboard .ob-art svg{width:min(100%,380px);height:auto}
   #onboard .ob-copy{display:flex;flex-direction:column;align-items:center;gap:14px;grid-column:2;justify-self:center;width:100%;max-width:400px}
   #onboard .ob-copy h1{margin:0;font-size:clamp(40px,4vw,54px);text-align:center}
@@ -275,6 +277,7 @@ html body #screen textarea.field-i,html body textarea.field-i{border-radius:20px
 :root[data-style="sky"] .sc-head .sc-back:hover{background:#f2f2f4}
 :root[data-style="sky"] .sc-head .sc-back:active{transform:scale(.92)}
 :root[data-style="sky"] .sc-head .sc-back svg{stroke:#000!important}
+:root[data-style="sky"] .sc-head .sc-back svg path{stroke:#000!important}
 :root[data-style="sky"] .sc-big h1{font-weight:500}
 
 /* ---- search: an opaque panel; nothing from the tabs shows behind it ---- */

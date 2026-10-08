@@ -9,4 +9,6 @@
     var dark = t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
     root.dataset.sky = dark || (t !== 'light' && (h >= 20 || h < 5)) ? 'night' : h < 8 ? 'dawn' : h < 17 ? 'day' : 'sunset';
   } catch (e) { root.dataset.sky = 'day'; }
+  // If the app script never runs (a failed download), show the page anyway after 8 s rather than a blank sky.
+  setTimeout(function () { var a = document.getElementById('app'); if (a && !a.dataset.hk) a.dataset.hk = 'fallback'; }, 8000);
 })();

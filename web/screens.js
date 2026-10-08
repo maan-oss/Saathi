@@ -425,6 +425,7 @@
         const on = j.wallet?.pack;
         card.append(checkRing(), el('h3', '', T('Payment received')), el('p', 'mut', on ? T('{name} is on until {date}.', { name: packName(on.id, on.name), date: fmtDate(on.until) }) : T('Your pack is on.')), done);
         stage.append(card);
+        setTimeout(() => { if (!document.body.contains(card)) return; stack.length = 0; hideScreen(); C.toast?.(T('Your pack is on.')); }, 2600);
         return;
       }
       const num = el('div', 'pay-num', rupee(from));
@@ -436,6 +437,12 @@
       if (!matchMedia('(prefers-reduced-motion: reduce)').matches) chip.classList.add('on');
       countUp(num, from, to, (v) => { if (walletText) walletText.textContent = rupee(v); }, 1900);
       setTimeout(() => { C.setWallet?.(j.wallet); }, 2000);
+      // Then back to the top page on its own, with the amount confirmed there.
+      setTimeout(() => {
+        if (!document.body.contains(card)) return;
+        stack.length = 0; hideScreen();
+        C.toast?.(j.pack ? T('Your pack is on.') : T('{amt} added to your wallet.', { amt: rupee(j.paise) }));
+      }, j.pack ? 2600 : 2900);
     };
     const confirm = async () => {
       stage.replaceChildren(waitBox(T('Confirming your payment'), T('Stripe is confirming it. This usually takes a few seconds. Keep this page open.')));

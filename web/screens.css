@@ -332,7 +332,7 @@ button.row-i:active,a.row-i:active{background:var(--bg2)}
 .scan-beam{position:absolute;z-index:2;left:0;right:0;top:0;height:64px;pointer-events:none;opacity:0;background:linear-gradient(to bottom,transparent,color-mix(in srgb,var(--ink) 22%,transparent));border-bottom:2px solid var(--ink);box-shadow:0 6px 24px color-mix(in srgb,var(--ink) 35%,transparent)}
 .scanning .scan-beam{opacity:1;animation:sweep 1.9s cubic-bezier(.45,0,.55,1) infinite alternate}
 @keyframes sweep{from{top:-64px}to{top:calc(100% - 64px)}}
-.scan-hud{position:absolute;z-index:4;left:14px;right:14px;bottom:14px;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;align-items:center;column-gap:9px;row-gap:8px;padding:10px 14px;border-radius:14px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);font:600 13.5px var(--sans);opacity:0;transform:translateY(8px);transition:opacity .3s,transform .4s var(--out)}
+.scan-hud{position:absolute;z-index:4;left:14px;right:14px;bottom:14px;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;align-items:center;column-gap:9px;row-gap:8px;padding:10px 14px;border-radius:14px;background:color-mix(in srgb,var(--bg) 88%,transparent);border:1px solid var(--line);font:600 13.5px var(--sans);opacity:0;transform:translateY(8px);transition:opacity .3s,transform .4s var(--out)}
 .scanning .scan-hud,.done .scan-hud,.failed .scan-hud{opacity:1;transform:none}
 .scan-hud i{width:9px;height:9px;border-radius:50%;background:var(--ink)}
 .scanning .scan-hud i{animation:pulse 1s ease-in-out infinite}
