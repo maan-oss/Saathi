@@ -716,7 +716,7 @@
     fine.append(fineT, ' ', pl);
     foot.append(next, fine);
     ob.append(top, stage, foot);
-    const slide = (s) => { const d = el('div', 'ob-slide'); const a = el('div', 'ob-art'); a.innerHTML = ART[s.art]; d.append(a, el('h1', '', T(s.title)), el('p', 'ob-p', T(s.text))); return d; };
+    const slide = (s) => { const d = el('div', 'ob-slide'); const a = el('div', 'ob-art'); a.innerHTML = ART[s.art]; const copy = el('div', 'ob-copy'); d.append(a, copy); copy.append(el('h1', '', T(s.title)), el('p', 'ob-p', T(s.text))); return d; };
     function go(n) {
       if (busy) return;
       dir = n >= step ? 1 : -1; step = Math.max(0, Math.min(total - 1, n)); next.disabled = false;
@@ -728,8 +728,9 @@
       if (step === 0) {
         view = el('div', 'ob-slide lang-step');
         const a = el('div', 'ob-art sm'); a.innerHTML = ART.lang;
-        view.append(a, el('h1', 'sm', C.uiLang() === 'en' && langObj.code === 'en' ? 'Choose your language · भाषा चुनें' : T('Choose your language')), el('p', 'ob-p', T('The whole app will show in it. You can change it any time in Settings.')));
-        const holder = el('div', 'ob-langs2'); view.append(holder);
+        const copy = el('div', 'ob-copy'); view.append(a, copy);
+        const holder = el('div', 'ob-langs2');
+        copy.append(el('h1', 'sm', C.uiLang() === 'en' && langObj.code === 'en' ? 'Choose your language · भाषा चुनें' : T('Choose your language')), el('p', 'ob-p', T('The whole app will show in it. You can change it any time in Settings.')), holder);
         langPicker(holder, { current: langObj.code, onPick: (l) => { langObj = l; next.textContent = T('Continue in {lang}', { lang: l.en }); } });
         next.textContent = T('Continue in {lang}', { lang: langObj.en });
       } else if (step === 1) { view = aboutView(); next.textContent = T('Continue'); syncNext(); }
@@ -749,7 +750,8 @@
     function aboutView() {
       const d = el('div', 'ob-slide about-step');
       const a = el('div', 'ob-art sm'); a.innerHTML = ART.me;
-      d.append(a, el('h1', 'sm', T('Tell Saathi about you')), el('p', 'ob-p', T('Saathi fills your forms from these, so you never type them twice. Stored encrypted. Fill in all four to continue, or skip.')));
+      const copy = el('div', 'ob-copy'); d.append(a, copy);
+      copy.append(el('h1', 'sm', T('Tell Saathi about you')), el('p', 'ob-p',T('Saathi fills your forms from these, so you never type them twice. Stored encrypted. Fill in all four to continue, or skip.')));
       const form = el('div', 'ob-form');
       const fld = (label, input, extra) => { const w = el('label', 'fld'); w.append(el('span', 'fld-l', label), input); if (extra) w.append(extra); return w; };
       const nm = el('input', 'field-i'); nm.type = 'text'; nm.autocomplete = 'name'; nm.placeholder = T('As on your Aadhaar'); nm.value = about.name; nm.maxLength = 80; nm.oninput = () => { about.name = nm.value; syncNext(); };
@@ -762,7 +764,7 @@
       const st = C.dropdown({ label: T('State'), search: true, placeholder: T('Your state'), options: STATE_LIST.map((n) => [n, n]), value: about.state || '', onChange: (v) => { about.state = v; hint.textContent = ''; hint.className = 'fld-h'; syncNext(); } });
       const err = el('p', 'fld-err'); err.hidden = true; err.setAttribute('role', 'alert'); aboutErr = err;
       form.append(fld(T('Full name'), nm), fld(T('Date of birth'), dob, age), gw, fld(T('State'), st, hint), err);
-      d.append(form);
+      copy.append(form);
       return d;
     }
     async function saveAbout() {

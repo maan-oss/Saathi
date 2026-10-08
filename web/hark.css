@@ -244,3 +244,23 @@ input:focus,input:focus-visible,select:focus,select:focus-visible,textarea:focus
 textarea.field-i,:root[data-style] textarea.field-i{border-radius:20px!important;padding:14px 18px;min-height:96px;line-height:1.5;display:block;width:100%;box-sizing:border-box;resize:none;overflow:auto;-webkit-appearance:none;appearance:none}
 .search-w input,.search-w input:focus{outline:none;box-shadow:none}
 html body #screen textarea.field-i,html body textarea.field-i{border-radius:20px!important}
+
+/* ---- desktop sign-in layout, like Hark's: a rounded frosted panel on the left, the words and buttons on the right ---- */
+.ob-copy{display:contents}
+@media (min-width:960px){
+  #onboard.onboard{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;overflow-y:auto}
+  :root #onboard.onboard .ob-bar{grid-column:1 / -1;grid-row:1;max-width:none;width:100%;margin:0;padding:22px 40px 0}
+  #onboard.onboard .ob-stage{grid-column:1 / -1;grid-row:2;flex:none;min-height:0;max-width:none;width:100%;margin:0;padding:16px 40px 8px;overflow:visible;display:flex;align-items:center;touch-action:auto}
+  #onboard .ob-slide{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:center;width:100%;margin:0;padding:0;text-align:center}
+  #onboard .ob-slide.from-r{animation:obr .5s var(--out) both}
+  #onboard .ob-slide.from-l{animation:obl .5s var(--out) both}
+  :root #onboard.onboard .ob-slide .ob-art{grid-column:1;width:auto;max-width:none;margin:0;min-height:min(560px,64vh);display:grid;place-items:center;padding:32px;border-radius:32px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);box-shadow:0 30px 70px rgba(6,14,36,.28);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+  #onboard .ob-art svg{width:min(100%,380px);height:auto}
+  #onboard .ob-copy{display:flex;flex-direction:column;align-items:center;gap:14px;grid-column:2;justify-self:center;width:100%;max-width:400px}
+  #onboard .ob-copy h1{margin:0;font-size:clamp(40px,4vw,54px);text-align:center}
+  #onboard .ob-copy .ob-p{text-align:center}
+  #onboard .ob-copy .ob-langs2{width:100%}
+  #onboard .ob-copy .ob-form{width:100%;text-align:left}
+  #onboard.onboard .ob-foot{grid-column:2;grid-row:3;justify-self:stretch;width:auto;max-width:none;margin:0;padding:8px 40px 30px;align-items:center}
+  #onboard.onboard .ob-foot>*{width:100%;max-width:400px;margin:0 auto}
+}
