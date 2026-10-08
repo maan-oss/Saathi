@@ -1,0 +1,113 @@
+/* The welcome: a first visit gets these five steps before the home screen. One stylesheet for all of it.
+   Only transform and opacity animate. No blur, no backdrop filters. */
+
+body.ob-open{overflow:hidden}
+body.ob-open .app{visibility:hidden}
+
+#onboard{position:fixed;inset:0;z-index:50;display:flex;justify-content:center;overflow:hidden;color:var(--onsky,#fff);background:linear-gradient(180deg,var(--sk-a,#5b8cc6) 0%,var(--sk-b,#a9d0ef) 55%,var(--sk-c,#d3dcdc) 100%);opacity:0;transition:opacity .4s ease}
+#onboard[hidden]{display:none}
+#onboard.on{opacity:1}
+#onboard::before{content:"";position:absolute;top:-24vh;right:-34vw;width:92vw;height:92vw;max-width:640px;max-height:640px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.36),rgba(255,255,255,0));pointer-events:none}
+
+.wl{position:relative;width:100%;max-width:460px;height:100%;box-sizing:border-box;display:flex;flex-direction:column;padding:max(14px,env(safe-area-inset-top)) 22px max(18px,env(safe-area-inset-bottom))}
+@media (min-width:700px){.wl{padding-top:36px}}
+
+/* top: back, five-part progress */
+.wl-top{flex:none;display:flex;align-items:center;gap:14px;height:46px}
+.wl-back{flex:none;width:44px;height:44px;border:0;border-radius:50%;padding:0;display:grid;place-items:center;background:rgba(255,255,255,.24);color:#fff;cursor:pointer;transition:transform .18s ease,opacity .2s ease}
+.wl-back:active{transform:scale(.92)}
+.wl-back.off{visibility:hidden}
+.wl-prog{flex:1;min-width:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.wl-prog i{height:5px;border-radius:99px;background:rgba(255,255,255,.34);transition:background .3s ease}
+.wl-prog i.done,.wl-prog i.on{background:#fff}
+
+/* the stage holds one step at a time */
+/* the stage scrolls, which also clips anything past its edge, so it reaches past the gutter by the width of the shadows */
+.wl-stage{flex:1;min-height:0;display:flex;flex-direction:column;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;margin:0 -24px;padding:0 24px}
+.wl-stage::-webkit-scrollbar{display:none}
+.wl-page{margin:auto 0;padding:22px 0 14px;display:flex;flex-direction:column;gap:12px;animation:wlR .46s cubic-bezier(.2,.8,.2,1) both}
+.wl-page.wl-in-l{animation-name:wlL}
+@keyframes wlR{from{opacity:0;transform:translate3d(26px,0,0)}to{opacity:1;transform:none}}
+@keyframes wlL{from{opacity:0;transform:translate3d(-26px,0,0)}to{opacity:1;transform:none}}
+@keyframes wlRise{from{opacity:0;transform:translate3d(0,12px,0)}to{opacity:1;transform:none}}
+@keyframes wlPop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
+@keyframes wlDraw{to{stroke-dashoffset:0}}
+
+.wl-eye{margin:0;font-size:12.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#fff;opacity:.86}
+.wl h1{margin:0;font-family:var(--serif);font-weight:700;font-size:clamp(30px,8.4vw,38px);line-height:1.08;letter-spacing:-.03em;text-wrap:balance;color:#fff;outline:none}
+:lang(hi) .wl h1{letter-spacing:0}
+.wl-sub{margin:0;font-size:16.5px;line-height:1.5;color:#fff;opacity:.92;max-width:36ch;text-wrap:pretty}
+@media (min-width:700px){.wl h1{font-size:44px}}
+
+/* step 1: welcome and language */
+.wl-mark{width:86px;height:86px;margin:2px 0 4px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 16px 40px rgba(10,30,70,.24);animation:wlPop .6s cubic-bezier(.2,.9,.3,1.2) both}
+.wl-mark img{display:block;width:46px;height:46px}
+.wl-pills{display:flex;flex-wrap:wrap;gap:8px}
+.wl-pills span{padding:7px 12px;border-radius:99px;background:rgba(255,255,255,.22);font-size:13px;font-weight:500;color:#fff}
+.wl-langs{display:flex;flex-direction:column;gap:10px;min-height:0}
+.wl-langs .langs{max-height:min(40vh,380px);overflow-y:auto;overscroll-behavior:contain;margin-top:0}
+
+/* the language list takes the height the page has left, and scrolls inside itself when it is short */
+.wl-page.wl-welcome{flex:1 1 auto;min-height:0;margin:0;padding-top:10px}
+.wl-page.wl-welcome > :not(.wl-langs){flex-shrink:0}
+.wl-page.wl-welcome .wl-langs{flex:1 1 auto;min-height:0}
+.wl-page.wl-welcome .wl-langs .langs{flex:1 1 auto;min-height:140px;max-height:min(46vh,440px)}
+
+/* step 2: about you */
+.wl-form{display:flex;flex-direction:column;gap:14px;margin-top:4px}
+.wl-field{display:flex;flex-direction:column;gap:7px;min-width:0;margin:0}
+.wl-lbl{padding-left:4px;font-size:14px;font-weight:600;color:#fff}
+.wl-in{width:100%;height:54px;box-sizing:border-box;border:0;border-radius:18px;padding:0 18px;font:inherit;font-size:17px;color:#1d1d1f;background:#fff;outline:none;box-shadow:0 8px 22px rgba(10,30,70,.14);-webkit-appearance:none;appearance:none}
+.wl-in::placeholder{color:#8a919c}
+.wl-in:focus{box-shadow:0 0 0 4px rgba(255,255,255,.55),0 8px 22px rgba(10,30,70,.14)}
+.wl-hint-small{margin:0;padding-left:4px;min-height:1.2em;font-size:13px;color:#fff;opacity:.92}
+.wl-chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.wl-chips button{height:52px;border:0;border-radius:18px;background:rgba(255,255,255,.24);color:#fff;font:inherit;font-size:16px;font-weight:600;cursor:pointer;transition:background .2s ease,color .2s ease,transform .15s ease}
+.wl-chips button:active{transform:scale(.97)}
+.wl-chips button[aria-pressed=true]{background:#fff;color:#1d1d1f;box-shadow:0 8px 20px rgba(10,30,70,.16)}
+.wl-dd .dd-btn{height:54px;border:0;border-radius:18px;background:#fff;color:#1d1d1f;font:inherit;font-size:17px;box-shadow:0 8px 22px rgba(10,30,70,.14)}
+.wl-err{margin:0;padding:10px 14px;border-radius:14px;background:rgba(150,24,36,.5);color:#fff;font-size:14px;font-weight:600}
+.wl-err[hidden]{display:none}
+
+/* step 3: what Saathi helps with */
+.wl-svc{list-style:none;margin:4px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.wl-svc li,.wl-points li{display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:22px;background:rgba(255,255,255,.2);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);animation:wlRise .5s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * 70ms)}
+.wl-svc b,.wl-points b{display:block;font-size:15.5px;font-weight:600;line-height:1.25;color:#fff}
+.wl-svc span:not(.wl-ic),.wl-points p{margin:0;font-size:13.5px;line-height:1.4;color:#fff;opacity:.92}
+.wl-ic{flex:none;width:42px;height:42px;border-radius:50%;background:#fff;color:#1d1d1f;display:grid;place-items:center}
+
+/* step 4: the promises */
+.wl-points{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.wl-points li{flex-direction:row;align-items:flex-start;gap:14px}
+.wl-points div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.wl-points b{font-size:16px}
+.wl-points p{font-size:14.5px}
+.wl-link{align-self:center;margin:0;padding:6px 8px;border:0;background:none;color:#fff;font:inherit;font-size:14px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+
+/* step 5: done */
+.wl-tick{display:block;width:96px;height:96px;margin:4px 0 2px}
+.wl-tick circle{fill:#fff;transform-box:fill-box;transform-origin:50% 50%;animation:wlPop .5s cubic-bezier(.2,.9,.3,1.2) both}
+.wl-tick path{fill:none;stroke:#1d1d1f;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:50;stroke-dashoffset:50;animation:wlDraw .5s .3s ease forwards}
+
+/* foot: one Continue. Disabled until the step is complete, with a line saying what is missing */
+.wl-foot{flex:none;display:flex;flex-direction:column;gap:10px;padding-top:12px}
+.wl-hint{min-height:1.3em;margin:0;text-align:center;font-size:14px;color:#fff;opacity:.95}
+.wl-next{width:100%;height:58px;border:0;border-radius:999px;background:#fff;color:#1d1d1f;font:inherit;font-size:17px;font-weight:650;cursor:pointer;box-shadow:0 14px 34px rgba(10,30,70,.24);transition:transform .16s ease,opacity .2s ease,box-shadow .2s ease}
+.wl-next:not(:disabled):active{transform:scale(.98)}
+.wl-next:disabled{opacity:.42;cursor:not-allowed;box-shadow:none}
+.wl-back:focus-visible,.wl-chips button:focus-visible,.wl-link:focus-visible,.wl-next:focus-visible{outline:3px solid rgba(255,255,255,.9);outline-offset:3px}
+
+/* shorter screens (laptops, small phones): tighter rhythm, so each step fits without scrolling */
+@media (max-height:860px){
+  .wl-page{padding:10px 0 8px;gap:10px}
+  .wl-form{gap:10px}
+  .wl-mark{width:64px;height:64px;margin:0}
+  .wl-mark img{width:36px;height:36px}
+  .wl-langs .langs{max-height:min(32vh,280px)}
+}
+@media (min-width:700px) and (max-height:860px){.wl{padding-top:20px}.wl h1{font-size:38px}}
+
+@media (prefers-reduced-motion:reduce){
+  .wl-page,.wl-mark,.wl-svc li,.wl-points li,.wl-tick circle{animation:none!important}
+  .wl-tick path{animation:none!important;stroke-dashoffset:0}
+}

@@ -43,6 +43,7 @@ const STATIC = {
   '/hark.css': ['hark.css', 'text/css; charset=utf-8'],
   '/guides.css': ['guides.css', 'text/css; charset=utf-8'],
   '/polish.css': ['polish.css', 'text/css; charset=utf-8'],
+  '/welcome.css': ['welcome.css', 'text/css; charset=utf-8'],
   '/screens.css': ['screens.css', 'text/css; charset=utf-8'],
   '/style.css': ['style.css', 'text/css; charset=utf-8'],
   '/manifest.webmanifest': ['manifest.webmanifest', 'application/manifest+json'],

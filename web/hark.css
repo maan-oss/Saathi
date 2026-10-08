@@ -2,8 +2,6 @@
 .hk-legacy{display:none!important}
 /* Until hark.js has built the Sky shell (it sets data-hk on #app), the old static markup stays hidden: no Classic flash on open or reload. */
 #app:not([data-hk]){visibility:hidden}
-/* A first visit: the welcome opens before the home shell, so the shell stays hidden until the welcome is done. */
-body.ob-open .app{visibility:hidden}
 :root{--hk-ink:#1d1d1f;--hk-mut:#5d6675;--hk-card:rgba(238,244,251,.86);--hk-tile:rgba(255,255,255,.78);--hk-ease:cubic-bezier(.22,.9,.28,1)}
 .hk-top{display:flex!important;align-items:center;gap:10px;justify-content:space-between;max-width:640px;width:100%;margin:0 auto;padding:max(12px,env(safe-area-inset-top)) 14px 8px!important;background:transparent!important;border:0!important;position:relative;z-index:3}
 .hk-round,.hk-av{flex:none;width:46px;height:46px;border-radius:50%!important;display:grid;place-items:center;padding:0;border:0;cursor:pointer;transition:transform .18s var(--hk-ease),background .2s}
@@ -252,25 +250,6 @@ textarea.field-i,:root[data-style] textarea.field-i{border-radius:20px!important
 .search-w input,.search-w input:focus{outline:none;box-shadow:none}
 html body #screen textarea.field-i,html body textarea.field-i{border-radius:20px!important}
 
-/* ---- desktop sign-in layout, like Hark's: a rounded frosted panel on the left, the words and buttons on the right ---- */
-.ob-copy{display:contents}
-@media (min-width:960px){
-  #onboard.onboard{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;overflow-y:auto}
-  :root #onboard.onboard .ob-bar{grid-column:1 / -1;grid-row:1;max-width:none;width:100%;margin:0;padding:22px 40px 0}
-  #onboard.onboard .ob-stage{grid-column:1 / -1;grid-row:2;flex:none;min-height:0;max-width:none;width:100%;margin:0;padding:16px 40px 8px;overflow:visible;display:flex;align-items:center;touch-action:auto}
-  #onboard .ob-slide{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:center;width:100%;margin:0;padding:0;text-align:center}
-  #onboard .ob-slide.from-r{animation:obr .5s var(--out) both}
-  #onboard .ob-slide.from-l{animation:obl .5s var(--out) both}
-  :root #onboard.onboard .ob-slide .ob-art{grid-column:1;width:auto;max-width:none;margin:0;min-height:min(560px,64vh);display:grid;place-items:center;padding:32px;border-radius:32px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);box-shadow:0 30px 70px rgba(6,14,36,.28);}
-  #onboard .ob-art svg{width:min(100%,380px);height:auto}
-  #onboard .ob-copy{display:flex;flex-direction:column;align-items:center;gap:14px;grid-column:2;justify-self:center;width:100%;max-width:400px}
-  #onboard .ob-copy h1{margin:0;font-size:clamp(40px,4vw,54px);text-align:center}
-  #onboard .ob-copy .ob-p{text-align:center}
-  #onboard .ob-copy .ob-langs2{width:100%}
-  #onboard .ob-copy .ob-form{width:100%;text-align:left}
-  #onboard.onboard .ob-foot{grid-column:2;grid-row:3;justify-self:stretch;width:auto;max-width:none;margin:0;padding:8px 40px 30px;align-items:center}
-  #onboard.onboard .ob-foot>*{width:100%;max-width:400px;margin:0 auto}
-}
 
 /* ---- the other pages match the shell: white pill buttons, round back button, the same title weight ---- */
 :root[data-style="sky"] .btn.pri,:root[data-style="sky"] .btn.xl,:root[data-style="sky"] .lk-acts .btn.pri,:root[data-style="sky"] .rm-acts .btn.pri{background:#fff!important;border-color:#fff!important;color:var(--hk-ink)!important;box-shadow:0 8px 24px rgba(10,30,70,.22)!important}
@@ -307,7 +286,3 @@ input:focus,input:focus-visible,textarea:focus,textarea:focus-visible,select:foc
 .grp-box.invite{padding:16px 18px}
 .invite-link{margin:10px 0 12px;font-size:14px;word-break:break-all;color:var(--ink)}
 
-/* ---- one motion per open (the welcome, the screens, the tabs) ----
-   The welcome overlay only fades. Each welcome step slides in once; the things on that step stay still. */
-#onboard.onboard{transform:none!important;transition:opacity .35s ease!important}
-#onboard .ob-slide>*{animation:none!important}

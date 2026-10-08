@@ -850,6 +850,7 @@
     try { cfg = (await api('/app/api/config')).j || {}; } catch { /* offline */ }
     pricesNow = cfg.prices || null;
     core.cfg = cfg;
+    core.welcomeLangs?.();   // the welcome's language list fills in once the config is here
     core.rebuild?.();
     if (SR || (cfg.voice && window.MediaRecorder && navigator.mediaDevices?.getUserMedia)) micBtn.hidden = false;
     document.addEventListener('visibilitychange', async () => {
@@ -1025,7 +1026,7 @@
     const done = () => { d._anim = null; d.style.overflow = ''; d.classList.remove('opening', 'closing'); if (!opening) d.open = false; };
     a.onfinish = done; a.oncancel = () => { d.style.overflow = ''; };
   });
-  const SEL = '.ob-langs2 .langs, .ob-stage, .sb-scroll, #chat, .screen';
+  const SEL = '.wl-langs .langs, .wl-stage, .sb-scroll, #chat, .screen';
   const upd = (n) => { const t = n.scrollTop > 6, b = n.scrollHeight - n.clientHeight - n.scrollTop > 6; n.style.setProperty('--ft', t ? '26px' : '0px'); n.style.setProperty('--fb', b ? '26px' : '0px'); n.classList.add('fadey'); };
   const all = () => document.querySelectorAll(SEL).forEach(upd);
   document.addEventListener('scroll', (e) => { const n = e.target; if (n && n.matches && n.matches(SEL)) upd(n); }, true);

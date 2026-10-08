@@ -510,7 +510,7 @@ body{font-family:var(--sans)}
 :root{--green:#1F1E1D;--green-ink:#1F1E1D;--on-green:#FAF9F5;--logofilter:none}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--green:#F0EEE6;--green-ink:#F0EEE6;--on-green:#262624;--logofilter:invert(1)}}
 :root[data-theme="dark"]{--green:#F0EEE6;--green-ink:#F0EEE6;--on-green:#262624;--logofilter:invert(1)}
-.brand img,.ob-logo{filter:var(--logofilter)}
+.brand img{filter:var(--logofilter)}
 a.link.ok,.link-btn{color:var(--ink);text-decoration-color:color-mix(in srgb,var(--ink) 40%,transparent)}
 .badge.ok{background:var(--bg2);color:var(--ink)}
 .facts svg,.toast svg{color:var(--ink)}
@@ -535,32 +535,6 @@ a.link.ok,.link-btn{color:var(--ink);text-decoration-color:color-mix(in srgb,var
 .jump{position:fixed;left:50%;bottom:calc(118px + env(safe-area-inset-bottom));margin-left:-20px;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--ink);display:grid;place-items:center;box-shadow:0 8px 26px rgba(31,30,29,.16);z-index:6;animation:sendin .3s var(--out)}
 .jump:hover{background:var(--bg2)}
 
-/* onboarding */
-body.ob-open{overflow:hidden}
-.onboard{position:fixed;inset:0;z-index:40;background:var(--bg);overflow-y:auto;overscroll-behavior:contain;opacity:0;transform:scale(1.015);pointer-events:none;transition:opacity .45s var(--out),transform .6s var(--out)}
-.onboard.on{opacity:1;transform:none;pointer-events:auto}
-.ob-in{max-width:460px;margin:0 auto;padding:max(48px,env(safe-area-inset-top)) 22px calc(32px + env(safe-area-inset-bottom));min-height:100%;display:flex;flex-direction:column}
-.ob-in>*{animation:in .8s var(--out) both}
-.ob-in>*:nth-child(2){animation-delay:.06s}.ob-in>*:nth-child(3){animation-delay:.12s}.ob-in>*:nth-child(4){animation-delay:.18s}.ob-in>*:nth-child(5){animation-delay:.26s}.ob-in>*:nth-child(6){animation-delay:.32s}.ob-in>*:nth-child(7){animation-delay:.38s}
-.ob-logo{display:block;margin-bottom:34px}
-.onboard h1{font:400 clamp(38px,10vw,52px)/1.04 var(--serif);letter-spacing:-.03em;margin:0 0 16px;font-variation-settings:"opsz" 80;text-wrap:balance}
-.ob-lede{color:var(--mut);font-size:17.5px;line-height:1.55;margin:0 0 28px}
-.ob-list{list-style:none;margin:0 0 34px;padding:0;display:flex;flex-direction:column;gap:16px}
-.ob-list li{display:flex;gap:14px;align-items:flex-start;font-size:15.5px;line-height:1.45}
-.ob-ic{flex:none;width:38px;height:38px;border-radius:12px;border:1px solid var(--line);display:grid;place-items:center;color:var(--ink)}
-.ob-list b{font-weight:600}
-.ob-label{font:500 12.5px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:auto 0 12px;padding-top:6px}
-.ob-langs{display:flex;flex-direction:column;gap:10px}
-.ob-lang{display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;text-align:left;padding:15px 18px;border:1px solid var(--line);border-radius:14px;background:transparent;position:relative;transition:background .2s,border-color .2s,transform .2s var(--out),color .2s}
-.ob-lang b{font:500 19px/1.2 var(--serif)}
-.ob-lang small{font-size:13.5px;color:var(--mut);transition:color .2s}
-.ob-lang::after{content:"";position:absolute;right:18px;top:50%;width:9px;height:9px;margin-top:-5px;border-top:2px solid currentColor;border-right:2px solid currentColor;transform:rotate(45deg);opacity:.35;transition:transform .25s var(--out),opacity .2s}
-.ob-lang:hover{background:var(--bg2);border-color:var(--mut)}
-.ob-lang:hover::after{transform:translateX(3px) rotate(45deg);opacity:.9}
-.ob-lang.chosen{background:var(--ink);border-color:var(--ink);color:var(--bg)}
-.ob-lang.chosen small{color:color-mix(in srgb,var(--bg) 70%,transparent)}
-.ob-fine{margin:22px 0 0;text-align:center;font-size:13px;color:var(--mut)}
-.ob-fine a{color:var(--ink)}
 
 /* wallet sheet */
 .wal-hero{padding:14px 0 6px!important;border:0!important}
@@ -616,21 +590,6 @@ body .msg.me .bubble-me a{color:inherit}
 .trust{margin-top:8px}
 .brand img{filter:var(--logofilter)}
 .drawer-head img{filter:var(--logofilter)}
-/* onboarding: one calm screen */
-.ob-in{max-width:460px;min-height:100%;margin:0 auto;padding:max(56px,env(safe-area-inset-top)) 24px max(28px,env(safe-area-inset-bottom));display:flex;flex-direction:column;justify-content:space-between;gap:36px}
-.ob-top{margin-top:8vh}
-.ob-logo{display:block;margin:0 0 30px}
-.onboard h1{font:400 clamp(38px,11vw,54px)/1.03 var(--serif);letter-spacing:-.03em;margin:0 0 18px}
-.ob-lede{color:var(--mut);font-size:17.5px;line-height:1.55;margin:0}
-.ob-bottom{display:flex;flex-direction:column}
-.ob-label{margin:0 0 12px}
-.ob-langs{flex-direction:row;gap:10px}
-.ob-lang{flex:1;align-items:center;justify-content:center;padding:0;height:56px;border-radius:16px;text-align:center}
-.ob-lang::after{display:none}
-.ob-lang b{font:500 18px/1 var(--sans)}
-.ob-lang[data-lang="2"] b{font-size:19px}
-.ob-lang:hover,.ob-lang:focus-visible{background:var(--ink);border-color:var(--ink);color:var(--bg)}
-.ob-lang:active{transform:scale(.97)}
 
 /* info pack */
 .pack .pk-h{padding:12px 16px 4px;font:600 12px/1 var(--sans);letter-spacing:.09em;text-transform:uppercase;color:var(--mut)}

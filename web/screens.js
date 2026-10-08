@@ -773,90 +773,187 @@
     });
   }
 
-  // ---- onboarding ---------------------------------------------------------------------------------
-  const ART = {
-    chat: '<svg viewBox="0 0 240 200" aria-hidden="true"><circle cx="120" cy="100" r="88" class="a-bg"/><rect x="40" y="52" width="112" height="52" rx="18" class="a-line"/><path d="M62 104v18l20-18" class="a-line"/><path d="M60 72h56M60 86h36" class="a-ln2"/><rect x="100" y="112" width="100" height="44" rx="18" class="a-fill"/><path d="M178 156v16l-18-16" class="a-fill"/><path d="M128 134l10 10 22-22" class="a-tick"/></svg>',
-    scan: '<svg viewBox="0 0 240 200" aria-hidden="true"><circle cx="120" cy="100" r="88" class="a-bg"/><rect x="62" y="62" width="116" height="76" rx="12" class="a-line"/><circle cx="92" cy="92" r="11" class="a-ln2"/><path d="M78 122c2-10 26-10 28 0M120 84h42M120 100h42M120 116h26" class="a-ln2"/><path d="M50 78V62a12 12 0 0112-12h16M162 50h16a12 12 0 0112 12v16M190 122v16a12 12 0 01-12 12h-16M78 150H62a12 12 0 01-12-12v-16" class="a-brk"/><circle cx="178" cy="142" r="20" class="a-fill"/><path d="M169 142l6 6 12-13" class="a-tick"/></svg>',
-    lock: '<svg viewBox="0 0 240 200" aria-hidden="true"><circle cx="120" cy="100" r="88" class="a-bg"/><path d="M120 40l52 20v36c0 34-22 56-52 66-30-10-52-32-52-66V60z" class="a-line"/><rect x="98" y="92" width="44" height="34" rx="8" class="a-fill"/><path d="M106 92V82a14 14 0 0128 0v10" class="a-brk"/><circle cx="120" cy="109" r="5" class="a-dot"/></svg>',
-    me: '<svg viewBox="0 0 240 200" aria-hidden="true"><circle cx="120" cy="100" r="88" class="a-bg"/><rect x="52" y="56" width="136" height="88" rx="14" class="a-line"/><circle cx="90" cy="90" r="12" class="a-fill"/><path d="M70 128c2-12 30-12 34 0" class="a-ln2"/><path d="M124 82h44M124 98h44M124 114h28" class="a-ln2"/><circle cx="176" cy="140" r="20" class="a-fill"/><path d="M167 140l6 6 12-13" class="a-tick"/></svg>',
-    lang: '<svg viewBox="0 0 240 200" aria-hidden="true"><circle cx="120" cy="100" r="88" class="a-bg"/><rect x="52" y="56" width="82" height="60" rx="16" class="a-line"/><path d="M72 116v16l18-16" class="a-line"/><text x="93" y="98" text-anchor="middle" class="a-tx">A</text><rect x="106" y="90" width="82" height="60" rx="16" class="a-fill"/><path d="M168 150v16l-18-16" class="a-fill"/><text x="147" y="132" text-anchor="middle" class="a-tx2">अ</text></svg>',
-  };
-  const STEPS = [
-    { art: 'chat', title: N('Ask in your own words'), text: N('Type or speak, in your language. Saathi explains PAN, Aadhaar, driving licence, passport and more, one simple step at a time.') },
-    { art: 'scan', title: N('Check documents before you apply'), text: N('Snap a photo or upload a PDF. Saathi spots blur, glare and mistakes, and gets your details ready to copy.') },
-    { art: 'lock', title: N('Private, and never asks for your OTP'), text: N('No sign-up. Your locker is encrypted and hidden until you unlock it. You always finish on the official website.') },
+  // ---- welcome: five short steps. Continue stays off until the step is complete ---------------------
+  // Only the About step asks for anything. Its fields are all needed, so there is no Skip.
+  const OB_TOTAL = 5;
+  const OB_SERVICES = [
+    ['card', N('PAN card'), N('Apply, or fix a wrong name or date')],
+    ['id', N('Aadhaar'), N('Update your address and details')],
+    ['car', N('Driving licence'), N('Learner licence and renewal')],
+    ['passport', N('Passport'), N('New application or renewal')],
+    ['vote', N('Voter ID'), N('Correct your details')],
+    ['gst', N('GST registration'), N('Register your business')],
   ];
+  const ageOf = (iso) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso); if (!m) return null; const b = new Date(+m[1], +m[2] - 1, +m[3]); if (b > new Date()) return null; const n = new Date(); let a = n.getFullYear() - b.getFullYear(); if (n < new Date(n.getFullYear(), b.getMonth(), b.getDate())) a--; return a >= 0 && a < 121 ? a : null; };
+  const field = (text, control, extra, asLabel = true) => { const w = el(asLabel ? 'label' : 'div', 'wl-field'); w.append(el('span', 'wl-lbl', text), control); if (extra) w.append(extra); return w; };
+
   C.onboarding = () => {
-    const ob = $('onboard'); ob.replaceChildren(); ob.hidden = false; document.body.classList.add('ob-open');
+    const ob = $('onboard');
+    ob.replaceChildren(); ob.hidden = false; document.body.classList.add('ob-open');
     requestAnimationFrame(() => ob.classList.add('on'));
-    // order: language, then three slides
-    const total = STEPS.length + 2; let step = 0; let dir = 1; let busy = false;
-    let langObj = langList().find((l) => l.code === C.uiLang()) || { code: 'en', native: 'English', en: 'English' };
-    const top = el('div', 'ob-bar'); const backB = el('button', 'icon-btn ob-back'); backB.type = 'button'; backB.append(ico('back', 22));
-    const dots = el('div', 'ob-dots'); for (let i = 0; i < total; i++) dots.append(el('i'));
-    const skip = btn('link-btn ob-skip', '', () => go(step === 1 ? 2 : total - 1));
-    top.append(backB, dots, skip);
-    const stage = el('div', 'ob-stage');
-    const foot = el('div', 'ob-foot'); const next = btn('btn pri xl', '');
-    const fine = el('p', 'ob-fine'); const pl = el('a', ''); pl.href = '#privacy'; pl.onclick = (e) => { e.preventDefault(); C.showPrivacy(); }; const fineT = el('span');
-    fine.append(fineT, ' ', pl);
-    foot.append(next, fine);
-    ob.append(top, stage, foot);
-    const slide = (s) => { const d = el('div', 'ob-slide'); const a = el('div', 'ob-art'); a.innerHTML = ART[s.art]; const copy = el('div', 'ob-copy'); d.append(a, copy); copy.append(el('h1', '', T(s.title)), el('p', 'ob-p', T(s.text))); return d; };
+
+    let step = 0; let busy = false; let langHolder = null; let aboutErr = null;
+    let lang = langList().find((l) => l.code === C.uiLang()) || { code: C.uiLang(), native: C.uiLang(), en: C.uiLang() };
+    const about = { name: '', dob: '', gender: '', state: '' };
+    const todayISO = new Date().toISOString().slice(0, 10);
+    const aboutReady = () => about.name.trim().length >= 2 && ageOf(about.dob) !== null && !!about.gender && about.state.trim().length >= 2;
+
+    // ---- chrome: back, five-part progress, one Continue -------------------------------------------
+    const back = btn('wl-back', ''); back.setAttribute('aria-label', T('Back')); back.append(ico('back', 22));
+    const prog = el('div', 'wl-prog'); prog.setAttribute('role', 'progressbar'); prog.setAttribute('aria-valuemin', '1'); prog.setAttribute('aria-valuemax', String(OB_TOTAL));
+    for (let i = 0; i < OB_TOTAL; i++) prog.append(el('i'));
+    const top = el('header', 'wl-top'); top.append(back, prog);
+    const stage = el('main', 'wl-stage');
+    const hint = el('p', 'wl-hint'); hint.setAttribute('aria-live', 'polite');
+    const next = btn('wl-next', '');
+    const foot = el('footer', 'wl-foot'); foot.append(hint, next);
+    const wrap = el('div', 'wl'); wrap.append(top, stage, foot);
+    ob.append(wrap);
+
+    // Continue is off until the step is complete; on About it also says what is still missing.
+    function sync() {
+      const onAbout = step === 1;
+      const ok = !onAbout || aboutReady();
+      next.disabled = busy || !ok;
+      next.setAttribute('aria-disabled', String(next.disabled));
+      if (onAbout && !ok && !busy) {
+        const missing = [];
+        if (about.name.trim().length < 2) missing.push(T('your name'));
+        if (ageOf(about.dob) === null) missing.push(T('date of birth'));
+        if (!about.gender) missing.push(T('gender'));
+        if (about.state.trim().length < 2) missing.push(T('state'));
+        hint.textContent = T('Still to add: {items}', { items: missing.join(', ') });
+      } else hint.textContent = '';
+    }
+    function label() {
+      next.textContent = step === 0 ? (lang.code === 'en' ? T('Continue in {lang}', { lang: lang.en }) : T('Continue')) : step === OB_TOTAL - 1 ? T('Start using Saathi') : T('Continue');
+    }
+    const pickLang = (l) => { lang = l; label(); };
+
+    // ---- the five steps ------------------------------------------------------------------------------
+    const views = [
+      () => { // 1: welcome and language
+        const page = el('section', 'wl-page wl-welcome');
+        const mark = el('div', 'wl-mark'); const logo = el('img'); logo.src = '/logo.svg'; logo.alt = ''; mark.append(logo);
+        const h = el('h1', '', T('Welcome to Saathi')); h.tabIndex = -1;
+        const p = el('p', 'wl-sub', T('Your helper for government paperwork, step by step. First, pick the language you want to read in.'));
+        const pills = el('div', 'wl-pills');
+        for (const t of [T('Free to start'), T('No sign-up'), T('Never asks for your OTP')]) pills.append(el('span', '', t));
+        langHolder = el('div', 'wl-langs');
+        langPicker(langHolder, { current: lang.code, onPick: pickLang });
+        page.append(mark, h, p, pills, langHolder);
+        return page;
+      },
+      () => { // 2: about you (all four needed)
+        const page = el('section', 'wl-page');
+        const eyebrow = el('p', 'wl-eye', T('Step {n} of {total}', { n: 2, total: OB_TOTAL }));
+        const h = el('h1', '', T('Tell us about you')); h.tabIndex = -1;
+        const p = el('p', 'wl-sub', T('Saathi fills your forms from these, so you never type them twice. Stored encrypted, and only you can see it.'));
+        const form = el('div', 'wl-form');
+
+        const nm = el('input', 'wl-in'); nm.type = 'text'; nm.autocomplete = 'name'; nm.maxLength = 80; nm.placeholder = T('As on your Aadhaar'); nm.value = about.name;
+        nm.addEventListener('input', () => { about.name = nm.value; sync(); });
+
+        const dob = el('input', 'wl-in'); dob.type = 'date'; dob.max = todayISO; dob.value = about.dob; dob.autocomplete = 'bday';
+        const age = el('small', 'wl-hint-small');
+        const showAge = () => { const n = ageOf(dob.value); age.textContent = n === null ? '' : T('Age: {n}', { n }); };
+        const onDob = () => { about.dob = dob.value; showAge(); sync(); };
+        dob.addEventListener('input', onDob); dob.addEventListener('change', onDob); showAge();
+
+        const chips = el('div', 'wl-chips'); chips.setAttribute('role', 'group'); chips.setAttribute('aria-label', T('Gender'));
+        for (const [v, text] of [['male', T('Male')], ['female', T('Female')], ['other', T('Other')]]) {
+          const b = btn('', text); b.setAttribute('aria-pressed', String(about.gender === v));
+          b.onclick = () => { about.gender = v; for (const c of chips.children) c.setAttribute('aria-pressed', String(c === b)); sync(); };
+          chips.append(b);
+        }
+
+        const dd = C.dropdown({ label: T('State'), search: true, placeholder: T('Your state'), options: STATE_LIST.map((n) => [n, n]), value: about.state || '', onChange: (v) => { about.state = v; sync(); } });
+        dd.classList.add('wl-dd');
+
+        aboutErr = el('p', 'wl-err'); aboutErr.setAttribute('role', 'alert'); aboutErr.hidden = true;
+        form.append(
+          field(T('Full name'), nm),
+          field(T('Date of birth'), dob, age),
+          field(T('Gender'), chips, null, false),
+          field(T('State'), dd, null, false),
+          aboutErr,
+        );
+        // Enter moves on, but only when every field is filled
+        form.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.tagName === 'INPUT' && aboutReady() && !busy) { e.preventDefault(); next.click(); } });
+        page.append(eyebrow, h, p, form);
+        return page;
+      },
+      () => { // 3: what Saathi helps with
+        const page = el('section', 'wl-page');
+        const h = el('h1', '', T('Paperwork, one step at a time')); h.tabIndex = -1;
+        const p = el('p', 'wl-sub', T('For each one, Saathi lists the documents to keep ready, the fee and the official link. Start from Home, any time.'));
+        const ul = el('ul', 'wl-svc');
+        OB_SERVICES.forEach(([icon, name, desc], i) => {
+          const li = el('li'); li.style.setProperty('--i', i);
+          const badge = el('span', 'wl-ic'); badge.append(ico(icon, 22));
+          li.append(badge, el('b', '', T(name)), el('span', '', T(desc)));
+          ul.append(li);
+        });
+        page.append(el('p', 'wl-eye', T('Step {n} of {total}', { n: 3, total: OB_TOTAL })), h, p, ul);
+        return page;
+      },
+      () => { // 4: what stays in your hands
+        const page = el('section', 'wl-page');
+        const h = el('h1', '', T('You stay in control')); h.tabIndex = -1;
+        const p = el('p', 'wl-sub', T('Saathi never does the sensitive steps for you.'));
+        const ul = el('ul', 'wl-points');
+        const rows = [
+          ['lock', T('Your locker is private'), T('ID numbers and dates stay hidden until you unlock them.')],
+          ['shield', T('Never your OTP'), T('Saathi never asks for an OTP, PIN or card number.')],
+          ['ext', T('You finish on the official site'), T('Saathi shows each step and the official link. You press the final button yourself.')],
+        ];
+        rows.forEach(([icon, title, text], i) => {
+          const li = el('li'); li.style.setProperty('--i', i);
+          const badge = el('span', 'wl-ic'); badge.append(ico(icon, 22));
+          const d = el('div'); d.append(el('b', '', title), el('p', '', text));
+          li.append(badge, d);
+          ul.append(li);
+        });
+        const privacy = btn('wl-link', T('How your data is handled'), () => C.showPrivacy());
+        page.append(el('p', 'wl-eye', T('Step {n} of {total}', { n: 4, total: OB_TOTAL })), h, p, ul, privacy);
+        return page;
+      },
+      () => { // 5: ready
+        const page = el('section', 'wl-page');
+        const tickHost = el('div'); tickHost.innerHTML = '<svg class="wl-tick" viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="48" r="46"/><path d="M29 50l13 13 26-28"/></svg>';
+        const first = about.name.trim().split(/\s+/)[0] || '';
+        const h = el('h1', '', first ? T('You are all set, {name}.', { name: first }) : T('You are all set.')); h.tabIndex = -1;
+        const p = el('p', 'wl-sub', T('Ask in your own words, or pick a service from Home. Your details are saved encrypted.'));
+        page.append(el('p', 'wl-eye', T('Step {n} of {total}', { n: 5, total: OB_TOTAL })), tickHost.firstElementChild, h, p);
+        return page;
+      },
+    ];
+
+    // ---- moving between steps -------------------------------------------------------------------------
+    function render(dir) {
+      const view = views[step]();
+      view.classList.add(dir >= 0 ? 'wl-in-r' : 'wl-in-l');
+      stage.replaceChildren(view); stage.scrollTop = 0;
+      [...prog.children].forEach((b, i) => { b.className = i < step ? 'done' : i === step ? 'on' : ''; });
+      back.classList.toggle('off', step === 0);
+      label(); sync();
+      const h = view.querySelector('h1'); if (h) h.focus({ preventScroll: true });
+    }
     function go(n) {
       if (busy) return;
-      dir = n >= step ? 1 : -1; step = Math.max(0, Math.min(total - 1, n)); next.disabled = false;
-      stage.replaceChildren();
-      for (const [i, d] of [...dots.children].entries()) d.classList.toggle('on', i === step);
-      backB.setAttribute('aria-label', T('Back')); skip.textContent = T('Skip'); pl.textContent = T('How your data is handled'); fineT.textContent = T('Free to start, no sign-up.');
-      backB.style.visibility = step ? 'visible' : 'hidden'; skip.style.visibility = step > 0 && step < total - 1 ? 'visible' : 'hidden';
-      let view;
-      if (step === 0) {
-        view = el('div', 'ob-slide lang-step');
-        const a = el('div', 'ob-art sm'); a.innerHTML = ART.lang;
-        const copy = el('div', 'ob-copy'); view.append(a, copy);
-        const holder = el('div', 'ob-langs2');
-        copy.append(el('h1', 'sm', T('Choose your language')), el('p', 'ob-p', T('The whole app will show in it. You can change it any time in Settings.')), holder);
-        langPicker(holder, { current: langObj.code, onPick: (l) => { langObj = l; next.textContent = T('Continue in {lang}', { lang: l.en }); } });
-        next.textContent = T('Continue in {lang}', { lang: langObj.en });
-      } else if (step === 1) { view = aboutView(); next.textContent = T('Continue'); syncNext(); }
-      else if (step < total - 1) { view = slide(STEPS[step - 2]); next.textContent = T('Next'); next.disabled = false; }
-      else { view = slide(STEPS[step - 2]); next.textContent = T('Get started'); }
-      view.classList.add(dir > 0 ? 'from-r' : 'from-l'); stage.append(view);
+      const dir = n >= step ? 1 : -1;
+      step = Math.max(0, Math.min(OB_TOTAL - 1, n));
+      render(dir);
     }
-    // ---- step 2: who you are, so forms can be filled for you ---------------------------------------
-    const about = { name: '', dob: '', gender: '', state: '' };
+    back.onclick = () => { if (step > 0) go(step - 1); };
+
+    // About you: check the state name with the server, then save the four details
     const tsend = async (op, args) => { const r = await api('/app/api/t', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ op, args }) }).catch(() => ({ ok: false, j: {} })); return r.ok ? { ok: true, data: r.j.data } : { ok: false, error: r.j?.error }; };
-    const ageOf = (iso) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso); if (!m) return null; const b = new Date(+m[1], +m[2] - 1, +m[3]); if (b > new Date()) return null; const n = new Date(); let a = n.getFullYear() - b.getFullYear(); if (n < new Date(n.getFullYear(), b.getMonth(), b.getDate())) a--; return a >= 0 && a < 121 ? a : null; };
-    let aboutErr = null;
-    const aboutReady = () => about.name.trim().length >= 2 && ageOf(about.dob) !== null && !!about.gender && about.state.trim().length >= 2;
-    const syncNext = () => { if (step === 1) next.disabled = busy || !aboutReady(); };
     const stateSeen = new Map();
     const checkState = async (v) => { const k = v.trim().toLowerCase(); if (stateSeen.has(k)) return stateSeen.get(k); const r = await tsend('state.find', { text: v }); if (r.ok) stateSeen.set(k, r); return r; };
-    function aboutView() {
-      const d = el('div', 'ob-slide about-step');
-      const a = el('div', 'ob-art sm'); a.innerHTML = ART.me;
-      const copy = el('div', 'ob-copy'); d.append(a, copy);
-      copy.append(el('h1', 'sm', T('Tell Saathi about you')), el('p', 'ob-p',T('Saathi fills your forms from these, so you never type them twice. Stored encrypted. Fill in all four to continue, or skip.')));
-      const form = el('div', 'ob-form');
-      const fld = (label, input, extra) => { const w = el('label', 'fld'); w.append(el('span', 'fld-l', label), input); if (extra) w.append(extra); return w; };
-      const nm = el('input', 'field-i'); nm.type = 'text'; nm.autocomplete = 'name'; nm.placeholder = T('As on your Aadhaar'); nm.value = about.name; nm.maxLength = 80; nm.oninput = () => { about.name = nm.value; syncNext(); };
-      const dob = el('input', 'field-i'); dob.type = 'date'; dob.max = new Date().toISOString().slice(0, 10); dob.value = about.dob; dob.autocomplete = 'bday';
-      const age = el('small', 'fld-h'); const showAge = () => { const n = ageOf(dob.value); age.textContent = n === null ? '' : T('Age: {n}', { n }); };
-      dob.oninput = () => { about.dob = dob.value; showAge(); syncNext(); }; showAge();
-      const g = seg([['male', T('Male')], ['female', T('Female')], ['other', T('Other')]], about.gender, (v) => { about.gender = v; syncNext(); });
-      const gw = el('div', 'fld'); gw.append(el('span', 'fld-l', T('Gender')), g);
-      const hint = el('small', 'fld-h');
-      const st = C.dropdown({ label: T('State'), search: true, placeholder: T('Your state'), options: STATE_LIST.map((n) => [n, n]), value: about.state || '', onChange: (v) => { about.state = v; hint.textContent = ''; hint.className = 'fld-h'; syncNext(); } });
-      const err = el('p', 'fld-err'); err.hidden = true; err.setAttribute('role', 'alert'); aboutErr = err;
-      form.append(fld(T('Full name'), nm), fld(T('Date of birth'), dob, age), gw, fld(T('State'), st, hint), err);
-      copy.append(form);
-      return d;
-    }
     async function saveAbout() {
       const v = { full_name: about.name.trim(), dob: about.dob, gender: about.gender, state: about.state.trim() };
-      if (!v.full_name && !v.dob && !v.gender && !v.state) return true;
-      const bad = (m) => { if (aboutErr) { aboutErr.textContent = m; aboutErr.hidden = false; aboutErr.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } return false; };
+      const bad = (m) => { if (aboutErr) { aboutErr.textContent = m; aboutErr.hidden = false; aboutErr.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' }); } return false; };
       if (v.state) { const r = await checkState(v.state); if (r.ok && !r.data.name) return bad(T('I don’t know a state like that. Try the full name of an Indian state.')); if (r.ok) v.state = r.data.name; }
       const values = Object.fromEntries(Object.entries(v).filter(([, x]) => x));
       const r = await tsend('details.set', { values });
@@ -865,35 +962,51 @@
       if (about.state) store.set('saathi.state', about.state);
       return true;
     }
-    backB.onclick = () => go(step - 1);
-    next.onclick = async () => {
-      if (busy) return;
-      if (step === 0) {
-        if (langObj.code === C.uiLang() && langObj.code === 'en') { store.set('saathi.lang', 'en'); return go(1); }
-        busy = true; next.disabled = true; next.textContent = langObj.code === 'hi' ? T('Getting ready…') : 'Setting up ' + langObj.en + '…';
-        const [r] = await Promise.all([api('/app/api/lang', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ code: langObj.code }) }), C.loadUI(langObj.code, { wait: 90000 })]);
-        busy = false; next.disabled = false;
-        if (!r.ok || !r.j.ok) { toast(T('Could not change the language. Please try again.')); next.textContent = T('Continue in {lang}', { lang: langObj.en }); return; }
-        store.set('saathi.lang', langObj.code); C.applyStatic(); buildSidebar();
-        return go(1);
-      }
-      if (step === 1) { if (!aboutReady()) return; busy = true; next.disabled = true; const ok = await saveAbout(); busy = false; syncNext(); if (!ok) return; return go(2); }
-      if (step < total - 1) return go(step + 1);
-      await finish();
-    };
-    let sx = null;
-    stage.addEventListener('pointerdown', (e) => { sx = e.clientX; });
-    stage.addEventListener('pointerup', (e) => { if (sx === null || step < 2) return; const dx = e.clientX - sx; sx = null; if (dx < -60) go(step + 1); else if (dx > 60) go(step - 1); });
+
     async function finish() {
-      next.disabled = true; store.set('saathi.onboarded', '1');
-      // make sure the bot side has a language even if the person kept English and never touched the picker
-      if (!store.get('saathi.lang')) store.set('saathi.lang', langObj.code);
+      busy = true; sync();
+      store.set('saathi.onboarded', '1');
+      if (!store.get('saathi.lang')) store.set('saathi.lang', lang.code);
       api('/app/api/lang', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ code: C.uiLang() }) }).then(() => refreshMe()).catch(() => {});
       ob.classList.remove('on'); document.body.classList.remove('ob-open');
       setTimeout(() => { ob.hidden = true; ob.replaceChildren(); C.openPending?.(); }, 420);
       C.welcome(); C.applyStatic();
     }
-    go(0);
+
+    next.onclick = async () => {
+      if (busy || next.disabled) return;
+      if (step === 0) {
+        if (lang.code === 'en' && C.uiLang() === 'en') { store.set('saathi.lang', 'en'); return go(1); }
+        busy = true; sync();
+        next.textContent = lang.code === 'hi' ? T('Getting ready…') : T('Setting up {lang}…', { lang: lang.en });
+        const [r] = await Promise.all([api('/app/api/lang', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ code: lang.code }) }), C.loadUI(lang.code, { wait: 90000 })]);
+        busy = false; sync();
+        if (!r.ok || !r.j.ok) { toast(T('Could not change the language. Please try again.')); label(); return; }
+        store.set('saathi.lang', lang.code); C.applyStatic(); buildSidebar();
+        return go(1);
+      }
+      if (step === 1) {
+        if (!aboutReady()) return;
+        busy = true; sync();
+        const ok = await saveAbout();
+        busy = false; sync();
+        if (ok) go(2);
+        return;
+      }
+      if (step < OB_TOTAL - 1) return go(step + 1);
+      await finish();
+    };
+
+    // The server's language list can arrive after the welcome has opened; redraw the list then.
+    C.welcomeLangs = () => {
+      if (!langHolder || !langHolder.isConnected || step !== 0) return;
+      lang = langList().find((l) => l.code === lang.code) || lang;
+      langHolder.replaceChildren();
+      langPicker(langHolder, { current: lang.code, onPick: pickLang });
+      label();
+    };
+
+    render(0);
   };
 
   // A service picked on the landing page (?service=pan, or kept from its onboarding) opens once the app is ready.
