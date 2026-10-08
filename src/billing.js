@@ -12,6 +12,9 @@ import { istDay } from './costguard.js';
 // Packs are fixed-price bundles for a preselected task. While a pack is active its included
 // things are not charged per message.
 
+// Stripe refuses a card charge under about 50 cents (₹20 failed in production). ₹50 clears it at any rate we see.
+export const MIN_TOPUP_PAISE = 5000;
+
 export const DEFAULT_RATES = {
   trialPaise: 500,
   freeMsgsPerDay: 40,
@@ -22,7 +25,7 @@ export const DEFAULT_RATES = {
   sheetPaise: 300,
   voicePaise: 50,
   remindPaise: 200,
-  topups: [2000, 5000, 10000, 20000],
+  topups: [5000, 10000, 20000, 50000],
   packs: {
     pack_quick: { id: 'pack_quick', name: 'Quick pack', paise: 2900, days: 3, scans: 3, ai: 20, voice: 8, remind: 3 },
     pan_pack: { id: 'pan_pack', name: 'Saathi pack', paise: 4900, days: 7, scans: 8, ai: 40, voice: 20, remind: 5 },

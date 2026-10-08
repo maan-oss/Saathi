@@ -312,13 +312,13 @@ test('delete wipes the account', async () => {
 test('web top-up: the server makes the Stripe page, only the signed webhook marks it paid, only its owner can see it', async () => {
   const sidA = 'ab'.repeat(16), sidB = 'cd'.repeat(16);
   const call = (sid, path, init = {}) => fetch(url(path), { ...init, headers: { 'x-session': sid, 'x-saathi': '1', ...(init.headers || {}) } });
-  const start = await call(sidA, '/app/api/topup', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ paise: 3000, origin: 'https://saathi-site-acme-7340.vercel.app' }) });
+  const start = await call(sidA, '/app/api/topup', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ paise: 5000, origin: 'https://saathi-site-acme-7340.vercel.app' }) });
   assert.equal(start.status, 200);
   const { url: payUrl, ref } = await start.json();
   assert.match(payUrl, /^https:\/\/checkout\.test\//);
   const sess = stripeSessions.at(-1);
   assert.equal(sess.ref, ref);
-  assert.equal(sess.amount, 3000);
+  assert.equal(sess.amount, 5000);
   // Stripe sends the person back to the address they paid from, with the payment reference
   assert.equal(sess.success, `https://saathi-site-acme-7340.vercel.app/app?topup=paid&pay=${ref}`);
 
@@ -328,7 +328,7 @@ test('web top-up: the server makes the Stripe page, only the signed webhook mark
   assert.equal((await call(sidB, `/app/api/pay?ref=${ref}`)).status, 404); // someone else's payment is not theirs to see
 
   // a Stripe event that is not signed does nothing
-  const body = JSON.stringify({ type: 'checkout.session.completed', data: { object: { id: `cs_${ref}`, client_reference_id: ref, payment_status: 'paid', currency: 'inr', amount_total: 3000, payment_intent: `pi_${ref}` } } });
+  const body = JSON.stringify({ type: 'checkout.session.completed', data: { object: { id: `cs_${ref}`, client_reference_id: ref, payment_status: 'paid', currency: 'inr', amount_total: 5000, payment_intent: `pi_${ref}` } } });
   const t = Math.floor(Date.now() / 1000);
   const sign = (s) => `t=${t},v1=${crypto.createHmac('sha256', s).update(`${t}.${body}`).digest('hex')}`;
   assert.equal((await fetch(url('/stripe'), { method: 'POST', headers: { 'stripe-signature': sign('wrong'), 'content-type': 'application/json' }, body })).status, 401);
@@ -343,7 +343,7 @@ test('web top-up: the server makes the Stripe page, only the signed webhook mark
     else await new Promise((r) => setTimeout(r, 100));
   }
   assert.ok(paid, 'payment was not marked paid');
-  assert.equal(paid.paise, 3000);
-  assert.ok(paid.wallet.paise >= 3000, `wallet ${paid.wallet.paise}`);
+  assert.equal(paid.paise, 5000);
+  assert.ok(paid.wallet.paise >= 5000, `wallet ${paid.wallet.paise}`);
   assert.ok(Number.isInteger(paid.before), 'the balance before the payment is recorded');
 });

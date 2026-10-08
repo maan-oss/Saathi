@@ -266,7 +266,7 @@ test('top up: link is created, credit lands once, duplicates and wrong amounts a
   await say('1');
   const list = (await tap('topup'))[0];
   assert.equal(list.kind, 'list');
-  assert.deepEqual(list.rows.map((r) => r.id), ['pay_2000', 'pay_5000', 'pay_10000', 'pay_20000']);
+  assert.deepEqual(list.rows.map((r) => r.id), ['pay_5000', 'pay_10000', 'pay_20000', 'pay_50000']);
   const msg = await tapText('pay_5000');
   assert.match(msg, /https:\/\/pay\.test\//);
   assert.equal(links[0].paise, 5000);

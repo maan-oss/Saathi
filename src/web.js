@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 import { classifyUrl, extractUrls, analyze, sensitiveKind } from './scamcheck.js';
 import { t } from './messages.js';
 import { SERVICES, LAST_VERIFIED, L10 } from './services.js';
-import { balance, activePack, inr, freeLeft, freeAiLeft, grantTrial, rates } from './billing.js';
+import { balance, activePack, inr, freeLeft, freeAiLeft, grantTrial, rates, MIN_TOPUP_PAISE } from './billing.js';
 import { LANGS, langDef } from './i18n.js';
 import { uiDict } from './uistrings.js';
 
@@ -328,7 +328,7 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
     try { b = JSON.parse((await readRaw(req, 2_000)).toString('utf8')); } catch { return json(res, 400, { error: 'bad_request' }); }
     const paise = Number(b.paise);
     const rt = rates(config);
-    const okAmount = rt.topups.includes(paise) || (Number.isInteger(paise) && paise % 100 === 0 && paise >= 1000 && paise <= 500000);
+    const okAmount = rt.topups.includes(paise) || (Number.isInteger(paise) && paise % 100 === 0 && paise >= MIN_TOPUP_PAISE && paise <= 500000);
     const packId = typeof b.pack === 'string' && rt.packs[b.pack] ? b.pack : null;
     if (!okAmount || (b.pack && !packId)) return json(res, 400, { error: 'bad_amount' });
     const uid = uidOf(sid);

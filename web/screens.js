@@ -351,7 +351,7 @@
   SCREENS.topup = async () => {
     const col = frame(T('Add money'), T('Choose an amount. It goes into your wallet and is used only when you use a paid feature.'));
     const cfg = C.cfg || {}; const p = C.prices;
-    const amounts = cfg.topups?.length ? cfg.topups : [2000, 5000, 10000, 20000];
+    const amounts = cfg.topups?.length ? cfg.topups : [5000, 10000, 20000, 50000];
     if (!cfg.pay) {
       col.append(empty('wallet', T('Top-ups are not switched on yet'), T('You can keep using Saathi with the free daily messages. Paid features will open once payments go live.'), btn('btn', T('Back to wallet'), goBack)));
       return;

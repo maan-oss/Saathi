@@ -271,13 +271,10 @@ html body #screen textarea.field-i,html body textarea.field-i{border-radius:20px
 /* ---- the other pages match the shell: white pill buttons, round back button, the same title weight ---- */
 :root[data-style="sky"] .btn.pri,:root[data-style="sky"] .btn.xl,:root[data-style="sky"] .lk-acts .btn.pri,:root[data-style="sky"] .rm-acts .btn.pri{background:#fff!important;border-color:#fff!important;color:var(--hk-ink)!important;box-shadow:0 8px 24px rgba(10,30,70,.22)!important}
 :root[data-style="sky"] .btn.pri:hover,:root[data-style="sky"] .btn.xl:hover{filter:none;opacity:.94}
-:root[data-style="sky"] .sc-head .sc-back{width:46px;height:46px;flex:none;border:0;border-radius:50%;background:rgba(255,255,255,.7);color:var(--hk-ink);display:grid;place-items:center;padding:0;transition:transform .18s var(--hk-ease),background .2s}
-:root[data-style="sky"] .sc-head .sc-back:hover{background:rgba(255,255,255,.8)}
+:root[data-style="sky"] .sc-head .sc-back{width:46px;height:46px;flex:none;border:0;border-radius:50%;background:#fff;color:#000;display:grid;place-items:center;padding:0;box-shadow:0 2px 10px rgba(10,30,70,.18);transition:transform .18s var(--hk-ease),background .2s}
+:root[data-style="sky"] .sc-head .sc-back:hover{background:#f2f2f4}
 :root[data-style="sky"] .sc-head .sc-back:active{transform:scale(.92)}
-:root[data-style="sky"] .sc-head .sc-back svg{stroke:var(--hk-ink)!important}
-:root[data-style="sky"][data-sky="night"] .sc-head .sc-back{background:rgba(255,255,255,.18);color:#fff}
-:root[data-style="sky"][data-sky="night"] .sc-head .sc-back:hover{background:rgba(255,255,255,.26)}
-:root[data-style="sky"][data-sky="night"] .sc-head .sc-back svg{stroke:#fff!important}
+:root[data-style="sky"] .sc-head .sc-back svg{stroke:#000!important}
 :root[data-style="sky"] .sc-big h1{font-weight:500}
 
 /* ---- search: an opaque panel; nothing from the tabs shows behind it ---- */

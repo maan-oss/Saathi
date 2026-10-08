@@ -1,7 +1,12 @@
-// Picks the sky before the first paint, with the same colours the app uses: by the time of day, or dark when the phone is in dark mode.
+// Runs before the first paint, so the app never flashes the old Classic look. Same rules as applyTheme and skyPhase in app.js:
+// the saved light/dark choice wins, otherwise the phone's dark mode, and the sky follows the time of day.
 (function () {
+  var root = document.documentElement;
   try {
-    var h = new Date().getHours(), dark = matchMedia('(prefers-color-scheme: dark)').matches;
-    document.documentElement.dataset.sky = dark || h >= 20 || h < 5 ? 'night' : h < 8 ? 'dawn' : h < 17 ? 'day' : 'sunset';
-  } catch (e) { document.documentElement.dataset.sky = 'day'; }
+    var t = localStorage.getItem('saathi.theme');
+    if (t === 'light' || t === 'dark') root.dataset.theme = t;
+    var h = new Date().getHours();
+    var dark = t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+    root.dataset.sky = dark || (t !== 'light' && (h >= 20 || h < 5)) ? 'night' : h < 8 ? 'dawn' : h < 17 ? 'day' : 'sunset';
+  } catch (e) { root.dataset.sky = 'day'; }
 })();

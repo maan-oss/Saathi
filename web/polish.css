@@ -191,7 +191,6 @@ body{background-image:radial-gradient(120% 60% at 50% -10%,color-mix(in srgb,var
 
 /* no glow */
 .hello::before{display:none!important}
-:root:not([data-style="sky"]) body{background-image:none!important}
 #onboard{background:var(--bg)!important}
 .ob-art{filter:none!important}
 
@@ -476,7 +475,6 @@ details.tips>summary .ti svg{stroke:var(--bg);width:20px;height:20px}
 :root[data-style="sky"][data-sky="night"] .gr-bg{stroke:rgba(255,255,255,.25)}
 :root[data-style="sky"][data-sky="night"] .gr-fg{stroke:#fff}
 :root[data-style="sky"][data-sky="night"] .gr-pct{color:#fff}
-:root:not([data-style="sky"]) .gr-bg{stroke:color-mix(in srgb,var(--ink) 18%,transparent)}
 /* richer, Hark-like skies: soft glow at the horizon over a smooth gradient */
 :root[data-style="sky"] body{background:radial-gradient(120% 55% at 50% 108%,var(--sk-glow,transparent),transparent 70%),linear-gradient(180deg,var(--sk-a) 0%,var(--sk-b) 52%,var(--sk-c) 100%) fixed}
 :root[data-style="sky"][data-sky="day"]{--sk-a:#4f86c9;--sk-b:#9cc7ee;--sk-c:#dfe8ef;--sk-glow:rgba(255,255,255,.55)}

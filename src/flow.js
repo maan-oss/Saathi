@@ -3,7 +3,7 @@ import { inspectInput, inspectOutput, cleanInput, wrapUntrusted } from './shield
 import { R } from './rich.js';
 import { STATE_NAMES } from './states.js';
 import { FIELDS, GENDER, normField, normAll, missingKeys, fieldDef, shown, fromExtraction } from './profile.js';
-import { charge, refund, credit, buyPack, grantTrial, balance, activePack, rates, inr, referralBonus } from './billing.js';
+import { charge, refund, credit, buyPack, grantTrial, balance, activePack, rates, inr, referralBonus, MIN_TOPUP_PAISE } from './billing.js';
 import {
   SERVICES,
   serviceById,
@@ -230,7 +230,7 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
       );
     }
     async function startTopup(paise, packId = null) {
-      const okAmount = rt.topups.includes(paise) || (Number.isInteger(paise) && paise % 100 === 0 && paise >= 1000 && paise <= 500000);
+      const okAmount = rt.topups.includes(paise) || (Number.isInteger(paise) && paise % 100 === 0 && paise >= MIN_TOPUP_PAISE && paise <= 500000);
       if (!payments || !okAmount) return say('topup_off');
       const ref = `sv_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
       store.putPayment(ref, { userId, paise, status: 'pending', ts: Date.now(), phone: ctx.phone || null, ...(packId ? { packId } : {}) });
