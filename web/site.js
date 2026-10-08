@@ -5,10 +5,8 @@
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const rupees = (p) => '₹' + (p % 100 === 0 ? p / 100 : (p / 100).toFixed(2));
   const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
-  const save = (k, v) => { try { localStorage.setItem(k, v); } catch { /* private mode */ } };
-  const keep = (k, v) => { try { sessionStorage.setItem(k, v); } catch { /* private mode */ } };
 
-  // ---- Header: a dark bar once the sky of the hero is behind you ----------------------------------
+  // ---- Header: a dark bar once you scroll past the hero ----
   const nav = $('#nav');
   if (nav) {
     const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 24);
@@ -16,101 +14,7 @@
     onScroll();
   }
 
-  // ---- Get started: a real three-step onboarding (same data the bot uses) ------------------------
-  const ob = $('#start');
-  if (ob) {
-    const steps = $$('.ob-step', ob), dots = $$('#obDots i'), count = $('#obCount');
-    const back = $('#obBack'), next = $('#obNext'), go = $('#obGo');
-    const svcWrap = $('#obSvc'), svcName = $('#obSvcName'), feeEl = $('#obFee'), docsEl = $('#obDocs');
-    const siteRow = $('#obSiteRow'), siteA = $('#obSite'), flag = $('#obFlag');
-    const docIcon = () => $('#tplDoc').content.firstElementChild.cloneNode(true);
-    let step = 1, lang = 'en', services = null, chosen = null; // chosen: service object, 'other', or null
-
-    const setStep = (n) => {
-      step = n;
-      steps.forEach((s) => { s.hidden = Number(s.dataset.step) !== n; });
-      dots.forEach((d, i) => d.classList.toggle('on', i === n - 1));
-      count.textContent = `Step ${n} of 3`;
-      back.hidden = n === 1;
-      next.hidden = n === 3;
-      go.hidden = n !== 3;
-      next.disabled = n === 2 && chosen === null;
-      if (n === 3) fillStep3();
-    };
-    const focusStep = () => {
-      const h = steps[step - 1]?.querySelector('h3');
-      if (h) h.focus({ preventScroll: true });
-    };
-
-    // Step 1: language. Only English and Hindi here; the app has the rest.
-    $$('[data-lang]', ob).forEach((b) => b.addEventListener('click', () => {
-      lang = b.dataset.lang;
-      $$('[data-lang]', ob).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-    }));
-
-    // Step 2: service rows, loaded from the app's own service list.
-    const pick = (b) => {
-      $$('[data-svc]', ob).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-      chosen = b.dataset.svc === '' ? 'other' : services?.find((s) => s.id === b.dataset.svc) || null;
-      next.disabled = chosen === null;
-    };
-    const rowFor = (sv) => {
-      const b = el('button', 'srow'); b.type = 'button'; b.dataset.svc = sv.id; b.setAttribute('aria-pressed', 'false');
-      const c = el('span', 'circ'); c.append(docIcon());
-      const t = el('span', 'st'); t.append(el('b', '', sv.name));
-      b.append(c, t);
-      b.addEventListener('click', () => pick(b));
-      return b;
-    };
-    const loadServices = () => fetch('/app/api/services').then((r) => (r.ok ? r.json() : Promise.reject())).then((d) => {
-      services = d.services || [];
-      svcWrap.replaceChildren(...services.map(rowFor));
-    }).catch(() => {
-      svcWrap.replaceChildren(el('p', 'tiny', 'Could not load the list just now. Pick “Something else”, or open the app.'));
-    });
-    const other = $('[data-svc=""]', ob);
-    if (other) other.addEventListener('click', () => pick(other));
-
-    // Step 3: what to keep ready, from the chosen service.
-    function fillStep3() {
-      if (chosen === 'other' || chosen === null) {
-        svcName.textContent = 'Ask in your own words';
-        feeEl.textContent = 'Free to ask. Prices show when you go ahead.';
-        docsEl.replaceChildren(el('li', '', 'Tell Saathi what you need, in your own words.'), el('li', '', 'It asks a few questions, then gives you the steps.'));
-        siteRow.hidden = true;
-        go.href = '/app';
-        return;
-      }
-      const sv = chosen;
-      svcName.textContent = sv.name;
-      const f = String(sv.fee || '').split('\n')[0];
-      const m = f.match(/^[^.]{6,60}\./);
-      feeEl.textContent = m ? m[0] : f;
-      const rest = m ? f.slice(m[0].length).trim() : '';
-      if (rest) feeEl.append(el('div', 'tiny', rest));
-      const lines = (sv.docs || []).filter((l) => /^[•\-*]/.test(l)).map((l) => l.replace(/^[•\-*]\s*/, ''));
-      const head = (sv.docs || []).find((l) => !/^[•\-*]/.test(l));
-      docsEl.replaceChildren(...(lines.length ? lines.slice(0, 7) : [head || 'Ask Saathi for the list']).map((l) => el('li', '', l)));
-      const site = (sv.sites || []).find((u) => /^https:\/\//.test(u));
-      siteRow.hidden = !site;
-      if (site) { siteA.textContent = new URL(site).host; siteA.href = site; }
-      flag.hidden = !(sv.unverified && sv.unverified.length);
-      go.href = '/app?service=' + encodeURIComponent(sv.id);
-    }
-
-    // Opening the app: remember the language and the chosen service, then the app picks them up.
-    go.addEventListener('click', () => {
-      save('saathi.lang', lang);
-      if (chosen && chosen !== 'other') keep('saathi.open', chosen.id);
-    });
-
-    next.addEventListener('click', () => { if (step < 3) { setStep(step + 1); focusStep(); } });
-    back.addEventListener('click', () => { if (step > 1) { setStep(step - 1); focusStep(); } });
-    setStep(1);
-    loadServices();
-  }
-
-  // ---- Scam checker (same rules as the bot; nothing is saved, no link is opened) ----------------
+  // ---- Scam check (same rules as the bot; nothing is saved, no link is opened) ----
   const chkIn = $('#chkIn'), chkGo = $('#chkGo'), chkOut = $('#chkOut'), chkHint = $('#chkHint');
   const bold = (parent, text) => {
     // Turns *word* into <b>word</b> without ever using innerHTML.
@@ -146,31 +50,7 @@
     for (const b of $$('.try button')) b.addEventListener('click', () => { chkIn.value = b.dataset.ex; runCheck(); });
   }
 
-  // ---- Locker demo: locked until you tap, hides again on its own -------------------------------
-  const vcard = $('#vcard'), vBtn = $('#vBtn'), vBody = $('#vBody'), vBar = $('#vBar');
-  if (vcard) {
-    let timer = null;
-    const SAMPLE = 'ABCPE1234F';
-    const lock = () => {
-      clearTimeout(timer);
-      vcard.dataset.state = 'locked';
-      vBody.replaceChildren(el('span', 'mask', '••••••234F'));
-      vBtn.textContent = 'Unlock';
-      const bar = $('i', vBar); bar.style.transition = 'none'; bar.style.transform = 'scaleX(0)';
-    };
-    const open = () => {
-      vcard.dataset.state = 'open';
-      vBody.replaceChildren(el('span', 'val', SAMPLE));
-      vBtn.textContent = 'Hide';
-      const bar = $('i', vBar);
-      bar.style.transition = 'none'; bar.style.transform = 'scaleX(1)';
-      requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.transition = 'transform 8s linear'; bar.style.transform = 'scaleX(0)'; }));
-      timer = setTimeout(lock, 8000);
-    };
-    vBtn.addEventListener('click', () => (vcard.dataset.state === 'open' ? lock() : open()));
-  }
-
-  // ---- From the server: real prices, and the WhatsApp link (sections stay hidden if the server has none)
+  // ---- From the server: real prices, and the WhatsApp link (sections stay hidden if the server has none) ----
   fetch('/app/api/config').then((r) => (r.ok ? r.json() : Promise.reject())).then((c) => {
     if (c.whatsapp && /^https:\/\/wa\.me\//.test(c.whatsapp)) {
       for (const a of $$('[data-wa]')) { a.href = c.whatsapp; a.hidden = false; }
@@ -192,7 +72,7 @@
   }).catch(() => {});
 })();
 
-// ---- FAQ answers open with one height animation (no second animation on the arrow) ----------------
+// ---- FAQ answers open with one height animation ----
 (() => {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   document.addEventListener('click', (e) => {
@@ -208,7 +88,7 @@
   });
 })();
 
-// ---- every official website name, anywhere on the page, becomes a real link ----------------------------------
+// ---- every official website name, anywhere on the page, becomes a real link ----
 (() => {
   'use strict';
   const LANDING = {
