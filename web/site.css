@@ -92,6 +92,24 @@ h1 em{font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.06e
 .safe-chip{display:inline-flex;align-items:center;gap:8px;margin:2px 0 0;padding:9px 14px;border-radius:999px;background:rgba(255,255,255,.94);color:var(--dark);font-size:13px;font-weight:600}
 .safe-chip .dot{width:8px;height:8px;border-radius:50%;background:#1f9e8c}
 
+/* desktop hero, like Hark's sign-in: a tall rounded sky panel on the left, centred copy on the right */
+@media (min-width:960px){
+  .hero{padding:20px;align-items:stretch}
+  .hero-grid{max-width:none;height:calc(100svh - 40px);min-height:680px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:stretch}
+  .hero-art{grid-column:1;grid-row:1;height:auto;max-width:none;margin:0;border-radius:32px;overflow:hidden;
+    background:radial-gradient(70% 50% at 15% 105%,rgba(255,190,160,.85),transparent 70%),linear-gradient(180deg,var(--sky-1) 0%,var(--sky-2) 52%,var(--sky-3) 100%)}
+  .hero-in{grid-column:2;grid-row:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:0 48px}
+  .hero-mark{font-size:clamp(52px,5.2vw,68px)}
+  h1{max-width:18ch;margin-inline:auto;font-size:clamp(40px,4.2vw,58px)}
+  .lede{margin-inline:auto;max-width:36ch;font-size:19px}
+  .cta{flex-direction:column;align-items:stretch;width:100%;max-width:380px;margin-inline:auto}
+  .cta .pill{width:100%}
+  .cta .pill.opt{display:inline-flex}
+  .fine{text-align:center}
+  .doc-card{left:12%;top:22%;width:58%}
+  .chat-card{right:8%;top:52%;width:74%}
+}
+
 /* ---- question strip ---- */
 .strip{position:relative;overflow:hidden;padding:30px 0 6px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
 .track{display:flex;width:max-content;animation:strip 70s linear infinite}
@@ -105,7 +123,7 @@ h1 em{font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.06e
 .sec{max-width:1120px;margin:0 auto;padding:96px 16px}
 @media (min-width:760px){.sec{padding:120px 24px}}
 .kicker{margin-bottom:12px;font-size:15px;font-weight:600;color:var(--mut)}
-h2{font:600 clamp(34px,5vw,56px)/1.02 var(--display);letter-spacing:-.035em;text-wrap:balance}
+h2{font:400 clamp(38px,4.8vw,60px)/1.02 var(--serif);letter-spacing:-.01em;text-wrap:balance}
 h2 em{font-family:var(--serif);font-style:italic;font-weight:400;letter-spacing:-.01em}
 .sub{margin-top:16px;max-width:52ch;font-size:18px;color:var(--mut)}
 .tiny{margin-top:14px;font-size:14px;color:var(--mut)}
@@ -114,6 +132,16 @@ h2 em{font-family:var(--serif);font-style:italic;font-weight:400;letter-spacing:
 .card{padding:26px;border-radius:32px;background:var(--soft);border:1px solid var(--line)}
 .sub + .card{margin-top:40px}
 @media (min-width:760px){.card{padding:44px}}
+
+/* desktop feature rows: copy on one side, a sky panel on the other, alternating like Hark's */
+@media (min-width:960px){
+  #guides,#price{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);column-gap:72px;align-items:center}
+  #guides>.kicker,#guides>h2,#guides>.sub,#price>.kicker,#price>h2,#price>.sub{grid-column:1}
+  #guides>.card{grid-column:2;grid-row:1 / span 3;margin-top:0;padding:48px;border:0;border-radius:40px;
+    background:linear-gradient(180deg,var(--sky-1) 0%,#2e4a7c 60%,#3a4a78 100%)}
+  #receipt{grid-column:2;grid-row:1 / span 3;margin-top:0}
+  #packNote{grid-column:2}
+}
 .card h2{margin-top:0}
 .card .field-i{margin-top:24px}
 .card .hint{margin-top:14px;font-size:14px;color:var(--mut);text-align:center}
