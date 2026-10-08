@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { diagnose } from '../scripts/doctor.js';
 
-const base = { vaultKey: 'v'.repeat(30), hashSalt: 's'.repeat(20), adminKey: 'a', verifyToken: 'tok', appSecret: 'x', graphBase: 'https://g', graphVersion: 'v21.0', anthropicBase: 'https://a', razorpayBase: 'https://r', model: 'm' };
+const base = { vaultKey: 'v'.repeat(30), hashSalt: 's'.repeat(20), adminKey: 'a', verifyToken: 'tok', appSecret: 'x', graphBase: 'https://g', graphVersion: 'v21.0', anthropicBase: 'https://a', stripeBase: 'https://r', model: 'm' };
 
 test('doctor flags default secrets and missing integrations without calling anything', async () => {
   let calls = 0;
@@ -23,11 +23,11 @@ test('doctor checks the live connections and the webhook handshake', async () =>
     if (url.startsWith('https://r/')) return { ok: false, status: 401, text: async () => 'bad key' };
     return { ok: true, json: async () => ({}) };
   };
-  const rows = await diagnose({ ...base, whatsappToken: 't', phoneId: 'P', anthropicKey: 'k', razorpayKeyId: 'rzp_test_1', razorpayKeySecret: 's', razorpayWebhookSecret: 'w', publicUrl: 'https://me.example' }, f);
+  const rows = await diagnose({ ...base, whatsappToken: 't', phoneId: 'P', anthropicKey: 'k', stripeSecretKey: 'sk_test_1', stripeWebhookSecret: 'w', publicUrl: 'https://me.example' }, f);
   const by = (t) => rows.find((r) => r.t.startsWith(t));
   assert.equal(by('WhatsApp token').s, 'OK ');
   assert.equal(by('Anthropic').s, 'OK ');
-  assert.equal(by('Razorpay keys').s, 'FIX');
+  assert.equal(by('Stripe key').s, 'FIX');
   assert.equal(by('Webhook handshake').s, 'OK ');
   assert.ok(seen.some((u) => u.includes('verify_token=tok')));
 });

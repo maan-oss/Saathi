@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node src/server.js",
     "simulate": "node scripts/simulate.js",
-    "build:demo": "node scripts/build-demo.js",
+    "build:site-demo": "node scripts/build-site-demo.js",
     "test": "node --test test/*.test.js",
     "setup": "node scripts/setup.js",
     "doctor": "node scripts/doctor.js",

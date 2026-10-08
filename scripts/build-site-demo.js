@@ -1,7 +1,7 @@
 // Builds demo/saathi-site.html: the REAL landing page (web/site.html, site.css, site.js) as one file, so it can be previewed
 // without a server. The scam checker runs the real rules in the page. Prices are hidden because there is no server to ask.
 // Usage: node scripts/build-site-demo.js <app-preview-url>
-import { readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { SERVICES, LAST_VERIFIED } from '../src/services.js';
 const APP = process.argv[2] || '#';
 const read = (p) => readFileSync(new URL(p, import.meta.url), 'utf8');
@@ -49,6 +49,7 @@ const css = (read('../web/hark.css') + '\n' + read('../web/site.css')).replace(/
 // The live page sets the sky and the body class from /sky.js and the page's own markup; the demo has no server, so it does the same here.
 const setup = "(function(){try{var d=document.documentElement;d.dataset.style='sky';var h=new Date().getHours(),dark=matchMedia('(prefers-color-scheme: dark)').matches;d.dataset.sky=dark||h>=20||h<5?'night':h<8?'dawn':h<17?'day':'sunset';document.body.classList.add('landing');}catch(e){}})();";
 const js = read('../web/site.js').replace("go.href = '/app?service=' + encodeURIComponent(sv.id);", `go.href = '${APP}'; go.target = '_blank'; go.rel = 'noopener';`);
-const fonts = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Instrument+Sans:wght@400..700&family=Noto+Sans+Devanagari:wght@700&display=swap">';
+const fonts = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:wght@400..700&family=Noto+Sans+Devanagari:wght@700&display=swap">';
+mkdirSync(new URL('../demo/', import.meta.url), { recursive: true });
 writeFileSync(new URL('../demo/saathi-site.html', import.meta.url), `<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Saathi</title>\n${fonts}\n<style>${css}</style>\n<script>${setup}</script>\n<body class="landing">\n${body}\n<script>${bundle}\n${js}</script>\n`);
 console.log('built demo/saathi-site.html');

@@ -7,7 +7,7 @@ import { createVault } from '../src/vault.js';
 import { Store } from '../src/store.js';
 import { buildPayloads, parseInbound } from '../src/whatsapp.js';
 import { R, plain } from '../src/rich.js';
-import { validRazorpaySignature, parsePaidEvent, createPayments } from '../src/payments.js';
+import { validStripeSignature, parsePaidEvent, createPayments } from '../src/payments.js';
 import { allMessages } from '../src/messages.js';
 
 test('vault round-trips, uses fresh IVs, and refuses tampering or the wrong key', async () => {
@@ -97,30 +97,39 @@ test('inbound: text, image, button tap, list tap and flow answers', () => {
   assert.deepEqual(parseInbound({ type: 'sticker' }), { type: 'other' });
 });
 
-test('Razorpay: signature is HMAC-SHA256 of the raw body; the paid event is parsed; other events are ignored', () => {
-  const body = JSON.stringify({ event: 'payment_link.paid', payload: { payment_link: { entity: { reference_id: 'sv_1', amount_paid: 5000 } }, payment: { entity: { id: 'pay_9', amount: 5000 } } } });
-  const sig = crypto.createHmac('sha256', 'whsec').update(body).digest('hex');
-  assert.equal(validRazorpaySignature(body, sig, 'whsec'), true);
-  assert.equal(validRazorpaySignature(body + ' ', sig, 'whsec'), false);
-  assert.equal(validRazorpaySignature(body, sig, 'other'), false);
-  assert.equal(validRazorpaySignature(body, sig, ''), false);
-  assert.deepEqual(parsePaidEvent(JSON.parse(body)), { ref: 'sv_1', paymentId: 'pay_9', paise: 5000 });
-  assert.equal(parsePaidEvent({ event: 'payment.failed' }), null);
+test('Stripe: signature is HMAC-SHA256 over "timestamp.body" and must be recent; the paid event is parsed; other events are ignored', () => {
+  const body = JSON.stringify({ id: 'evt_1', type: 'checkout.session.completed', data: { object: { id: 'cs_1', client_reference_id: 'sv_1', payment_status: 'paid', currency: 'inr', amount_total: 5000, payment_intent: 'pi_9' } } });
+  const t = 1700000000;
+  const sig = crypto.createHmac('sha256', 'whsec_x').update(`${t}.${body}`).digest('hex');
+  const header = `t=${t},v1=${sig}`;
+  assert.equal(validStripeSignature(body, header, 'whsec_x', t + 10), true);
+  assert.equal(validStripeSignature(body + ' ', header, 'whsec_x', t + 10), false);
+  assert.equal(validStripeSignature(body, header, 'other', t + 10), false);
+  assert.equal(validStripeSignature(body, header, '', t + 10), false);
+  assert.equal(validStripeSignature(body, header, 'whsec_x', t + 301), false); // older than five minutes
+  assert.equal(validStripeSignature(body, `t=${t},v1=00`, 'whsec_x', t), false);
+  assert.deepEqual(parsePaidEvent(JSON.parse(body)), { ref: 'sv_1', paymentId: 'pi_9', paise: 5000 });
+  assert.equal(parsePaidEvent({ ...JSON.parse(body), type: 'checkout.session.expired' }), null);
+  assert.equal(parsePaidEvent(JSON.parse(body.replace('"paid"', '"unpaid"'))), null);
+  assert.equal(parsePaidEvent(JSON.parse(body.replace('"inr"', '"usd"'))), null);
 });
 
-test('Razorpay link request uses paise, INR and our reference (fake network)', async () => {
+test('Stripe Checkout request uses INR paise and our reference (fake network)', async () => {
   let seen;
-  const p = createPayments({ razorpayKeyId: 'id', razorpayKeySecret: 'sec' }, async (url, init) => {
+  const p = createPayments({ stripeSecretKey: 'sk_test_x', publicUrl: 'https://saathi.example' }, async (url, init) => {
     seen = { url, init };
-    return { ok: true, json: async () => ({ short_url: 'https://rzp.io/x', id: 'plink_1' }) };
+    return { ok: true, json: async () => ({ url: 'https://checkout.stripe.com/c/pay/cs_1', id: 'cs_1' }) };
   });
   const r = await p.createLink({ ref: 'sv_1', paise: 5000, note: 'n' });
-  assert.equal(r.url, 'https://rzp.io/x');
-  const body = JSON.parse(seen.init.body);
-  assert.equal(body.amount, 5000);
-  assert.equal(body.currency, 'INR');
-  assert.equal(body.reference_id, 'sv_1');
-  assert.match(seen.init.headers.authorization, /^Basic /);
+  assert.equal(r.url, 'https://checkout.stripe.com/c/pay/cs_1');
+  assert.equal(seen.url, 'https://api.stripe.com/v1/checkout/sessions');
+  const form = new URLSearchParams(seen.init.body);
+  assert.equal(form.get('line_items[0][price_data][unit_amount]'), '5000');
+  assert.equal(form.get('line_items[0][price_data][currency]'), 'inr');
+  assert.equal(form.get('client_reference_id'), 'sv_1');
+  assert.equal(form.get('success_url'), 'https://saathi.example/app?topup=paid');
+  assert.equal(seen.init.headers.authorization, 'Bearer sk_test_x');
+  await assert.rejects(createPayments({ stripeSecretKey: 'k' }, async () => ({})).createLink({ ref: 'sv_2', paise: 100, note: 'n' }), /PUBLIC_URL/);
   assert.equal(createPayments({}), null);
 });
 

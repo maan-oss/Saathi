@@ -8,7 +8,7 @@
 // "not confirmed", and anything that imitates an official name without being official is called out as a trap.
 
 export const OFFICIAL_SUFFIXES = ['gov.in', 'nic.in', 'utiitsl.com', 'proteantech.in'];
-export const PAYMENT_HOSTS = ['razorpay.com', 'rzp.io']; // Saathi's own top-up links come from here
+export const PAYMENT_HOSTS = ['checkout.stripe.com', 'buy.stripe.com']; // Saathi's own top-up links come from here
 const SHORTENERS = new Set(['bit.ly', 'tinyurl.com', 't.co', 'goo.gl', 'is.gd', 'cutt.ly', 'rb.gy', 'shorturl.at', 'ow.ly', 'buff.ly', 'tiny.cc', 'wa.me', 't.me', 'rebrand.ly', 'lnkd.in', 'bl.ink', 'v.gd']);
 const RISKY_TLDS = new Set(['xyz', 'top', 'click', 'live', 'icu', 'cyou', 'cfd', 'sbs', 'buzz', 'vip', 'rest', 'tk', 'ml', 'ga', 'cf', 'gq', 'pw', 'site', 'online', 'shop', 'work', 'life', 'today', 'help', 'support', 'link', 'loan', 'win', 'bid']);
 const KNOWN_TLDS = 'com|in|org|net|co|gov|nic|edu|info|biz|io|me|app|cc|us|uk|ru|cn|ly|to|ws|' + [...RISKY_TLDS].join('|');

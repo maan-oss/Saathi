@@ -322,14 +322,14 @@
   };
 
   // ---- payment: shared by add money and packs ----------------------------------------------------
-  // Opens the Razorpay page, then watches the wallet until `done(wallet)` says the payment has landed.
+  // Opens the Stripe page, then watches the wallet until `done(wallet)` says the payment has landed.
   function startPayment(col, { url, paise, title, done, successTitle, successText }) {
     col.replaceChildren();
     const card = el('section', 'card-i paycard');
     const spin = el('div', 'spin'); spin.append(el('i'));
-    card.append(spin, el('h3', '', title), el('p', 'mut', T('Open the secure Razorpay page to pay {amt}. Come back here when you are done. This page updates by itself.', { amt: rupee(paise) })));
+    card.append(spin, el('h3', '', title), el('p', 'mut', T('Open the secure Stripe page to pay {amt}. Come back here when you are done. This page updates by itself.', { amt: rupee(paise) })));
     const href = /^https:\/\//.test(url) ? url : 'https://' + url.replace(/^\/\//, '');
-    const a = el('a', 'btn pri xl', T('Open Razorpay to pay {amt}', { amt: rupee(paise) })); a.href = href; a.target = '_blank'; a.rel = 'noopener noreferrer nofollow';
+    const a = el('a', 'btn pri xl', T('Open Stripe to pay {amt}', { amt: rupee(paise) })); a.href = href; a.target = '_blank'; a.rel = 'noopener noreferrer nofollow';
     const status = el('p', 'status', T('Waiting for your payment…'));
     const check = btn('btn', T('I have paid, check now'), () => tick(true));
     const cancel = btn('link-btn', T('Cancel'), () => { clearInterval(timer); goBack(); });
@@ -385,7 +385,7 @@
       if (!r.ok || !url) return errBox(stage, plain(rep[0]?.body) || T('We could not start that payment. Nothing was charged. Please try again.'));
       startPayment(col, { url, paise: amt, title: T('Complete your payment'), done: (w) => w.paise > before, successTitle: T('Payment received'), successText: (w) => T('{amt} added. Your balance is now {bal}.', { amt: rupee(w.paise - before), bal: w.balance }) });
     };
-    col.append(grid, sum, pay, stage, note(T('You pay on Razorpay with UPI, card or netbanking. Saathi never sees your card number or UPI PIN.'), 'lock'));
+    col.append(grid, sum, pay, stage, note(T('You pay on Stripe with your card. Saathi never sees your card number.'), 'lock'));
     draw();
   };
 
@@ -413,7 +413,7 @@
         const buy = btn('btn ' + (PACK_TAG[pk.id] ? 'pri' : 'ink') + ' xl', enough ? T('Get it for {amt} from your wallet', { amt: rupee(pk.paise) }) : T('Pay {amt} and get it', { amt: rupee(need) }), () => buyPack(pk, buy, need));
         card.append(top, price, ul, buy); holder.append(card);
       }
-      holder.append(note(T('Packs are paid from your wallet. If you are short, you pay only the difference on Razorpay and the pack starts by itself.'), 'wallet'));
+      holder.append(note(T('Packs are paid from your wallet. If you are short, you pay only the difference on Stripe and the pack starts by itself.'), 'wallet'));
     };
     const buyPack = async (pk, button, need) => {
       const beforeUntil = C.wallet?.pack?.until || 0; const beforeBal = C.wallet?.paise || 0;
@@ -573,7 +573,7 @@
     ['lock', N('What we keep'), N('Your place in the guide and your language, deleted after a few hours of inactivity. Details you choose to save (name, date of birth, parents’ names, gender, address, PIN code, mobile number, email) are stored encrypted until you delete them. The locker keeps ID numbers and expiry dates, encrypted, hidden until you unlock. We never store Aadhaar card photos, card numbers or OTPs.')],
     ['scan', N('Photos, PDFs and voice notes'), N('Only read if you agree, held in memory and never saved. Voice notes are turned into text by a speech service and the audio is not kept.')],
     ['bell', N('Reminders'), N('If you set one, we keep its date, its name and your phone number (encrypted) so we can message you before it.')],
-    ['wallet', N('Payments'), N('Paid on Razorpay’s own page. We never see your card or UPI details. We keep the amount, date and reference for your wallet.')],
+    ['wallet', N('Payments'), N('Paid on Stripe’s own page. We never see your card details. We keep the amount, date and reference for your wallet.')],
     ['spark', N('AI'), N('Free-form questions, document reading and translation are processed by an AI service. Your saved details are never sent to it. Languages other than English and Hindi are machine translated and may have mistakes.')],
     ['shield', N('What we never do'), N('We never ask for your OTP or password. Do not share them with anyone. Everything is stored under a scrambled ID, not your phone number.')],
     ['trash', N('Deleting your data'), N('Settings, then Delete all my data, removes your saved details, locker, reminders and wallet from our server.')],

@@ -1,90 +1,117 @@
-# Setup: from zero to a working WhatsApp number
+# Setup: from zero to a working Saathi
 
-Plan on about an hour of clicking, plus waiting for Meta's approvals. Do it in this order. Screens change; if a button has moved, search the name in quotes.
+Read this once from top to bottom. Each step says who does it. **You** do the accounts, ID checks, money and keys. The code is already finished.
 
-**What you need:** a phone number that is not already on WhatsApp (a new SIM is fine), a credit or debit card, and for real payments a bank account and PAN for Razorpay.
+**Never paste a secret key into chat or into a file in the repo.** Paste it into the host's environment variables (step 2) and nowhere else.
 
-Once the server is running, open `https://YOUR-ADDRESS/admin/setup?key=YOUR_ADMIN_KEY`: the setup console shows what is connected, the exact values to paste into Meta and Razorpay (with copy buttons), the template text, and a button to send yourself a test message.
+## 0. What you need
 
-The same address, `https://YOUR-ADDRESS/`, is the **web app**: people without WhatsApp open it in any browser and can install it to their home screen. Same guide, same wallet rules, same scam protection. Set `WHATSAPP_NUMBER` to add a "Chat on WhatsApp" button, and `TRUST_PROXY=1` on Render or Fly.
+- This folder pushed to a **private** GitHub repo.
+- A phone number that is not on WhatsApp (a new SIM is fine), a card, and your ID.
+- For payments: an Australian bank account and an **ABN**. Stripe asks for an ABN on Australian accounts; sole traders can get one free at abr.gov.au. Confirm on Stripe's sign-up form.
 
-Run `npm run setup` first. It makes your secret keys and writes `.env`. Run `npm run doctor` after each step: it tells you what is still missing.
+## 1. Check the code (2 minutes, free)
 
-## 1. Try it for free, no accounts (2 minutes)
+```
+npm test           # the test suite, all against fakes
+npm run simulate   # chat with the bot in the terminal
+```
 
-`npm test` then `npm run simulate`. Or open the visual simulator. Nothing here costs anything.
+Needs Node 20 or newer. There are no dependencies to install.
 
-## 2. Put the server on the internet (10 minutes)
+## 2. Host it on Render (about 15 minutes)
 
-WhatsApp can only talk to a public https address. Pick one:
+Use **Render**, not Vercel. The bot keeps saved details and wallet balances on a disk. Vercel has no disk that survives a restart, so anything saved there is lost. Vercel is fine for previews only.
 
-- **Render (easiest):** put this folder on GitHub (private repo), Render > New > Blueprint > pick the repo. `render.yaml` sets everything up. Paste your secrets when asked. Your address is `https://saathi.onrender.com` (yours will differ).
-- **Fly.io:** the commands are at the top of `fly.toml`.
+1. Render > **New > Blueprint**, pick the repo. Render reads `render.yaml`: a Docker build, a 1 GB disk at `/data`, a health check on `/health`.
+2. Render asks for the secrets in the table below. Paste them there.
+3. After the first deploy, copy the service address (for example `https://saathi-xxxx.onrender.com`) into `PUBLIC_URL`. Stripe uses it to send people back after a payment.
+4. Open `https://YOUR-URL/health`. It should say `ok`.
 
-It needs a small always-on server with a disk (about ₹600 to ₹1,000 a month). A free tier that sleeps will miss reminders and lose saved data.
+| Variable | What it is | Where it comes from |
+|---|---|---|
+| `PUBLIC_URL` | Your service address, `https://…` | Render shows it |
+| `VERIFY_TOKEN` | Any long random string | Make one up |
+| `APP_SECRET` | Meta app secret | Meta > App settings > Basic |
+| `HASH_SALT`, `VAULT_KEY`, `ADMIN_KEY` | Long random strings | Make them up, e.g. `openssl rand -hex 32`. Never change `HASH_SALT`. Back up `VAULT_KEY`. |
+| `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_ID` | WhatsApp access | Step 3 |
+| `WHATSAPP_NUMBER` | Your number, digits with country code | Your number, e.g. `919876543210` |
+| `OPENROUTER_API_KEY` | Free AI answers | openrouter.ai/keys (step 4) |
+| `ANTHROPIC_API_KEY` | Optional paid AI | console.anthropic.com |
+| `STRIPE_SECRET_KEY` | Stripe secret key | Step 5 |
+| `STRIPE_WEBHOOK_SECRET` | Stripe signing secret | Step 5 |
+| `SARVAM_API_KEY`, `OPENAI_API_KEY` | Voice notes (optional) | dashboard.sarvam.ai, platform.openai.com |
+| `DETAILS_FLOW_ID` | WhatsApp Flow id (optional) | Step 3 |
 
-Put your address in `.env` as `PUBLIC_URL=...`, then `npm run doctor`: it should show "Server is up" and "Webhook handshake works".
+Keep `DOC_CHECK=0` until your privacy page is live (step 7).
 
-## 3. WhatsApp (Meta) (30 minutes, plus approval waits)
+## 3. WhatsApp (Meta) (about 30 minutes, plus approval waits)
 
 1. developers.facebook.com > **My Apps > Create App** > type **Business** > add the **WhatsApp** product.
-2. **WhatsApp > API Setup** gives you a free **test number** and a 24-hour token. You can already message yourself with it. Copy the **Phone number ID**.
-3. **Webhook:** WhatsApp > Configuration > Edit. Callback URL `https://YOUR-ADDRESS/webhook`, Verify token = the `VERIFY_TOKEN` from your `.env`. Then **subscribe to the `messages` field**.
-4. **App secret:** App settings > Basic > Show. Put it in `.env` as `APP_SECRET`.
-5. **Permanent token:** business.facebook.com > Settings > Users > **System users** > add one (Admin) > **Assign assets** (your app, full control) > **Generate token** with `whatsapp_business_messaging` and `whatsapp_business_management`, never expires. Put it in `.env` as `WHATSAPP_TOKEN`. The 24-hour token stops working the next day.
-6. **Your real number:** WhatsApp > API Setup > **Add phone number**. This needs **Business verification** (Settings > Security Center). It takes a few days and needs your business documents.
-7. **Business profile:** name "Saathi", a logo, category, and in the description "Independent helper. Not affiliated with the Government of India." Paste your `/privacy` link.
-8. **Reminder templates** (WhatsApp Manager > Message templates > Create). Category **Utility**. Create both:
+2. **WhatsApp > API Setup** gives you a free test number. Copy its **Phone number ID** into `WHATSAPP_PHONE_ID`.
+3. **WhatsApp > Configuration > Edit**: Callback URL `https://YOUR-URL/webhook`, Verify token = your `VERIFY_TOKEN`. Then subscribe to the **messages** field.
+4. **App settings > Basic**: copy the **App secret** into `APP_SECRET`.
+5. **Permanent token:** business.facebook.com > Settings > **System users** > add one (Admin) > **Assign assets** (your app, full control) > **Generate token** with `whatsapp_business_messaging` and `whatsapp_business_management`, no expiry. Put it in `WHATSAPP_TOKEN`. The 24-hour token on API Setup stops working the next day.
+6. Test first: message the test number "hi" from your own phone.
+7. **Your real number:** WhatsApp > API Setup > **Add phone number**. This needs **Business verification** (Settings > Security Center), which takes days.
+8. **Reminder templates** (WhatsApp Manager > Message templates, category **Utility**). Create both:
+   - `saathi_reminder`, English: `Reminder from Saathi: your {{1}} is due {{2}} ({{3}}). Reply MENU anytime for help.` Samples: `driving licence`, `in 7 days`, `12 Nov 2026`
+   - `saathi_reminder_hi`, Hindi: `साथी की ओर से याद दिलाना: आपका {{1}} {{2}} है ({{3}})। मदद के लिए कभी भी MENU लिखें।` Samples: `ड्राइविंग लाइसेंस`, `7 दिन बाद`, `12 Nov 2026`
+   - Until they are approved, reminders reach only people who messaged in the last 23 hours.
+9. **Optional details form:** create a WhatsApp Flow and upload `flows/details.flow.json` to it. Put the Flow's id in `DETAILS_FLOW_ID`. Without it, the bot asks one question at a time.
+10. **Profile:** name "Saathi", photo `assets/saathi-profile.png`, description "Independent helper. Not affiliated with the Government of India.", and the link to `/privacy`.
 
-   - Name `saathi_reminder`, language English:
-     `Reminder from Saathi: your {{1}} is due {{2}} ({{3}}). Reply MENU anytime for help.`
-     Sample values: `driving licence`, `in 7 days`, `12 Nov 2026`
-   - Name `saathi_reminder_hi`, language Hindi:
-     `साथी की ओर से याद दिलाना: आपका {{1}} {{2}} है ({{3}})। मदद के लिए कभी भी MENU लिखें।`
-     Sample values: `ड्राइविंग लाइसेंस`, `7 दिन बाद`, `12 Nov 2026`
+## 4. AI (free, 5 minutes)
 
-   Until they are approved, reminders reach only people who messaged in the last 23 hours.
-9. Optional: **WhatsApp Flows** for the details form. Set `DETAILS_FLOW_ID`. Skipping it is fine.
+openrouter.ai > **Keys** > create one > `OPENROUTER_API_KEY`. The bot uses `stealth/space-bunny-alpha` and falls back to `openrouter/free`. Free models may keep what they are sent, so the bot never sends saved details to the AI, and photo ID checks stay off (`DOC_CHECK=0`).
 
-Test with the test number first. Send "hi" from your own phone.
+Paid Claude is optional: `ANTHROPIC_API_KEY`, used only when no OpenRouter key is set.
 
-**What Meta charges:** replies inside 24 hours, and the reminder templates, are the costs the spend counter tracks. Check Meta's current India price list; it changes.
+## 5. Payments (Stripe) (about an hour; ID checks take days)
 
-## 4. AI (5 minutes)
+The wallet is in rupees. Stripe charges buyers in **INR** through its hosted checkout page, and pays out to your Australian bank in AUD.
 
-Easiest and free: openrouter.ai > Keys > create one > `OPENROUTER_API_KEY`. The bot then uses `stealth/space-bunny-alpha` (free, fast, reads images), and falls back to `openrouter/free` if it is busy or retired. Change `OPENROUTER_MODEL` / `OPENROUTER_FALLBACKS` any time; slugs are on openrouter.ai/models.
+Stripe's published Australian rates (check them before you rely on them): cards from Australia 1.65% + A$0.30; international cards 3.5% + A$0.30; plus 2% when a currency conversion is needed. Stripe is a payment processor, not a merchant of record: GST and tax are your responsibility.
 
-**Privacy warning:** free and stealth models may keep and learn from what they are sent. The bot never sends saved details to the AI, but a photographed ID would go there. That is why `DOC_CHECK` stays off by default; turn it on only with a model whose data policy you accept. Free models are shared, so they are sometimes slow or busy (the bot retries once, then says to try again), the quality of the answers varies, and 
+1. **stripe.com/au > Create account.** It starts in **test mode**. Stay there until the test in step 5 works.
+2. **Developers > API keys:** copy the **Secret key** (`sk_test_…`) into Render as `STRIPE_SECRET_KEY`.
+3. **Developers > Webhooks > Add endpoint:** URL `https://YOUR-URL/stripe`. Events: `checkout.session.completed` and `checkout.session.async_payment_succeeded`. Copy the **Signing secret** (`whsec_…`) into Render as `STRIPE_WEBHOOK_SECRET`.
+4. Render restarts with the new values. Open `https://YOUR-URL/admin/setup?key=YOUR_ADMIN_KEY`. The Payments line should say "Stripe key works (TEST mode)".
+5. **Test:** in the web app, open Wallet > Top up, pay with the test card `4242 4242 4242 4242`, any future date, any CVC. The balance should rise within seconds. If it does not, open the endpoint in Stripe's dashboard and read the failed deliveries. If Stripe refuses the INR charge, tell the developer, because the price setup needs a change.
+6. **Go live:** finish Stripe's identity and bank checks. Put the live secret key (`sk_live_…`) in `STRIPE_SECRET_KEY`. Add the same endpoint in live mode and put its new signing secret in `STRIPE_WEBHOOK_SECRET`.
 
-Prefer paid Claude: console.anthropic.com > API keys > `ANTHROPIC_API_KEY` (used only when no OpenRouter key is set). If you pick a paid OpenRouter model, set `LLM_IN_USD_PER_M` and `LLM_OUT_USD_PER_M` so the spend caps count it. The caps (`DAILY_BUDGET_INR`, `MONTHLY_BUDGET_INR`) stop AI use long before real money goes.
-
-## 5. Payments (Razorpay) (10 minutes, KYC takes days)
-
-1. razorpay.com > sign up > start in **Test mode** (no KYC needed, no real money).
-2. Settings > **API keys** > generate. Put `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` in `.env`. Test keys start `rzp_test_`, live keys `rzp_live_`.
-3. Make sure **Payment Links** is on for your account.
-4. Settings > **Webhooks** > add: URL `https://YOUR-ADDRESS/razorpay`, secret = any long random string (also put it in `.env` as `RAZORPAY_WEBHOOK_SECRET`), event **`payment_link.paid`** only.
-5. Test: in WhatsApp type `wallet` > Top up > pay with Razorpay's test card 4111 1111 1111 1111 (any future date, any CVV). The balance should rise within seconds.
-6. Complete KYC for live mode, swap in the `rzp_live_` keys.
-
-**Read before taking real money:** a top-up balance that people can spend later is a prepaid wallet, and Indian rules on prepaid instruments (RBI) may apply. Get advice before you launch it. The safe way to start is to sell only fixed packs and keep the balance small.
+Know the limits before launch:
+- Buyers pay by card. As far as I know, UPI is not offered through Stripe to an Australian account. Check Stripe's current list.
+- A top-up balance people can spend later is a **prepaid wallet**, and Indian rules on prepaid instruments (RBI) may apply. Get advice before taking real money. The safe start is fixed packs with small balances.
+- Stripe does not send a share of takings to ad accounts. Moving money into ads is a manual step for now.
 
 ## 6. Voice notes (optional, 3 minutes)
 
-dashboard.sarvam.ai > API key > `SARVAM_API_KEY`. Or an OpenAI key as fallback.
+`SARVAM_API_KEY` from dashboard.sarvam.ai, or `OPENAI_API_KEY` as the fallback.
 
-## 7. Go live checklist
+## 7. Go-live checklist
 
-- `npm run doctor` shows no FIX lines.
-- Message the number from a second phone: pick a language, open a service, send a photo, send a voice note, top up, set a reminder.
-- Open `https://YOUR-ADDRESS/` on a phone, chat, attach a photo, and install it to the home screen.
-- Open `https://YOUR-ADDRESS/admin/inbox?key=YOUR_ADMIN_KEY` and answer a test "agent" request.
-- Turn on `DOC_CHECK=1` only after `/privacy` is public and linked in your WhatsApp profile.
-- Back up `VAULT_KEY` and the `/data` disk. Lose the key and saved profiles cannot be opened.
-- Have a lawyer glance at the privacy notice and the wallet.
+- The admin setup page shows no FIX lines. Run `npm run doctor` locally as well.
+- Message the number from a second phone: pick a language, open a service, send a photo, send a voice note, top up with the test card, set a reminder.
+- Open `https://YOUR-URL/` on a phone and add it to the home screen.
+- Open `https://YOUR-URL/admin/inbox?key=YOUR_ADMIN_KEY` and answer a test "agent" request.
+- Set `DOC_CHECK=1` only after `/privacy` is public and linked from your WhatsApp profile.
+- Back up `VAULT_KEY` and the Render disk. Lose `VAULT_KEY` and saved profiles cannot be opened.
+- Have a lawyer read the privacy notice (India's DPDP Act) and the wallet setup.
 
-## Everyday running
+## Local commands
 
-- Spend so far: `/admin/stats?key=ADMIN_KEY`. People waiting for a human: the inbox page.
-- Reminders run by themselves every hour.
-- To fix a translation, edit `data/translations.json` and add `"reviewed": true`.
+| Command | What it does |
+|---|---|
+| `npm test` | Runs the test suite |
+| `npm run simulate` | Chat with the bot in the terminal |
+| `npm run doctor` | Checks each connection using your `.env` |
+| `npm run setup` | Writes `.env` with generated secrets and asks for keys. Local only. Never commit `.env`. |
+| `npm run translate` | Pre-generates the machine-translated languages (needs an AI key) |
+| `npm run build:site-demo` | Writes `demo/saathi-site.html`, a one-file preview of the landing page |
+
+## Ongoing
+
+- Spend so far: `/admin/stats?key=ADMIN_KEY`. People waiting for a human: `/admin/inbox?key=ADMIN_KEY`.
+- Reminders run inside the server every hour.
+- To fix a translation, edit `data/translations.json` and add `"reviewed": true`. It will not be overwritten.

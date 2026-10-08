@@ -30,15 +30,14 @@ export const config = {
   graphVersion: process.env.GRAPH_VERSION || 'v21.0',
   graphBase: process.env.GRAPH_BASE || 'https://graph.facebook.com', // overridden only in tests
   anthropicBase: process.env.ANTHROPIC_BASE || 'https://api.anthropic.com',
-  razorpayBase: process.env.RAZORPAY_BASE || 'https://api.razorpay.com',
+  stripeBase: process.env.STRIPE_BASE || 'https://api.stripe.com',
 
   // Encrypts saved profiles. Set a long random string in production.
   vaultKey: process.env.VAULT_KEY || 'dev-vault-key-change-me',
 
-  // Razorpay (optional: without it, top-ups are not offered)
-  razorpayKeyId: process.env.RAZORPAY_KEY_ID || '',
-  razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET || '',
-  razorpayWebhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET || '',
+  // Stripe Checkout (optional: without it, top-ups are not offered)
+  stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
+  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
 
   // WhatsApp Flow id for the details form (optional: without it the bot asks one field at a time)
   detailsFlowId: process.env.DETAILS_FLOW_ID || '',

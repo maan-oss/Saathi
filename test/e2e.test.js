@@ -1,4 +1,4 @@
-// End to end: the real server process, real HTTP, signed webhooks, and fake Meta / Anthropic / Razorpay servers.
+// End to end: the real server process, real HTTP, signed webhooks, and fake Meta / Anthropic / Stripe servers.
 import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
@@ -8,10 +8,10 @@ import { mkdtempSync, rmSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const APP_SECRET = 'app-secret';
-const RZP_SECRET = 'rzp-secret';
+const STRIPE_SECRET = 'whsec_e2e';
 const PHONE = '919812345678';
 const sent = []; // every WhatsApp message the bot sent
-const rzpLinks = [];
+const stripeSessions = [];
 const anthropicCalls = [];
 let sttCalls = 0;
 let mock, mockPort, server, serverPort, dataDir;
@@ -49,11 +49,12 @@ before(async () => {
       const hasImage = Array.isArray(b.messages[0].content) && b.messages[0].content.some((c) => c.type === 'image' || c.type === 'document');
       return json(res, { content: [{ type: 'text', text: hasImage ? JSON.stringify(DOC) : 'You can fix that on the official site.' }], usage: { input_tokens: 900, output_tokens: 80 } });
     }
-    if (u === '/v1/payment_links') {
-      assert.match(req.headers.authorization, /^Basic /);
-      const b = JSON.parse(body);
-      rzpLinks.push(b);
-      return json(res, { short_url: `https://rzp.test/${b.reference_id}`, id: 'plink_test' });
+    if (u === '/v1/checkout/sessions') {
+      assert.equal(req.headers.authorization, 'Bearer sk_test_e2e');
+      const f = new URLSearchParams(body);
+      const ref = f.get('client_reference_id');
+      stripeSessions.push({ ref, currency: f.get('line_items[0][price_data][currency]'), amount: Number(f.get('line_items[0][price_data][unit_amount]')) });
+      return json(res, { id: `cs_${ref}`, url: `https://checkout.test/${ref}` });
     }
     json(res, { error: 'not found' }, 404);
   });
@@ -65,8 +66,8 @@ before(async () => {
       ...process.env,
       PORT: String(serverPort), DATA_DIR: dataDir,
       WHATSAPP_TOKEN: 'WA_TOKEN', WHATSAPP_PHONE_ID: 'PHONEID', VERIFY_TOKEN: 'verify-me', APP_SECRET, HASH_SALT: 'salt', VAULT_KEY: 'vault-key',
-      GRAPH_BASE: `http://127.0.0.1:${mockPort}`, ANTHROPIC_BASE: `http://127.0.0.1:${mockPort}`, RAZORPAY_BASE: `http://127.0.0.1:${mockPort}`,
-      ANTHROPIC_API_KEY: 'sk-test', DOC_CHECK: '1', RAZORPAY_KEY_ID: 'rzp_id', RAZORPAY_KEY_SECRET: 'rzp_sec', RAZORPAY_WEBHOOK_SECRET: RZP_SECRET,
+      GRAPH_BASE: `http://127.0.0.1:${mockPort}`, ANTHROPIC_BASE: `http://127.0.0.1:${mockPort}`, STRIPE_BASE: `http://127.0.0.1:${mockPort}`,
+      ANTHROPIC_API_KEY: 'sk-test', DOC_CHECK: '1', STRIPE_SECRET_KEY: 'sk_test_e2e', STRIPE_WEBHOOK_SECRET: STRIPE_SECRET, PUBLIC_URL: `http://127.0.0.1:${serverPort}`,
       SARVAM_API_KEY: 'sarvam-key', SARVAM_BASE: `http://127.0.0.1:${mockPort}`, DETAILS_FLOW_ID: 'FLOW1', ADMIN_KEY: 'adm', DAILY_BUDGET_INR: '300',
     },
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -195,15 +196,15 @@ test('top up: payment link created in paise, signed webhook credits the wallet o
   const [list] = await say(text('topup'));
   assert.equal(list.interactive.type, 'list');
   const [link] = await say(pick('pay_5000', '₹50'));
-  assert.equal(rzpLinks.length, 1);
-  assert.equal(rzpLinks[0].amount, 5000);
-  assert.equal(rzpLinks[0].currency, 'INR');
-  assert.match(link.text.body, /https:\/\/rzp\.test\/sv_/);
+  assert.equal(stripeSessions.length, 1);
+  assert.equal(stripeSessions[0].amount, 5000);
+  assert.equal(stripeSessions[0].currency, 'inr');
+  assert.match(link.text.body, /https:\/\/checkout\.test\/sv_/);
 
-  const ref = rzpLinks[0].reference_id;
-  const event = JSON.stringify({ event: 'payment_link.paid', payload: { payment_link: { entity: { reference_id: ref, amount_paid: 5000 } }, payment: { entity: { id: 'pay_E2E1', amount: 5000 } } } });
-  const sign = (b, s = RZP_SECRET) => crypto.createHmac('sha256', s).update(b).digest('hex');
-  const hook = (b, s) => fetch(url('/razorpay'), { method: 'POST', headers: { 'x-razorpay-signature': sign(b, s), 'content-type': 'application/json' }, body: b });
+  const ref = stripeSessions[0].ref;
+  const event = JSON.stringify({ id: 'evt_E2E1', type: 'checkout.session.completed', data: { object: { id: `cs_${ref}`, client_reference_id: ref, payment_status: 'paid', currency: 'inr', amount_total: 5000, payment_intent: 'pi_E2E1' } } });
+  const stripeHeader = (b, s = STRIPE_SECRET) => { const t = Math.floor(Date.now() / 1000); return `t=${t},v1=${crypto.createHmac('sha256', s).update(`${t}.${b}`).digest('hex')}`; };
+  const hook = (b, s) => fetch(url('/stripe'), { method: 'POST', headers: { 'stripe-signature': stripeHeader(b, s), 'content-type': 'application/json' }, body: b });
 
   assert.equal((await hook(event, 'wrong')).status, 401);
   const before = sent.length;
@@ -211,7 +212,7 @@ test('top up: payment link created in paise, signed webhook credits the wallet o
   await until(() => sent.length >= before + 1);
   assert.match(sent.at(-1).text.body, /Received ₹50/);
   assert.equal(sent.at(-1).to, PHONE);
-  await hook(event); // Razorpay retries: must not credit twice
+  await hook(event); // Stripe retries: must not credit twice
   await new Promise((r) => setTimeout(r, 250));
   assert.equal(sent.length, before + 1);
 

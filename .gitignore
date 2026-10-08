@@ -5,4 +5,5 @@ data-sim/
 node_modules/
 .test-*
 .vercel
+demo/
 *.zip

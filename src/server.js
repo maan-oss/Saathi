@@ -7,7 +7,7 @@ import { createLlm } from './llm.js';
 import { createWhatsApp, parseInbound } from './whatsapp.js';
 import { createBot } from './flow.js';
 import { createVault } from './vault.js';
-import { createPayments, validRazorpaySignature, parsePaidEvent } from './payments.js';
+import { createPayments, validStripeSignature, parsePaidEvent } from './payments.js';
 import { t } from './messages.js';
 import { inr } from './billing.js';
 import { createConverse } from './converse.js';
@@ -104,7 +104,7 @@ async function processMessage(msg) {
   });
 }
 
-// Razorpay tells us a payment link was paid. Credit the wallet once, then tell the user.
+// Stripe tells us a checkout was paid. Credit the wallet once, then tell the user.
 function processPayment(paid) {
   const rec = store.getPayment(paid.ref);
   if (!rec) return console.warn('payment for unknown ref', paid.ref);
@@ -180,7 +180,7 @@ What we do: Saathi guides you through government paperwork on WhatsApp: PAN, dri
 What we keep: your place in the guide and your language, deleted after ${config.userIdleHours} hours of inactivity. If you choose to save your details (name, date of birth, parents' names, gender, address, PIN code, mobile number, email) they are stored encrypted until you type "forget" or ${config.accountKeepDays} days without a message. Your locker (only if you add to it): ID numbers such as PAN, licence or passport, and expiry dates, encrypted with a server key, hidden until you tap Unlock, erased with "forget". We can technically decrypt them with that key, so we never look and only the code that answers you does. We never store Aadhaar cards as photos, card numbers or OTPs. Your wallet balance and payment records (amount, date, reference) are kept for accounts. Everything under a scrambled ID, not your phone number. Type "delete" to erase it all.
 Photos and PDFs: only read if you agree, only in memory, never saved. Voice notes: turned into text by a speech service (Sarvam or OpenAI), held in memory, never saved; the text is used only to answer you and is not kept.
 Reminders: if you set one, we keep the date, its name and your phone number (encrypted) so we can message you before it, until it passes or you type "delete". The AI service reads the photo; your saved details are never sent to it.
-Payments: made on Razorpay's page. We never see your card or UPI details. While a payment is pending we hold your phone number to tell you it arrived.
+Payments: made on Stripe's page. We never see your card details. While a payment is pending we hold your phone number to tell you it arrived.
 If you ask for a human (type "agent"), we save your phone number and what you write to them so a person can reply. Closed conversations are deleted after 30 days.
 AI: free-form questions, document reading and translation are processed by an AI service (${config.openrouterKey ? 'OpenRouter, which routes to a model provider; free models may keep what they are sent, so with a free model do not photograph documents you would not want a third party to see' : 'Anthropic'}). Other languages than English and Hindi are machine translated and may contain mistakes.
 We never ask for your OTP or password. Do not share them with anyone.
@@ -291,7 +291,7 @@ const server = http.createServer((req, res) => {
         base,
         publicUrlSet: Boolean(config.publicUrl),
         webhook: `${base}/webhook`,
-        razorpayHook: `${base}/razorpay`,
+        stripeHook: `${base}/stripe`,
         verifyToken: config.verifyToken,
         privacy: `${base}/privacy`,
         app: `${base}/`,
@@ -383,9 +383,9 @@ const server = http.createServer((req, res) => {
     });
   }
 
-  if (req.method === 'POST' && url.pathname === '/razorpay') {
+  if (req.method === 'POST' && url.pathname === '/stripe') {
     return void readBody(req, res, (rawBody) => {
-      if (!validRazorpaySignature(rawBody, req.headers['x-razorpay-signature'], config.razorpayWebhookSecret)) {
+      if (!validStripeSignature(rawBody, req.headers['stripe-signature'], config.stripeWebhookSecret)) {
         res.statusCode = 401;
         return void res.end('bad signature');
       }
@@ -394,7 +394,7 @@ const server = http.createServer((req, res) => {
         const paid = parsePaidEvent(JSON.parse(rawBody.toString('utf8')));
         if (paid) processPayment(paid);
       } catch (e) {
-        console.error('bad razorpay body:', e.message);
+        console.error('bad stripe body:', e.message);
       }
     });
   }
@@ -422,7 +422,7 @@ if (!process.env.VERCEL) server.listen(config.port, () => {
   console.log(config.dryRun ? '⚠️  DRY RUN: no WhatsApp credentials, replies are printed.' : 'WhatsApp: live');
   console.log(llm.enabled ? `AI: ${llm.provider === 'openrouter' ? 'OpenRouter ' + config.openrouterModel + (config.openrouterFallbacks.length ? ' (fallback ' + config.openrouterFallbacks.join(', ') + ')' : '') : config.model}` : 'AI: off (scripted guide only)');
   if (!config.dryRun && config.vaultKey === 'dev-vault-key-change-me') console.warn('⚠️  Set VAULT_KEY: saved profiles are encrypted with a public dev key.');
-  console.log(payments ? 'Payments: Razorpay' : 'Payments: off (no top-ups)');
+  console.log(payments ? 'Payments: Stripe' : 'Payments: off (no top-ups)');
   console.log(stt.enabled ? `Voice notes: on (${config.sarvamKey ? 'Sarvam' : 'OpenAI'}${config.sarvamKey && config.openaiKey ? ', OpenAI fallback' : ''})` : 'Voice notes: off (no SARVAM_API_KEY or OPENAI_API_KEY)');
   console.log(`Languages: English, हिंदी${translator.enabled ? ', plus 9 AI-translated on demand' : ''}`);
   console.log(`Web app: ${config.publicUrl || 'http://localhost:' + config.port}/`);

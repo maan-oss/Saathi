@@ -26,8 +26,6 @@ const MAX_UPLOAD = 6 * 1024 * 1024;
 const MEDIA_TTL = 10 * 60 * 1000;
 
 const STATIC = {
-  '/fonts/fraunces.woff2': ['fonts/fraunces-latin-wght-normal.woff2', 'font/woff2'],
-  '/fonts/fraunces-italic.woff2': ['fonts/fraunces-latin-wght-italic.woff2', 'font/woff2'],
   '/fonts/instrument.woff2': ['fonts/instrument-sans-latin-standard-normal.woff2', 'font/woff2'],
   '/fonts/devanagari.woff2': ['fonts/noto-sans-devanagari-devanagari-700-normal.woff2', 'font/woff2'],
   '/fonts/bricolage.woff2': ['fonts/bricolage-grotesque-latin-wght-normal.woff2', 'font/woff2'],

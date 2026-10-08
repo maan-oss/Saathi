@@ -12,7 +12,7 @@ test('addresses: official ones pass, copies and tricks do not', () => {
   for (const bad of ['https://incometax.gov.in.verify-kyc.xyz/login', 'www.pan-card-india.in', 'aadhaar-update.co.in', 'https://uidai-gov.com', 'passport-seva.online', 'http://192.168.4.4/pan', 'https://incometax.gov.in@evil.com/', 'https://xn--incometax-9xa.in', 'https://apply.example.com/update.apk'])
     assert.equal(kind(bad), 'trap', bad);
   assert.equal(kind('https://bit.ly/3abc'), 'shortener');
-  assert.equal(kind('https://rzp.io/i/abc'), 'payment');
+  assert.equal(kind('https://checkout.stripe.com/c/pay/cs_test_abc'), 'payment');
   assert.equal(kind('https://panasonic.com'), 'unknown'); // "pan" inside a word is not a look-alike
   assert.equal(kind('http://incometax.gov.in'), 'unknown'); // no padlock
   assert.equal(isOfficialHost('notgov.in'), false);

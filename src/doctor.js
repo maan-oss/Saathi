@@ -56,17 +56,18 @@ export async function diagnose(cfg = config, f = fetch) {
 
   if (cfg.openrouterKey && cfg.docCheck) out.push(bad('Document reading on a free model', 'free and stealth models on OpenRouter may keep and learn from what you send. Do not read ID photos with them: set DOC_CHECK=0 or pick a paid model whose data policy you accept.'));
 
-  // Razorpay
-  if (!cfg.razorpayKeyId || !cfg.razorpayKeySecret) out.push(skip('Payments', 'no Razorpay keys: top-ups are not offered, people use the free daily messages and welcome credit only.'));
+  // Stripe
+  if (!cfg.stripeSecretKey) out.push(skip('Payments', 'no Stripe secret key: top-ups are not offered, people use the free daily messages and welcome credit only.'));
   else {
     try {
-      const r = await f(`${cfg.razorpayBase}/v1/payment_links?count=1`, { headers: { authorization: 'Basic ' + Buffer.from(`${cfg.razorpayKeyId}:${cfg.razorpayKeySecret}`).toString('base64') } });
-      const mode = cfg.razorpayKeyId.startsWith('rzp_test') ? ' (TEST mode: no real money)' : cfg.razorpayKeyId.startsWith('rzp_live') ? ' (LIVE)' : '';
-      out.push(r.ok ? ok('Razorpay keys work' + mode) : bad('Razorpay keys', `${r.status}: ${await short(r)}. Payment Links must be enabled on your account.`));
+      const r = await f(`${cfg.stripeBase}/v1/balance`, { headers: { authorization: `Bearer ${cfg.stripeSecretKey}` } });
+      const mode = cfg.stripeSecretKey.startsWith('sk_test_') ? ' (TEST mode: no real money)' : cfg.stripeSecretKey.startsWith('sk_live_') ? ' (LIVE)' : '';
+      out.push(r.ok ? ok('Stripe key works' + mode) : bad('Stripe key', `${r.status}: ${await short(r)}. Use the secret key (sk_test_... or sk_live_...) from the Stripe dashboard.`));
     } catch (e) {
-      out.push(bad('Razorpay', 'could not reach it: ' + e.message));
+      out.push(bad('Stripe', 'could not reach it: ' + e.message));
     }
-    out.push(cfg.razorpayWebhookSecret ? ok('RAZORPAY_WEBHOOK_SECRET set') : bad('RAZORPAY_WEBHOOK_SECRET', 'empty: paid top-ups would be rejected and nobody gets credited.'));
+    out.push(cfg.stripeWebhookSecret ? ok('STRIPE_WEBHOOK_SECRET set') : bad('STRIPE_WEBHOOK_SECRET', 'empty: paid top-ups would be rejected and nobody gets credited.'));
+    if (!cfg.publicUrl) out.push(bad('Stripe return address', 'PUBLIC_URL is not set, so Stripe cannot send people back to Saathi.'));
   }
 
   // Voice

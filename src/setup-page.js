@@ -1,6 +1,6 @@
 // The setup console (served at /admin/setup?key=...). It shows what is connected, what is missing, and the exact
-// values to paste into Meta and Razorpay, each with a copy button. Same white-and-green look as the app.
-// It cannot create your Meta, Razorpay or Anthropic accounts: those need your own login, OTP and ID.
+// values to paste into Meta and Stripe, each with a copy button. Same white-and-green look as the app.
+// It cannot create your Meta, Stripe or Anthropic accounts: those need your own login, OTP and ID.
 
 export const SETUP_HTML = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -71,8 +71,8 @@ a{color:var(--gi)}
 
   <section class="card">
     <h2>2. Payments (optional)</h2>
-    <p class="mut small">In Razorpay: Settings, Webhooks, Add new webhook. Choose the event <b>payment_link.paid</b>, and set a secret. Put the same secret in RAZORPAY_WEBHOOK_SECRET.</p>
-    <div class="val"><div style="flex:1;min-width:0"><small>Razorpay webhook URL</small><code id="rzp"></code></div><button data-copy="rzp">Copy</button></div>
+    <p class="mut small">In Stripe: Developers, Webhooks, Add an endpoint. Paste the webhook URL below and choose the event <b>checkout.session.completed</b>. Stripe then shows a signing secret (whsec_...): put it in STRIPE_WEBHOOK_SECRET.</p>
+    <div class="val"><div style="flex:1;min-width:0"><small>Stripe webhook URL</small><code id="stripeHook"></code></div><button data-copy="stripeHook">Copy</button></div>
   </section>
 
   <section class="card">
@@ -92,7 +92,7 @@ a{color:var(--gi)}
     <h2>5. Your links</h2>
     <div class="val"><div style="flex:1;min-width:0"><small>Web app (share this with people who don't use WhatsApp)</small><code id="app"></code></div><button data-copy="app">Copy</button></div>
     <div class="val"><div style="flex:1;min-width:0"><small>Privacy notice (paste into your WhatsApp business profile)</small><code id="priv"></code></div><button data-copy="priv">Copy</button></div>
-    <div class="row"><a class="btn" id="inboxLink" href="#">Open the human inbox</a><a class="btn" href="https://developers.facebook.com/apps/" target="_blank" rel="noopener noreferrer">Meta for Developers</a><a class="btn" href="https://dashboard.razorpay.com/" target="_blank" rel="noopener noreferrer">Razorpay</a><a class="btn" href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer">OpenRouter</a></div>
+    <div class="row"><a class="btn" id="inboxLink" href="#">Open the human inbox</a><a class="btn" href="https://developers.facebook.com/apps/" target="_blank" rel="noopener noreferrer">Meta for Developers</a><a class="btn" href="https://dashboard.stripe.com/" target="_blank" rel="noopener noreferrer">Stripe</a><a class="btn" href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer">OpenRouter</a></div>
   </section>
 
   <section class="card"><h2>Spend so far</h2><pre id="spend" class="mut"></pre></section>
@@ -125,7 +125,7 @@ async function load() {
   $('sum').className = 'sum ' + (fix ? 'todo' : 'good');
   $('sum').textContent = fix ? fix + ' thing' + (fix > 1 ? 's' : '') + ' to fix' : 'All connected';
   $('when').textContent = 'Checked ' + new Date().toLocaleTimeString();
-  $('hook').textContent = j.webhook; $('vt').textContent = j.verifyToken; $('rzp').textContent = j.razorpayHook; $('app').textContent = j.app; $('priv').textContent = j.privacy;
+  $('hook').textContent = j.webhook; $('vt').textContent = j.verifyToken; $('stripeHook').textContent = j.stripeHook; $('app').textContent = j.app; $('priv').textContent = j.privacy;
   $('urlNote').textContent = j.publicUrlSet ? '' : 'PUBLIC_URL is not set, so these addresses are guessed from this page. Set PUBLIC_URL to your real https address, then check again.';
   const t = $('tpls'); t.replaceChildren();
   for (const x of j.templates) {

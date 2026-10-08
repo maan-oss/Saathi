@@ -331,7 +331,7 @@
     }
     if (info.kind === 'payment' && href) {
       const a = el('a', 'link pay'); a.href = href; a.target = '_blank'; a.rel = 'noopener noreferrer nofollow';
-      a.append(svg(ICON.lock, 17), T('Pay securely on Razorpay'));
+      a.append(svg(ICON.lock, 17), T('Pay securely on Stripe'));
       a.title = url;
       a.addEventListener('click', () => { awaitingPayment = true; });
       return a;

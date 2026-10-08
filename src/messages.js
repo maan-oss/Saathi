@@ -31,7 +31,7 @@ const M = {
     scam_v_danger: "🚫 *This looks like a scam.*",
     scam_v_none: "I found no link and no known scam trick in that. This doesn't prove it is safe. If anyone asked for money, an OTP or your documents, stop and don't reply.",
     scam_u_official: "• *{host}* is an official government address.",
-    scam_u_payment: "• *{host}* is Razorpay, the payment service Saathi uses. Pay only if you asked for a top-up in this chat.",
+    scam_u_payment: "• *{host}* is Stripe, the payment service Saathi uses. Pay only if you asked for a top-up in this chat.",
     scam_u_trap: "• *{host}* is NOT an official address.",
     scam_u_shortener: "• *{host}* is a short link that hides where it goes.",
     scam_u_unknown: "• *{host}* is not a government address, and I can't confirm who runs it.",
@@ -62,7 +62,7 @@ const M = {
     btn_scam_again: "Check another",
     btn_scam_tips: "Stay-safe tips",
     scam_image: "I can't read screenshots for this yet. Copy the text or link and paste it here.",
-    safety_tips: "🛡️ *Stay safe*\n• I will never ask for your OTP, PIN, password or card number. Neither will anyone from the government.\n• Government sites end in *.gov.in* or *.nic.in*. For PAN, *pan.utiitsl.com* and *proteantech.in* (Protean) are official too.\n• Real fees are paid on the official site's own payment page, never to a person's phone number or UPI.\n• A licence, passport or PAN \"without test\", \"in 1 day\" or \"100% guaranteed\" is a scam.\n• I only send links to official sites. Top-up links come from razorpay.com or rzp.io, and only after you ask for a top-up.\n• Something feels wrong? Type *agent*. To report a scam call *1930* or use *cybercrime.gov.in*.",
+    safety_tips: "🛡️ *Stay safe*\n• I will never ask for your OTP, PIN, password or card number. Neither will anyone from the government.\n• Government sites end in *.gov.in* or *.nic.in*. For PAN, *pan.utiitsl.com* and *proteantech.in* (Protean) are official too.\n• Real fees are paid on the official site's own payment page, never to a person's phone number or UPI.\n• A licence, passport or PAN \"without test\", \"in 1 day\" or \"100% guaranteed\" is a scam.\n• I only send links to official sites. Top-up links come from checkout.stripe.com, and only after you ask for a top-up.\n• Something feels wrong? Type *agent*. To report a scam call *1930* or use *cybercrime.gov.in*.",
     sensitive_warn: "🔒 That looks like an {what}. Never type these into any chat, including this one. I don't need it and I did not keep it. Please delete that message, and describe the problem in words instead.",
     sensitive_k_aadhaar: "Aadhaar number",
     sensitive_k_card: "card number",
@@ -241,7 +241,7 @@ const M = {
     wallet_pack: '\n✅ Saathi pack active until {date} ({scans} scans, {aiN} AI answers left)',
     pay_need:
       'That costs {price} and your balance is {bal}. Top up, or get the *Saathi pack* ({pack}) that covers a whole paperwork job.',
-    topup_body: 'How much would you like to add? You pay on a secure Razorpay page.',
+    topup_body: 'How much would you like to add? You pay on a secure Stripe page.',
     topup_btn: 'Amounts',
     topup_desc: 'About {ai} AI answers or {scans} scans',
     topup_link:
@@ -336,7 +336,7 @@ const M = {
     scam_v_danger: "🚫 *यह ठगी लगती है।*",
     scam_v_none: "इसमें मुझे कोई लिंक या जानी-पहचानी ठगी की चाल नहीं मिली। इसका मतलब यह नहीं कि यह सुरक्षित है। अगर किसी ने पैसे, OTP या आपके दस्तावेज़ माँगे हैं तो रुकें और जवाब न दें।",
     scam_u_official: "• *{host}* सरकारी पता है।",
-    scam_u_payment: "• *{host}* Razorpay है, वह पेमेंट सेवा जो Saathi इस्तेमाल करता है। तभी भुगतान करें जब आपने इस चैट में टॉप-अप माँगा हो।",
+    scam_u_payment: "• *{host}* Stripe है, वह पेमेंट सेवा जो Saathi इस्तेमाल करता है। तभी भुगतान करें जब आपने इस चैट में टॉप-अप माँगा हो।",
     scam_u_trap: "• *{host}* सरकारी पता नहीं है।",
     scam_u_shortener: "• *{host}* छोटा लिंक है जो छिपाता है कि वह कहाँ ले जाता है।",
     scam_u_unknown: "• *{host}* सरकारी पता नहीं है, और मैं यह पक्का नहीं कर सकता कि इसे कौन चलाता है।",
@@ -367,7 +367,7 @@ const M = {
     btn_scam_again: "और जाँचें",
     btn_scam_tips: "सुरक्षा के टिप्स",
     scam_image: "मैं इसके लिए स्क्रीनशॉट अभी नहीं पढ़ सकता। टेक्स्ट या लिंक कॉपी करके यहाँ चिपकाएँ।",
-    safety_tips: "🛡️ *सुरक्षित रहें*\n• मैं आपसे कभी OTP, PIN, पासवर्ड या कार्ड नंबर नहीं माँगूँगा। सरकार का कोई व्यक्ति भी नहीं माँगेगा।\n• सरकारी साइटें *.gov.in* या *.nic.in* पर खत्म होती हैं। PAN के लिए *pan.utiitsl.com* और *proteantech.in* (Protean) भी सरकारी हैं।\n• असली फीस सरकारी साइट के अपने पेमेंट पेज पर ही भरें, किसी के फोन नंबर या UPI पर कभी नहीं।\n• \"बिना टेस्ट\", \"1 दिन में\" या \"100% गारंटी\" वाला लाइसेंस, पासपोर्ट या PAN ठगी है।\n• मैं सिर्फ़ सरकारी साइटों के लिंक भेजता हूँ। टॉप-अप के लिंक razorpay.com या rzp.io से आते हैं, और तभी जब आप टॉप-अप माँगें।\n• कुछ गड़बड़ लगे तो *agent* लिखें। ठगी की शिकायत के लिए *1930* पर कॉल करें या *cybercrime.gov.in* इस्तेमाल करें।",
+    safety_tips: "🛡️ *सुरक्षित रहें*\n• मैं आपसे कभी OTP, PIN, पासवर्ड या कार्ड नंबर नहीं माँगूँगा। सरकार का कोई व्यक्ति भी नहीं माँगेगा।\n• सरकारी साइटें *.gov.in* या *.nic.in* पर खत्म होती हैं। PAN के लिए *pan.utiitsl.com* और *proteantech.in* (Protean) भी सरकारी हैं।\n• असली फीस सरकारी साइट के अपने पेमेंट पेज पर ही भरें, किसी के फोन नंबर या UPI पर कभी नहीं।\n• \"बिना टेस्ट\", \"1 दिन में\" या \"100% गारंटी\" वाला लाइसेंस, पासपोर्ट या PAN ठगी है।\n• मैं सिर्फ़ सरकारी साइटों के लिंक भेजता हूँ। टॉप-अप के लिंक checkout.stripe.com से आते हैं, और तभी जब आप टॉप-अप माँगें।\n• कुछ गड़बड़ लगे तो *agent* लिखें। ठगी की शिकायत के लिए *1930* पर कॉल करें या *cybercrime.gov.in* इस्तेमाल करें।",
     sensitive_warn: "🔒 यह {what} जैसा लग रहा है। ऐसी चीज़ें किसी भी चैट में न लिखें, इस चैट में भी नहीं। मुझे इसकी ज़रूरत नहीं है और मैंने इसे रखा नहीं। कृपया वह संदेश डिलीट कर दें, और समस्या शब्दों में बताएँ।",
     sensitive_k_aadhaar: "आधार नंबर",
     sensitive_k_card: "कार्ड नंबर",
@@ -543,7 +543,7 @@ const M = {
     wallet_pack: '\n✅ Saathi पैक {date} तक चालू ({scans} स्कैन, {aiN} AI जवाब बाकी)',
     pay_need:
       'इसकी कीमत {price} है और आपका बैलेंस {bal} है। टॉप-अप करें, या पूरे कागज़ी काम के लिए *Saathi पैक* ({pack}) लें।',
-    topup_body: 'कितने रुपये जोड़ना चाहेंगे? भुगतान सुरक्षित Razorpay पेज पर होता है।',
+    topup_body: 'कितने रुपये जोड़ना चाहेंगे? भुगतान सुरक्षित Stripe पेज पर होता है।',
     topup_btn: 'रकम',
     topup_desc: 'करीब {ai} AI जवाब या {scans} स्कैन',
     topup_link:

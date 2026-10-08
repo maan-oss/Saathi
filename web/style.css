@@ -253,15 +253,13 @@ button:active:not(:disabled){transform:scale(.97)}
 .vault.hidden{border-style:dashed;background:var(--tint)}
 .vault .l::first-letter{text-transform:uppercase}
 
-/* ===== Saathi v3 skin: mint and deep green, Bricolage headings, Fraunces reading text ===== */
+/* ===== Saathi v3 skin: mint and deep green, Bricolage headings ===== */
 @font-face{font-family:"Bricolage";src:url(/fonts/bricolage.woff2) format("woff2");font-weight:200 800;font-display:swap}
 @font-face{font-family:"Instrument Sans";src:url(/fonts/instrument.woff2) format("woff2");font-weight:400 700;font-display:swap}
-@font-face{font-family:"Fraunces";src:url(/fonts/fraunces.woff2) format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
-@font-face{font-family:"Fraunces";src:url(/fonts/fraunces-italic.woff2) format("woff2");font-weight:100 900;font-style:italic;font-display:swap}
 :root{
   --display:"Bricolage","Instrument Sans",ui-sans-serif,system-ui,sans-serif;
   --sans:"Instrument Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans","Noto Sans Devanagari",sans-serif;
-  --serif:"Fraunces",ui-serif,Georgia,"Noto Serif","Noto Serif Devanagari",serif;
+  --serif:"Bricolage",ui-serif,Georgia,"Noto Serif","Noto Serif Devanagari",serif;
   --mint:#9DE8C0; --mint2:#C9F4DD;
   --bg:#FBFCFA; --bg2:#F1F6F2; --ink:#0B2A1D; --mut:#4B6156; --line:#DCE6DF;
   --tint:#DDF3E6; --tint2:#B9E9CF; --green-ink:#0A6A49;
