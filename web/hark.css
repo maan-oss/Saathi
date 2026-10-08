@@ -276,3 +276,14 @@ html body #screen textarea.field-i,html body textarea.field-i{border-radius:20px
 :root[data-style="sky"][data-sky="night"] .sc-head .sc-back:hover{background:rgba(255,255,255,.26)}
 :root[data-style="sky"][data-sky="night"] .sc-head .sc-back svg{stroke:#fff!important}
 :root[data-style="sky"] .sc-big h1{font-weight:500}
+
+/* ---- search: an opaque panel; nothing from the tabs shows behind it ---- */
+.hk-sp{background:transparent}
+.app[data-search]>.hk-pane,.app[data-search]>.chat,.app[data-search]>.dock{display:none!important}
+
+/* ---- no white ring on fields, chat boxes or selects when you tap them ---- */
+input:focus,input:focus-visible,textarea:focus,textarea:focus-visible,select:focus,select:focus-visible,
+.field-i:focus,.field-i:focus-visible,.search-w:focus-within,.composer:focus-within,.dd-btn:focus,.dd-btn:focus-visible,.dd-q:focus{outline:none!important}
+.composer:focus-within,.search-w:focus-within,.field-i:focus,.field-i:focus-visible,.dd-btn:focus-visible{border-color:var(--line)!important}
+:root[data-style="sky"] .composer,:root[data-style="sky"] .composer:focus-within,:root[data-style="sky"] .search-w:focus-within,:root[data-style="sky"] .field-i:focus{border-color:rgba(255,255,255,.14)!important;box-shadow:var(--shadow)!important}
+.field-i:focus,.field-i:focus-visible,.dd-btn:focus-visible,.dd-q:focus{box-shadow:none!important}
