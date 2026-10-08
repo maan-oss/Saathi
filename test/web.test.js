@@ -175,7 +175,7 @@ test('web: landing page at / , app at /app, and the config feeds the pricing cha
   const w = await boot();
   const home = await w.call('/', { sid: null });
   assert.equal(home.status, 200);
-  assert.match(home.text, /minus the panic/);
+  assert.match(home.text, /Government forms/);
   assert.match(home.text, /not affiliated with or endorsed by any government/);
   assert.doesNotMatch(home.text, /<script>(?!\s*<)/);
   const app = await w.call('/app', { sid: null });
@@ -209,7 +209,7 @@ test('web: the landing page can read real service facts, and the site and app ar
     assert.ok(j.verified && j.services.length >= 5);
     const pan = j.services.find((s) => /PAN/i.test(s.name));
     assert.ok(pan.fee && pan.docs.length && pan.sites.every((u) => /^https:\/\//.test(u)));
-    assert.match((await w.call("/", { sid: null })).text, /id="obSvc"/);
+    assert.match((await w.call("/", { sid: null })).text, /id="services"/);
     assert.match((await w.call('/app', { sid: null })).text, /id="onboard"/);
   } finally { w.close(); }
 });

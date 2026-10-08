@@ -465,3 +465,19 @@ test('wallet screen shows the balance and the pack price once each, with no doub
   assert.doesNotMatch(t, /₹5₹/);
   done();
 });
+
+test('referral: a top-up by someone who was invited returns the 30% first-month share, once', async () => {
+  const { say, tap, tapText, links, bot, store, done } = setup();
+  await say('hi');
+  await say('1');
+  await tap('topup');
+  await tapText('pay_5000');
+  const ref = links[0].ref;
+  const payerId = store.getPayment(ref).userId;
+  store.putUser(payerId, { ...store.getUser(payerId), referrerId: 'referrer-1' });
+  const r = await bot.creditPayment({ ref, paymentId: 'pay_R', paise: 5000 });
+  assert.equal(r.ok, true);
+  assert.deepEqual(r.referral, { referrerId: 'referrer-1', paise: 1500, paymentId: 'pay_R' });
+  assert.ok(store.getUser(payerId).firstPaidAt > 0, 'the first paid top-up starts the referral month');
+  done();
+});

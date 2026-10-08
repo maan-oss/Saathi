@@ -406,6 +406,20 @@ export function createTools({ store, vault, llm, guard, config }) {
       store.putUser(uid, u);
       return { saved };
     },
+    // Referrals. ref.code gives this person's invite code. ref.set attaches the person who invited them,
+    // once, and only before their first top-up, so nobody can switch referrers after paying.
+    async 'ref.code'(uid) {
+      return { code: store.refCodeFor(uid) };
+    },
+    async 'ref.set'(uid, args = {}) {
+      const u = store.getUser(uid);
+      if (!u) return { done: false };
+      const owner = store.userForRefCode(args.code);
+      if (u.referrerId || u.firstPaidAt || !owner || owner === uid || !store.getUser(owner)) return { done: true, saved: false };
+      u.referrerId = owner;
+      store.putUser(uid, u);
+      return { done: true, saved: true };
+    },
   };
   return {
     ops,

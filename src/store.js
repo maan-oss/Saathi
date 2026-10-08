@@ -1,5 +1,6 @@
 import { mkdirSync, readFileSync, writeFileSync, renameSync } from 'node:fs';
 import { join } from 'node:path';
+import { randomBytes } from 'node:crypto';
 
 // Minimal JSON-file store. Fine for a pilot (hundreds of users/day).
 // Move to SQLite/Postgres when you outgrow it.
@@ -13,6 +14,7 @@ export class Store {
     this.trials = this._load('trials.json', {});
     this.translations = this._load('translations.json', {});
     this.settings = this._load('settings.json', {});
+    this.referrals = this._load('referrals.json', { byUser: {}, byCode: {} });
     this.seen = [];
   }
 
@@ -52,6 +54,31 @@ export class Store {
   deleteUser(id) {
     delete this.users[id];
     this._save('users.json', this.users);
+    const code = this.referrals.byUser[id];
+    if (code) {
+      delete this.referrals.byUser[id];
+      delete this.referrals.byCode[code];
+      this._save('referrals.json', this.referrals);
+    }
+  }
+
+  // Referral codes: one short code per person, and the person it belongs to. Codes are random, so they
+  // cannot be guessed from an account id. Removed with the account.
+  refCodeFor(id) {
+    const have = this.referrals.byUser[id];
+    if (have) return have;
+    const alpha = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code;
+    do code = Array.from(randomBytes(6), (b) => alpha[b % alpha.length]).join('');
+    while (this.referrals.byCode[code]);
+    this.referrals.byUser[id] = code;
+    this.referrals.byCode[code] = id;
+    this._save('referrals.json', this.referrals);
+    return code;
+  }
+
+  userForRefCode(code) {
+    return this.referrals.byCode[String(code || '').trim().toUpperCase()] || null;
   }
 
   // Privacy: forget people who have been idle. Session state goes after idleMs. People who saved a

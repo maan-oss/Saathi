@@ -9,7 +9,7 @@ import { createBot } from './flow.js';
 import { createVault } from './vault.js';
 import { createPayments, validStripeSignature, parsePaidEvent } from './payments.js';
 import { t } from './messages.js';
-import { inr } from './billing.js';
+import { inr, credit } from './billing.js';
 import { createConverse } from './converse.js';
 import { createWeb, createWebMedia, isWebKey } from './web.js';
 import { diagnose } from './doctor.js';
@@ -111,8 +111,25 @@ function processPayment(paid) {
   enqueue(rec.userId, async () => {
     const r = await bot.creditPayment(paid);
     if (!r.ok) return console.warn('payment not credited:', r.reason, paid.ref);
+    // The referrer's share goes through their own queue, so their balance is never written twice at once.
+    if (r.referral?.paise > 0 && r.referral.referrerId !== rec.userId) {
+      enqueue(r.referral.referrerId, async () => creditReferrer(r.referral));
+    }
     if (r.phone) await sendReplies(r.phone, [t(r.lang, 'topup_ok', { amt: inr(r.paise), bal: inr(r.balance) })]);
+    // Receipt: the phone the person typed at Stripe gets Stripe's own receipt link. The number is not kept.
+    const phone = paid.phone || r.phone;
+    if (phone && payments) {
+      const url = await payments.receiptUrl(paid.paymentId).catch(() => null);
+      if (url) await sendReplies(phone, [`Thanks. Your payment of ${inr(r.paise)} is in your wallet.\nReceipt: ${url}\n\nधन्यवाद। आपका भुगतान वॉलेट में जुड़ गया है।\nरसीद: ${url}`]);
+    }
   });
+}
+
+function creditReferrer({ referrerId, paise, paymentId }) {
+  const u = store.getUser(referrerId);
+  if (!u) return; // the referrer has left; nothing to pay
+  const r = credit(u, paise, 'ref:' + paymentId, 'referral');
+  if (r.ok) store.putUser(referrerId, u);
 }
 
 function readBody(req, res, cb) {

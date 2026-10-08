@@ -161,3 +161,14 @@ export function buyPack(u, cfg, id, now = Date.now()) {
   u.packs.push({ id, until: now + def.days * 86400000, scans: def.scans, ai: def.ai, voice: def.voice || 0, remind: def.remind || 0 });
   return { ok: true, pack: def };
 }
+
+// Referrals: whoever invited a payer earns a share of each top-up. 30% for the payer's first month
+// (counted from their first paid top-up), 10% after that. Paise, rounded down.
+export const REFERRAL_FIRST_PCT = 30;
+export const REFERRAL_LATER_PCT = 10;
+export const REFERRAL_WINDOW_MS = 30 * 86400000;
+export function referralBonus(paise, firstPaidAt, now = Date.now()) {
+  if (!Number.isInteger(paise) || paise <= 0) return 0;
+  const later = Boolean(firstPaidAt) && now - firstPaidAt > REFERRAL_WINDOW_MS;
+  return Math.floor((paise * (later ? REFERRAL_LATER_PCT : REFERRAL_FIRST_PCT)) / 100);
+}

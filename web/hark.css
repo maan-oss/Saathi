@@ -297,3 +297,7 @@ input:focus,input:focus-visible,textarea:focus,textarea:focus-visible,select:foc
 .rm-item.open .rm-chev{transform:rotate(90deg)}
 .rm-head{transition:background .2s ease}
 @media (prefers-reduced-motion:reduce){.rm-body,.rm-item.closing .rm-body{animation-duration:.01s}}
+
+/* ---- invite a friend (wallet) ---- */
+.grp-box.invite{padding:16px 18px}
+.invite-link{margin:10px 0 12px;font-size:14px;word-break:break-all;color:var(--ink)}

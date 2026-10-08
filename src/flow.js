@@ -3,7 +3,7 @@ import { inspectInput, inspectOutput, cleanInput, wrapUntrusted } from './shield
 import { R } from './rich.js';
 import { STATE_NAMES } from './states.js';
 import { FIELDS, GENDER, normField, normAll, missingKeys, fieldDef, shown, fromExtraction } from './profile.js';
-import { charge, refund, credit, buyPack, grantTrial, balance, activePack, rates, inr } from './billing.js';
+import { charge, refund, credit, buyPack, grantTrial, balance, activePack, rates, inr, referralBonus } from './billing.js';
 import {
   SERVICES,
   serviceById,
@@ -940,6 +940,7 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
       const w = String(what || '');
       if (w === 'welcome credit') return T('hist_welcome');
       if (w === 'top-up') return T('hist_topup');
+      if (w === 'referral') return T('hist_referral');
       if (w.startsWith('pack ')) return T('hist_pack');
       if (w.startsWith('refund ')) return T('hist_refund', { what: histWhat(w.slice(7)) });
       return ['msg', 'ai', 'scan', 'sheet', 'voice', 'remind'].includes(w) ? T('hist_' + w) : T('hist_other');
@@ -1471,9 +1472,13 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
     if (!r.ok) return { ...r, reason: r.duplicate ? 'duplicate' : 'bad_amount' };
     let packOn = false;
     if (rec.packId && rates(config).packs[rec.packId]) packOn = buyPack(u, config, rec.packId).ok;
+    // The first paid top-up starts the referral month. The referrer's share is paid by the caller.
+    const firstPaidAt = u.firstPaidAt || Date.now();
+    if (!u.firstPaidAt) u.firstPaidAt = firstPaidAt;
+    const referral = u.referrerId ? { referrerId: u.referrerId, paise: referralBonus(paise, firstPaidAt), paymentId } : null;
     store.putUser(rec.userId, u);
     store.putPayment(ref, { userId: rec.userId, paise, status: 'paid', paymentId, ts: rec.ts, paidAt: Date.now(), ...(rec.packId ? { packId: rec.packId } : {}) });
-    return { ok: true, userId: rec.userId, phone: rec.phone, lang: u.lang || 'en', paise, balance: r.balance, packOn };
+    return { ok: true, userId: rec.userId, phone: rec.phone, lang: u.lang || 'en', paise, balance: r.balance, packOn, referral };
   }
 
   return { handle, creditPayment };

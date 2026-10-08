@@ -108,7 +108,7 @@ test('Stripe: signature is HMAC-SHA256 over "timestamp.body" and must be recent;
   assert.equal(validStripeSignature(body, header, '', t + 10), false);
   assert.equal(validStripeSignature(body, header, 'whsec_x', t + 301), false); // older than five minutes
   assert.equal(validStripeSignature(body, `t=${t},v1=00`, 'whsec_x', t), false);
-  assert.deepEqual(parsePaidEvent(JSON.parse(body)), { ref: 'sv_1', paymentId: 'pi_9', paise: 5000 });
+  assert.deepEqual(parsePaidEvent(JSON.parse(body)), { ref: 'sv_1', paymentId: 'pi_9', paise: 5000, phone: null });
   assert.equal(parsePaidEvent({ ...JSON.parse(body), type: 'checkout.session.expired' }), null);
   assert.equal(parsePaidEvent(JSON.parse(body.replace('"paid"', '"unpaid"'))), null);
   assert.equal(parsePaidEvent(JSON.parse(body.replace('"inr"', '"usd"'))), null);

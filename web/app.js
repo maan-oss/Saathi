@@ -854,6 +854,11 @@
     });
     // Every visit starts on a fresh chat. Earlier chats are in the sidebar.
     chats.cur = null; store.set(HIST_KEY, JSON.stringify(chats));
+    // An invite link (/app?ref=CODE): remember who invited this person, then tell the server once.
+    try { const rc = new URLSearchParams(location.search).get('ref'); if (rc && /^[A-Z2-9]{6}$/i.test(rc)) store.set('saathi.ref', rc.toUpperCase()); } catch { /* ignore */ }
+    const pendingRef = store.get('saathi.ref');
+    if (pendingRef) api('/app/api/t', { method: 'POST', headers: { 'content-type': 'application/json', 'x-saathi': '1' }, body: JSON.stringify({ op: 'ref.set', args: { code: pendingRef } }) })
+      .then((r) => { if (r.ok && r.j?.data?.done) store.del?.('saathi.ref'); }).catch(() => {});
     if (!store.get('saathi.onboarded')) core.onboarding();
     else welcome();
     core.openPending?.();

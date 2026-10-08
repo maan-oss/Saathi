@@ -258,7 +258,7 @@
   };
 
   // ---- wallet ----------------------------------------------------------------------------------
-  const WHAT = { 'welcome credit': N('Welcome credit'), 'top-up': N('Money added'), msg: N('Guide message'), ai: N('AI answer'), scan: N('Document check'), sheet: N('Form sheet'), voice: N('Voice note'), remind: N('Reminder') };
+  const WHAT = { 'welcome credit': N('Welcome credit'), 'top-up': N('Money added'), referral: N('Referral bonus'), msg: N('Guide message'), ai: N('AI answer'), scan: N('Document check'), sheet: N('Form sheet'), voice: N('Voice note'), remind: N('Reminder') };
   const whatLabel = (w) => (w.startsWith('pack ') ? T('Pack bought') : w.startsWith('refund ') ? T('Refund') : WHAT[w] ? T(WHAT[w]) : T('Other'));
   function activityRows(list) {
     const box = el('div', 'act');
@@ -304,6 +304,20 @@
       sec.append(th);
       sec.append(hist.length ? activityRows(hist.slice(0, 6)) : el('p', 'mut pad', T('Nothing yet. Charges and top-ups will show here.')));
       holder.append(sec);
+      // Invite a friend: your link, and what you earn when the people you invite add money.
+      const inv = el('section', 'grp'); inv.append(el('h2', 'grp-t', T('Invite a friend')));
+      const invBox = el('div', 'grp-box invite');
+      const invLink = el('p', 'invite-link', T('Getting your link…'));
+      const invBtn = btn('btn sm', T('Copy my invite link'), null); invBtn.disabled = true;
+      invBox.append(el('p', 'mut', T('You earn 30% of what they add in their first month, and 10% after that.')), invLink, invBtn);
+      inv.append(invBox); holder.append(inv);
+      api('/app/api/t', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ op: 'ref.code', args: {} }) }).then((r) => {
+        const code = r.ok && r.j?.ok ? r.j.data?.code : null;
+        if (!code) { invLink.textContent = T('Your link is not ready yet. Try again in a moment.'); return; }
+        const link = location.origin + '/app?ref=' + code;
+        invLink.textContent = link; invBtn.disabled = false;
+        invBtn.onclick = function () { C.copyText(link, this); };
+      }).catch(() => { invLink.textContent = T('Your link is not ready yet. Try again in a moment.'); });
       if (p) {
         const rows = [[T('Guide message (after the free ones)'), p.msgPaise], [T('AI answer (after the free ones)'), p.aiPaise], [T('Document check'), p.scanPaise], [T('Form sheet'), p.sheetPaise], [T('Voice note'), p.voicePaise], [T('Reminder'), p.remindPaise]];
         const box = el('div', 'grp-box prices');

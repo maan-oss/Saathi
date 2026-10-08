@@ -26,6 +26,7 @@ export function createPayments(config, fetchFn = fetch) {
         'line_items[0][price_data][currency]': CURRENCY,
         'line_items[0][price_data][unit_amount]': String(paise),
         'line_items[0][price_data][product_data][name]': note,
+        'phone_number_collection[enabled]': 'true', // so the receipt can be sent to a phone
       });
       const res = await fetchFn(`${base}/v1/checkout/sessions`, {
         method: 'POST',
@@ -39,6 +40,17 @@ export function createPayments(config, fetchFn = fetch) {
       }
       const d = await res.json();
       return { url: d.url, id: d.id };
+    },
+    /** Stripe's hosted receipt for a paid payment intent, or null if there is none yet. */
+    async receiptUrl(paymentId) {
+      if (!paymentId) return null;
+      const res = await fetchFn(`${base}/v1/payment_intents/${encodeURIComponent(paymentId)}?expand[]=latest_charge`, {
+        headers: { authorization: `Bearer ${config.stripeSecretKey}` },
+      });
+      if (!res.ok) return null;
+      const d = await res.json();
+      const url = d?.latest_charge?.receipt_url;
+      return typeof url === 'string' && /^https:\/\//.test(url) ? url : null;
     },
   };
 }
@@ -74,5 +86,6 @@ export function parsePaidEvent(body) {
   const paymentId = typeof s.payment_intent === 'string' ? s.payment_intent : s.payment_intent?.id || s.id;
   const paise = Number(s.amount_total);
   if (!ref || !paymentId || !Number.isInteger(paise) || paise <= 0) return null;
-  return { ref, paymentId: String(paymentId), paise };
+  const phone = typeof s.customer_details?.phone === 'string' ? s.customer_details.phone.replace(/\D/g, '') : '';
+  return { ref, paymentId: String(paymentId), paise, phone: phone.length >= 10 ? phone : null };
 }
