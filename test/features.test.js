@@ -440,7 +440,7 @@ test('with no money and no pack the reminder shows the paywall before asking for
   const r = await s.run({ type: 'reply', id: 'remind_add' }, 'u1', { phone: PHONE });
   const card = r.replies.at(-1);
   assert.deepEqual(card.buttons.map((b) => b.id), ['topup', 'pack', 'menu']);
-  assert.match(plain(card), /costs ₹2/);
+  assert.match(plain(card), /That one costs \*₹2\*, and your wallet has \*₹0\*/);
   s.done();
 });
 

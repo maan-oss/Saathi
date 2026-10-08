@@ -210,7 +210,7 @@ test('top up: payment link created in paise, signed webhook credits the wallet o
   const before = sent.length;
   assert.equal((await hook(event)).status, 200);
   await until(() => sent.length >= before + 1);
-  assert.match(sent.at(-1).text.body, /Received ₹50/);
+  assert.match(sent.at(-1).text.body, /₹50 added to your wallet/);
   assert.equal(sent.at(-1).to, PHONE);
   await hook(event); // Stripe retries: must not credit twice
   await new Promise((r) => setTimeout(r, 250));

@@ -253,7 +253,8 @@ test('after the free daily messages and with no balance, the guide shows a paywa
   const blocked = await tap('1'); // the adult question would be msg 4
   const card = blocked.at(-1);
   assert.deepEqual(card.buttons.map((b) => b.id), ['topup', 'pack', 'menu']);
-  assert.match(plain(card), /costs ₹0.15 and your balance is ₹0/);
+  assert.match(plain(card), /free guide messages for today/);
+  assert.match(plain(card), /Each one after that costs \*₹0\.15\*, and your wallet has \*₹0\*/);
   assert.equal(store.getUser('u1').state, 'svc_q'); // did not move on
   assert.equal(store.getUser('u1').ans.adult, undefined);
   done();
@@ -287,7 +288,7 @@ test('top up says so plainly when payments are not configured', async () => {
   const { say, tapText, done } = setup({}, {}, { payments: false });
   await say('hi');
   await say('1');
-  assert.match(await tapText('pay_5000'), /Top-ups are not open yet/);
+  assert.match(await tapText('pay_5000'), /Top-ups aren't open yet/);
   done();
 });
 
@@ -299,9 +300,9 @@ test('PAN pack: needs confirmation, is paid from the wallet, then guide messages
   u.wallet.paise = 5000;
   u.docConsent = true;
   store.putUser('u1', u);
-  assert.match(await tapText('pack'), /Saathi pack, ₹49/);
+  assert.match(await tapText('pack'), /Saathi pack: ₹49/);
   assert.equal(wallet(), 5000); // nothing charged yet
-  assert.match(await tapText('confirm_pack'), /Saathi pack is active/);
+  assert.match(await tapText('confirm_pack'), /Saathi pack\* is on until/);
   assert.equal(wallet(), 100);
   await say('1'); // guide messages are free now
   await say('1');
@@ -320,7 +321,7 @@ test('pack with too little money sends the user to top up', async () => {
   await say('1');
   await tap('pack');
   const r = await tap('confirm_pack');
-  assert.match(r.map(plain).join(''), /pack costs ₹49 and your balance is ₹5/);
+  assert.match(r.map(plain).join(''), /The pack costs \*₹49\*, and your wallet has \*₹5\*/);
   assert.equal(r.at(-1).kind, 'list');
   done();
 });
@@ -387,7 +388,7 @@ test('sheet: copy-ready rows, charged 300 paise from the welcome credit, then a 
   assert.equal(wallet(), 200);
   const again = await tap('sheet');
   assert.equal(again.some((x) => x.kind === 'sheet'), false);
-  assert.match(again.map(plain).join(''), /costs ₹3 and your balance is ₹2/);
+  assert.match(again.map(plain).join(''), /That one costs \*₹3\*, and your wallet has \*₹2\*/);
   done();
 });
 

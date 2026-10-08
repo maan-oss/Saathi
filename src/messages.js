@@ -133,8 +133,9 @@ const M = {
     qa_blocked: 'I can only help with Indian government paperwork like PAN, Aadhaar, driving licence, passport, voter ID and GST. Ask me about one of those, or type *menu*.',
     qa_fail: 'I can\'t answer that right now. Please check the official website for your service, or type *agent* for a human.',
     qa_busy:
-      'I\'m out of AI help for today, but the step-by-step guide still works. Type *menu*, or *agent* for a human.',
-    step_help_busy: 'Tap *Next* when you\'ve finished this step, *Back* to go back, or type *agent* for a human.',
+      'AI answers are used up for today, so I can\'t answer that one. The step-by-step guide still works. Type *menu* to carry on, or *agent* for a person.',
+    step_help_busy:
+      'AI help is resting for today, but you can keep going. Tap *Next* when this step is done, *Back* to go back, or type *agent* for a person.',
 
     // ---- scanning documents ----
     scan_prompt:
@@ -145,7 +146,7 @@ const M = {
       'I read your photo or PDF with AI to pull out your name, date of birth, address, ID number and expiry date. The photo is *not saved*. Only if you tap Save do the details go into your encrypted profile and locker.\n\nAllow this?',
     doc_consent_yes: 'Thanks. Send the photo now.',
     doc_consent_no: 'No problem, I won\'t read any photos. Type *docs* for the documents list.',
-    doc_busy: 'Photo reading is paused for today. Type *docs* for the checklist.',
+    doc_busy: 'Photo reading is paused for today and starts again tomorrow. Meanwhile, type *docs* for the checklist of what to bring.',
     doc_fail: 'I couldn\'t open that photo (you were not charged). Please try sending it again.',
     doc_unclear:
       '⚠️ This photo isn\'t clear enough{issues}. You were not charged. Please retake it in good light, flat, with all four corners visible.',
@@ -237,22 +238,26 @@ const M = {
 
     // ---- wallet ----
     wallet:
-      '*Your wallet: {bal}*{pack}\n\nPrices:\n• Guide messages: free for the first {free} a day, then {msg} each\n• AI answer: {ai}\n• Document scan: {scan}\n• Form sheet: {sheet}\n• Voice note: {voice}\n• Reminder: {remindP}\n• *Saathi pack {packPrice}*: {days} days, unlimited guide messages, {scans} scans, {aiN} AI answers, {voiceN} voice notes, {remindN} reminders, unlimited sheets\n\nType *history* to see every charge.',
-    wallet_pack: '\n✅ Saathi pack active until {date} ({scans} scans, {aiN} AI answers left)',
+      '*Your wallet: {bal}*{pack}\n\n*What things cost*\n• Guide messages: the first {free} a day are free, then {msg} each\n• AI answer: {ai}\n• Document scan: {scan}\n• Form sheet: {sheet}\n• Voice note: {voice}\n• Reminder: {remindP}\n\n*Saathi pack, {packPrice}*: {days} days of unlimited guide messages, plus {scans} scans, {aiN} AI answers, {voiceN} voice notes, {remindN} reminders and unlimited form sheets.\n\nType *history* to see every charge.',
+    wallet_pack: '\n✅ *Saathi pack* on until {date}: {scans} scans and {aiN} AI answers left',
     pay_need:
-      'That costs {price} and your balance is {bal}. Top up, or get the *Saathi pack* ({pack}) that covers a whole paperwork job.',
-    topup_body: 'How much would you like to add? You pay on a secure Stripe page.',
+      'That one costs *{price}*, and your wallet has *{bal}*.\n\nAdd money to your wallet, or get the *Saathi pack* for *{pack}*. It covers {days} days of guide messages, {scans} scans, {aiN} AI answers, {voiceN} voice notes and {remindN} reminders.',
+    pay_msgs_out:
+      'You\'ve used your {free} free guide messages for today. Each one after that costs *{msg}*, and your wallet has *{bal}*.\n\nThe free messages come back at midnight IST. Or get the *Saathi pack* for *{pack}* and send guide messages without limit for {days} days.',
+    topup_body:
+      'How much would you like to add? Pick an amount below. You\'ll pay on a secure Stripe page, and your wallet updates by itself once the payment goes through.',
     topup_btn: 'Amounts',
     topup_desc: 'About {ai} AI answers or {scans} scans',
     topup_link:
-      'Pay *{amt}* securely here:\n{url}\n\nYour wallet updates by itself after you pay. Never share an OTP or card details in this chat.',
-    topup_off: 'Top-ups are not open yet. You can keep using your balance.',
-    topup_fail: 'I couldn\'t make the payment link. Please try again in a minute.',
-    topup_ok: '✅ Received {amt}. Your wallet is now *{bal}*.',
+      'Your payment link for *{amt}*:\n{url}\n\nOpen it to pay. Your wallet updates by itself once the payment goes through. Never share an OTP or card details in this chat.',
+    topup_off: 'Top-ups aren\'t open yet. Your current balance still works.',
+    topup_fail: 'I couldn\'t create a payment link just now. Nothing was charged. Please try again in a minute.',
+    topup_ok: '✅ {amt} added to your wallet. Your balance is now *{bal}*.',
     pack_info:
-      '*Saathi pack, {price}*\n• {days} days of unlimited guide messages\n• {scans} document scans\n• {aiN} AI answers\n• {voiceN} voice notes\n• {remindN} reminders\n• Unlimited form sheets\nPaid from your wallet (balance {bal}).',
-    pack_bought: '✅ Saathi pack is active until {date}.',
-    pack_short: 'The pack costs {price} and your balance is {bal}. Top up first.',
+      '*Saathi pack: {price}*, valid for {days} days\n• Unlimited guide messages\n• {scans} document scans\n• {aiN} AI answers\n• {voiceN} voice notes\n• {remindN} reminders\n• Unlimited form sheets\n\nIt comes out of your wallet. Your balance is *{bal}* now.',
+    pack_bought: '✅ Your *Saathi pack* is on until *{date}*. Guide messages are unlimited until then.',
+    pack_short:
+      'The pack costs *{price}*, and your wallet has *{bal}*. Add money below, then tap *Saathi pack* again.',
 
     doc_tip: 'Tip: type *docs* to see the documents list.',
     handoff:
@@ -270,7 +275,7 @@ const M = {
     voice_empty: 'I couldn\'t hear anything clear in that voice note (you were not charged). Please try again, closer to the phone, or type it.',
     voice_fail: 'I couldn\'t listen to that voice note right now (you were not charged). Please type your message.',
     voice_long: 'That voice note is too long for me (you were not charged). Please send a shorter one, under about a minute.',
-    voice_busy: 'Voice notes are paused for today. Please type your message.',
+    voice_busy: 'Voice notes are paused for today and will be back tomorrow. Please type your message in the meantime.',
     doc_too_big: 'That file is too big for me (you were not charged). Please send one under 5 MB, or a photo of the page.',
 
     // ---- languages ----
@@ -438,8 +443,9 @@ const M = {
     qa_blocked: 'मैं सिर्फ भारतीय सरकारी कागज़ात में मदद कर सकता हूँ, जैसे पैन, आधार, ड्राइविंग लाइसेंस, पासपोर्ट, वोटर आईडी और जीएसटी। इनमें से कुछ पूछिए, या *menu* लिखें।',
     qa_fail: 'मैं अभी इसका जवाब नहीं दे पा रहा। कृपया अपनी सेवा की सरकारी वेबसाइट देखें या इंसान के लिए *agent* लिखें।',
     qa_busy:
-      'आज की AI मदद खत्म हो गई है, लेकिन स्टेप-बाय-स्टेप गाइड चलती रहेगी। *menu* लिखें, या इंसान के लिए *agent*।',
-    step_help_busy: 'यह स्टेप पूरा होने पर *आगे* दबाएँ, पीछे जाने के लिए *पीछे*, या इंसान के लिए *agent* लिखें।',
+      'आज के AI जवाब खत्म हो गए हैं, इसलिए यह सवाल अभी नहीं ले पाऊँगा। स्टेप-बाय-स्टेप गाइड फिर भी चल रही है। आगे बढ़ने के लिए *menu* लिखें, या इंसान के लिए *agent*।',
+    step_help_busy:
+      'आज के लिए AI मदद रुकी है, पर आप आगे बढ़ सकते हैं। यह स्टेप पूरा होने पर *आगे* दबाएँ, पीछे जाने के लिए *पीछे*, या इंसान के लिए *agent* लिखें।',
 
     scan_prompt:
       'किसी दस्तावेज़ (आधार, वोटर ID, जन्म प्रमाणपत्र, स्कूल सर्टिफिकेट) की साफ फोटो या PDF भेजें। मैं उसमें से नाम, जन्मतिथि और पता पढ़ूँगा। कीमत: {price} प्रति स्कैन। अच्छी रोशनी में, सीधी, चारों कोने दिखाते हुए। आधार नंबर को पहले कागज़ से ढक दें।',
@@ -449,7 +455,7 @@ const M = {
       'मैं AI से आपकी फोटो या PDF पढ़कर नाम, जन्मतिथि, पता, ID नंबर और खत्म होने की तारीख निकालता हूँ। फोटो *सेव नहीं* होती। आप सेव दबाएँ तभी ये एन्क्रिप्टेड प्रोफाइल और लॉकर में जाते हैं।\n\nक्या इजाज़त है?',
     doc_consent_yes: 'धन्यवाद। अब फोटो भेजिए।',
     doc_consent_no: 'कोई बात नहीं, मैं कोई फोटो नहीं पढ़ूँगा। दस्तावेज़ों की सूची के लिए *docs* लिखें।',
-    doc_busy: 'आज के लिए फोटो पढ़ना बंद है। चेकलिस्ट के लिए *docs* लिखें।',
+    doc_busy: 'आज के लिए फोटो पढ़ना बंद है और कल फिर शुरू होगा। तब तक कौन से दस्तावेज़ चाहिए, यह देखने के लिए *docs* लिखें।',
     doc_fail: 'मैं वह फोटो खोल नहीं पाया (आपसे पैसे नहीं कटे)। कृपया दोबारा भेजें।',
     doc_unclear:
       '⚠️ यह फोटो पर्याप्त साफ नहीं है{issues}। आपसे पैसे नहीं कटे। कृपया अच्छी रोशनी में, सीधी रखकर, चारों कोने दिखाते हुए दोबारा खींचें।',
@@ -539,22 +545,26 @@ const M = {
     sheet_none: 'शीट में डालने के लिए अभी कुछ नहीं है। पहले अपनी जानकारी जोड़ें।',
 
     wallet:
-      '*आपका वॉलेट: {bal}*{pack}\n\nकीमतें:\n• गाइड मैसेज: रोज़ पहले {free} मुफ्त, फिर {msg} प्रति मैसेज\n• AI जवाब: {ai}\n• दस्तावेज़ स्कैन: {scan}\n• फॉर्म शीट: {sheet}\n• वॉइस नोट: {voice}\n• रिमाइंडर: {remindP}\n• *Saathi पैक {packPrice}*: {days} दिन, गाइड मैसेज असीमित, {scans} स्कैन, {aiN} AI जवाब, {voiceN} वॉइस नोट, {remindN} रिमाइंडर, शीट असीमित\n\nहर खर्च देखने के लिए *history* लिखें।',
-    wallet_pack: '\n✅ Saathi पैक {date} तक चालू ({scans} स्कैन, {aiN} AI जवाब बाकी)',
+      '*आपका वॉलेट: {bal}*{pack}\n\n*कीमतें*\n• गाइड मैसेज: रोज़ पहले {free} मुफ्त, फिर {msg} प्रति मैसेज\n• AI जवाब: {ai}\n• दस्तावेज़ स्कैन: {scan}\n• फॉर्म शीट: {sheet}\n• वॉइस नोट: {voice}\n• रिमाइंडर: {remindP}\n\n*Saathi पैक, {packPrice}*: {days} दिन गाइड मैसेज बिना सीमा के, साथ में {scans} स्कैन, {aiN} AI जवाब, {voiceN} वॉइस नोट, {remindN} रिमाइंडर और फॉर्म शीट बिना सीमा के।\n\nहर खर्च देखने के लिए *history* लिखें।',
+    wallet_pack: '\n✅ *Saathi पैक* {date} तक चालू ({scans} स्कैन और {aiN} AI जवाब बाकी)',
     pay_need:
-      'इसकी कीमत {price} है और आपका बैलेंस {bal} है। टॉप-अप करें, या पूरे कागज़ी काम के लिए *Saathi पैक* ({pack}) लें।',
-    topup_body: 'कितने रुपये जोड़ना चाहेंगे? भुगतान सुरक्षित Stripe पेज पर होता है।',
+      'इसकी कीमत *{price}* है, और आपके वॉलेट में *{bal}* है।\n\nवॉलेट में पैसे डालें, या *Saathi पैक* लें, जो *{pack}* का है। इसमें {days} दिन के गाइड मैसेज, {scans} स्कैन, {aiN} AI जवाब, {voiceN} वॉइस नोट और {remindN} रिमाइंडर शामिल हैं।',
+    pay_msgs_out:
+      'आज के {free} मुफ्त गाइड मैसेज खत्म हो गए हैं। इसके बाद हर मैसेज *{msg}* का है, और आपके वॉलेट में *{bal}* है।\n\nमुफ्त मैसेज आधी रात (IST) के बाद फिर मिल जाते हैं। या *Saathi पैक* ({pack}) लें और {days} दिन तक गाइड मैसेज बिना सीमा के भेजें।',
+    topup_body:
+      'कितने रुपये जोड़ना चाहेंगे? नीचे से रकम चुनें। भुगतान सुरक्षित Stripe पेज पर होगा, और पेमेंट पूरा होते ही आपका वॉलेट अपने आप अपडेट हो जाएगा।',
     topup_btn: 'रकम',
     topup_desc: 'करीब {ai} AI जवाब या {scans} स्कैन',
     topup_link:
-      '*{amt}* का भुगतान यहाँ सुरक्षित तरीके से करें:\n{url}\n\nभुगतान के बाद आपका वॉलेट अपने आप अपडेट हो जाएगा। इस चैट में कभी OTP या कार्ड की जानकारी न भेजें।',
-    topup_off: 'टॉप-अप अभी शुरू नहीं हुए हैं। आप अपना बैलेंस इस्तेमाल करते रहें।',
-    topup_fail: 'मैं पेमेंट लिंक नहीं बना पाया। कृपया एक मिनट बाद फिर कोशिश करें।',
-    topup_ok: '✅ {amt} मिल गए। आपका वॉलेट अब *{bal}* है।',
+      '*{amt}* का भुगतान करने के लिए यह लिंक खोलें:\n{url}\n\nपेमेंट पूरा होते ही आपका वॉलेट अपने आप अपडेट हो जाएगा। इस चैट में कभी OTP या कार्ड की जानकारी न भेजें।',
+    topup_off: 'टॉप-अप अभी शुरू नहीं हुए हैं। आपका मौजूदा बैलेंस चलता रहेगा।',
+    topup_fail: 'अभी पेमेंट लिंक नहीं बन पाया। आपसे कुछ नहीं कटा है। कृपया एक मिनट बाद फिर कोशिश करें।',
+    topup_ok: '✅ {amt} आपके वॉलेट में जुड़ गए। अब आपका बैलेंस *{bal}* है।',
     pack_info:
-      '*Saathi पैक, {price}*\n• {days} दिन गाइड मैसेज असीमित\n• {scans} दस्तावेज़ स्कैन\n• {aiN} AI जवाब\n• {voiceN} वॉइस नोट\n• {remindN} रिमाइंडर\n• फॉर्म शीट असीमित\nआपके वॉलेट से कटेगा (बैलेंस {bal})।',
-    pack_bought: '✅ Saathi पैक {date} तक चालू है।',
-    pack_short: 'पैक की कीमत {price} है और आपका बैलेंस {bal} है। पहले टॉप-अप करें।',
+      '*Saathi पैक: {price}*, {days} दिन के लिए\n• गाइड मैसेज बिना सीमा के\n• {scans} दस्तावेज़ स्कैन\n• {aiN} AI जवाब\n• {voiceN} वॉइस नोट\n• {remindN} रिमाइंडर\n• फॉर्म शीट बिना सीमा के\n\nयह आपके वॉलेट से कटेगा। अभी आपका बैलेंस *{bal}* है।',
+    pack_bought: '✅ आपका *Saathi पैक* {date} तक चालू है। तब तक गाइड मैसेज बिना सीमा के हैं।',
+    pack_short:
+      'पैक की कीमत *{price}* है, और आपके वॉलेट में *{bal}* है। नीचे से रकम जोड़ें, फिर *Saathi पैक* दोबारा दबाएँ।',
 
     doc_tip: 'टिप: दस्तावेज़ों की सूची के लिए *docs* लिखें।',
     handoff:
@@ -571,7 +581,7 @@ const M = {
     voice_empty: 'इस वॉइस नोट में मुझे कुछ साफ सुनाई नहीं दिया (आपसे पैसे नहीं कटे)। कृपया फोन के पास बोलकर दोबारा भेजें, या टाइप करें।',
     voice_fail: 'मैं अभी वह वॉइस नोट नहीं सुन पाया (आपसे पैसे नहीं कटे)। कृपया अपना संदेश टाइप करें।',
     voice_long: 'यह वॉइस नोट मेरे लिए बहुत लंबा है (आपसे पैसे नहीं कटे)। कृपया करीब एक मिनट से छोटा भेजें।',
-    voice_busy: 'आज के लिए वॉइस नोट बंद हैं। कृपया अपना संदेश टाइप करें।',
+    voice_busy: 'आज के लिए वॉइस नोट बंद हैं और कल फिर चालू होंगे। तब तक कृपया अपना संदेश टाइप करें।',
     doc_too_big: 'यह फाइल मेरे लिए बहुत बड़ी है (आपसे पैसे नहीं कटे)। कृपया 5 MB से छोटी फाइल भेजें, या पन्ने की फोटो भेजें।',
 
     lang_pick: 'भाषा चुनें / Choose your language:',

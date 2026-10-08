@@ -181,8 +181,9 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
     });
 
     // ---- money ----------------------------------------------------------
-    function paywall(c) {
-      ask(T('pay_need', { price: inr(c.price), bal: inr(balance(u)), pack: inr(packDef.paise) }), [
+    function paywall(c, kind) {
+      const vars = { ...packVars(), price: inr(c.price), bal: inr(balance(u)), free: rt.freeMsgsPerDay, msg: inr(rt.msgPaise) };
+      ask(T(kind === 'msg' ? 'pay_msgs_out' : 'pay_need', vars), [
         btn('topup', 'btn_topup'),
         btn('pack', 'btn_pack', { price: inr(packDef.paise) }),
         btn('menu', 'btn_menu'),
@@ -192,7 +193,7 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
     function gate(kind) {
       const c = charge(u, config, kind);
       if (c.ok) return c;
-      paywall(c);
+      paywall(c, kind);
       return null;
     }
     function showTopups() {
