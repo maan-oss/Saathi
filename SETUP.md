@@ -79,6 +79,7 @@ Stripe's published Australian rates (check them before you rely on them): cards 
 4. Render restarts with the new values. Open `https://YOUR-URL/admin/setup?key=YOUR_ADMIN_KEY`. The Payments line should say "Stripe key works (TEST mode)".
 5. **Test:** in the web app, open Wallet > Top up, pay with the test card `4242 4242 4242 4242`, any future date, any CVC. The balance should rise within seconds. If it does not, open the endpoint in Stripe's dashboard and read the failed deliveries. If Stripe refuses the INR charge, tell the developer, because the price setup needs a change.
 6. **Go live:** finish Stripe's identity and bank checks. Put the live secret key (`sk_live_…`) in `STRIPE_SECRET_KEY`. Add the same endpoint in live mode and put its new signing secret in `STRIPE_WEBHOOK_SECRET`.
+   The live catalog is already in the Saathi account: "Saathi wallet top-up" (₹50, ₹100, ₹200, ₹500), "Saathi Quick pack" (₹29), "Saathi pack" (₹49) and "Saathi Plus" (₹149). Their price IDs are in `LIVE_PRICES` in `src/payments.js`. A live key charges those prices; a test key charges the same amounts inline. If you change a price in Stripe, change it in that file too.
 
 Know the limits before launch:
 - Buyers pay by card. As far as I know, UPI is not offered through Stripe to an Australian account. Check Stripe's current list.

@@ -334,7 +334,7 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
     const ref = `sv_${Date.now().toString(36)}${crypto.randomBytes(5).toString('hex')}`;
     store.putPayment(ref, { userId: uid, paise, status: 'pending', ts: Date.now(), before, ...(packId ? { packId } : {}) });
     try {
-      const { url } = await payments.createLink({ ref, paise, note: packId ? 'Saathi pack' : 'Saathi wallet top-up', origin: b.origin });
+      const { url } = await payments.createLink({ ref, paise, note: packId ? 'Saathi pack' : 'Saathi wallet top-up', origin: b.origin, pack: Boolean(packId) });
       return json(res, 200, { url, ref });
     } catch (e) {
       console.error('payment link error:', e.message);

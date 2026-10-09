@@ -474,6 +474,8 @@
   // ---- packs -------------------------------------------------------------------------------------
   const PACK_TAG = { pan_pack: N('Most popular'), pack_month: N('Best value') };
   const PACK_ICON = { pack_quick: 'tkt', pan_pack: 'stk', pack_month: 'crown' };
+  // The least a Stripe payment can be (billing.js MIN_TOPUP_PAISE). A short wallet pays at least this much, so a ₹29 pack can be paid for.
+  const MIN_TOPUP = 5000;
   SCREENS.packs = async () => {
     const col = frame(T('Packs'), T('One price for a whole paperwork job. No need to count messages.'));
     const packs = C.prices?.packs || [];
@@ -491,7 +493,7 @@
         const price = el('div', 'pack-price'); price.append(el('b', '', rupee(pk.paise)), el('span', '', T('about {amt} a day', { amt: rupee(Math.round(pk.paise / pk.days)) })));
         const ul = el('ul', 'incl');
         for (const [k, t] of [['msg', T('Unlimited guide messages')], ['doc', T('Unlimited form sheets')], ['camera', T('{n} document checks', { n: pk.scans })], ['spark', T('{n} AI answers', { n: pk.ai })], ['mic', T('{n} voice notes', { n: pk.voice })], ['bell', T('{n} reminders', { n: pk.remind })]]) { const li = el('li'); const c = el('span', 'inc-ic'); c.append(ico(k, 16)); li.append(c, el('span', '', t)); ul.append(li); }
-        const enough = (w?.paise || 0) >= pk.paise; const need = Math.max(1000, Math.ceil((pk.paise - (w?.paise || 0)) / 100) * 100);
+        const enough = (w?.paise || 0) >= pk.paise; const need = Math.max(MIN_TOPUP, Math.ceil((pk.paise - (w?.paise || 0)) / 100) * 100);
         const buy = btn('btn ' + (PACK_TAG[pk.id] ? 'pri' : 'ink') + ' xl', enough ? T('Get it for {amt} from your wallet', { amt: rupee(pk.paise) }) : T('Pay {amt} and get it', { amt: rupee(need) }), () => buyPack(pk, buy));
         card.append(top, price, ul, buy); holder.append(card);
       }
@@ -501,7 +503,7 @@
       const beforeUntil = C.wallet?.pack?.until || 0; const have = C.wallet?.paise || 0;
       if (have < pk.paise) {
         // Short: pay the difference on Stripe. The pack starts by itself once that payment is in.
-        const need = Math.max(1000, Math.ceil((pk.paise - have) / 100) * 100);
+        const need = Math.max(MIN_TOPUP, Math.ceil((pk.paise - have) / 100) * 100);
         return payOut(need, pk.id, (msg) => errBox(stage, msg));
       }
       button.disabled = true; const old = button.textContent; button.textContent = T('One moment…');

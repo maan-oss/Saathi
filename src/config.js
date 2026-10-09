@@ -89,7 +89,7 @@ export const config = {
     sheetPaise: num('SHEET_PAISE', 300),
     voicePaise: num('VOICE_PAISE', 50),
     remindPaise: num('REMIND_PAISE', 200),
-    topups: [2000, 5000, 10000, 20000],
+    topups: [5000, 10000, 20000, 50000], // ₹50 is the floor (billing.js MIN_TOPUP_PAISE): the old ₹20 preset failed at Stripe in production
     packs: {
       pack_quick: { id: 'pack_quick', name: 'Quick pack', paise: num('QUICK_PACK_PAISE', 2900), days: 3, scans: 3, ai: 20, voice: 8, remind: 3 },
       pan_pack: { id: 'pan_pack', name: 'Saathi pack', paise: num('PAN_PACK_PAISE', 4900), days: 7, scans: 8, ai: 40, voice: 20, remind: 5 },

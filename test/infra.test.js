@@ -135,6 +135,32 @@ test('Stripe Checkout request uses INR paise and our reference (fake network)', 
   assert.equal(createPayments({}), null);
 });
 
+test('Stripe Checkout uses the catalog price only for a live key and an exact preset; everything else is inline', async () => {
+  const calls = [];
+  const fetchFn = async (url, init) => {
+    calls.push({ form: new URLSearchParams(init.body), headers: init.headers });
+    return { ok: true, json: async () => ({ url: 'https://checkout.stripe.com/c/pay/cs_2', id: 'cs_2' }) };
+  };
+  const live = createPayments({ stripeSecretKey: 'sk_live_x', publicUrl: 'https://saathi.example' }, fetchFn);
+  await live.createLink({ ref: 'sv_t1', paise: 5000, note: 'Saathi wallet top-up' });
+  await live.createLink({ ref: 'sv_t2', paise: 14900, note: 'Saathi wallet top-up' }); // a ₹149 top-up is not the Saathi Plus pack
+  await live.createLink({ ref: 'sv_p1', paise: 14900, note: 'Saathi pack', pack: true });
+  await live.createLink({ ref: 'sv_p2', paise: 3700, note: 'Saathi pack', pack: true }); // a pack amount outside the catalog
+  await createPayments({ stripeSecretKey: 'sk_test_x', publicUrl: 'https://saathi.example' }, fetchFn).createLink({ ref: 'sv_t3', paise: 5000, note: 'Saathi wallet top-up' });
+  const [a, b, c, d, e] = calls.map((x) => x.form);
+  assert.equal(a.get('line_items[0][price]'), 'price_1UOZ5cRvRwVipsIhX7g5DpnX');
+  assert.equal(a.get('line_items[0][price_data][unit_amount]'), null);
+  assert.equal(b.get('line_items[0][price]'), null);
+  assert.equal(b.get('line_items[0][price_data][unit_amount]'), '14900');
+  assert.equal(c.get('line_items[0][price]'), 'price_1UOZ5LRvRwVipsIhTzpvF4he');
+  assert.match(c.get('custom_text[submit][message]'), /pack starts/);
+  assert.equal(d.get('line_items[0][price_data][unit_amount]'), '3700');
+  assert.equal(d.get('line_items[0][price_data][product_data][name]'), 'Saathi pack');
+  assert.equal(e.get('line_items[0][price]'), null, 'a test key cannot use live prices');
+  assert.equal(e.get('line_items[0][price_data][unit_amount]'), '5000');
+  for (const call of calls) assert.equal(call.headers['stripe-version'], '2025-09-30.clover');
+});
+
 test('every button title fits WhatsApp (20) and every list row fits (24 / 72), in both languages', () => {
   for (const [lang, table] of Object.entries(allMessages)) {
     for (const [key, val] of Object.entries(table)) {

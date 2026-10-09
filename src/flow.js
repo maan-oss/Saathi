@@ -235,7 +235,7 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
       const ref = `sv_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
       store.putPayment(ref, { userId, paise, status: 'pending', ts: Date.now(), phone: ctx.phone || null, ...(packId ? { packId } : {}) });
       try {
-        const { url } = await payments.createLink({ ref, paise, note: 'Saathi wallet top-up' });
+        const { url } = await payments.createLink({ ref, paise, note: packId ? 'Saathi pack' : 'Saathi wallet top-up', pack: Boolean(packId) });
         say('topup_link', { amt: inr(paise), url });
       } catch (e) {
         console.error('payment link error:', e.message);
@@ -248,7 +248,7 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
       const def = rt.packs[id];
       const r = buyPack(u, config, id);
       if (r.ok) return say('pack_bought', { date: fmtDate(activePack(u).until) });
-      const need = Math.max(1000, Math.ceil(r.need / 100) * 100);
+      const need = Math.max(MIN_TOPUP_PAISE, Math.ceil(r.need / 100) * 100); // a short wallet tops up at least the minimum, or the top-up is refused
       say('pack_short', { price: inr(def.paise), bal: inr(balance(u)) });
       await startTopup(need, id);
     }
