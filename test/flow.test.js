@@ -481,3 +481,16 @@ test('referral: a top-up by someone who was invited returns the 30% first-month 
   assert.ok(store.getUser(payerId).firstPaidAt > 0, 'the first paid top-up starts the referral month');
   done();
 });
+
+test('a bare service name gets its card and three buttons on the web, with no AI call', async () => {
+  const { run, say, calls, done } = setup();
+  try {
+    await say('hi');
+    await say('1'); // English, as the first-run question asks
+    const replies = (await run({ type: 'text', text: 'PAN card' }, 'u1', { channel: 'web', ai: true })).replies;
+    assert.equal(calls.answer, 0, 'the answer comes from our own guide, not the model');
+    const card = replies.find((r) => r.kind === 'buttons' && /New PAN card/.test(r.body));
+    assert.ok(card, 'the PAN card with its buttons is in the replies: ' + JSON.stringify(replies.map((r) => r.kind || r).slice(0, 4)));
+    assert.deepEqual(card.buttons.map((b) => b.id), ['go_pan', 'docs', 'fee']);
+  } finally { done(); }
+});

@@ -524,6 +524,16 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
           const wantFee = FEE_Q.test(q);
           const wantDocs = DOCS_Q.test(q);
           const specific = /link|penalt|late|tatk?al|pvc|learn|duplic|correct|reprint|renew|minor|child|police|pcc|lost|nri|foreign|international|retest|test|compos|return|inoperat|refund|updat|chang|address|mobile|name|dob|birth|state|hindi/i.test(q);
+          if (sv && !inSteps && !wantFee && !wantDocs && !specific && q.split(/\s+/).length <= 3) {
+            // Just a service name ("PAN card", "passport"): our own card with the next steps, so it never depends on the AI.
+            const b = baseService(sv.id) || sv;
+            u.svc = b.id;
+            const head = `*${L10(b.name, L())}*: ${L10(b.blurb, L())}`;
+            const ask = L() === 'hi' ? 'आप क्या करना चाहते हैं?' : 'What do you need?';
+            const btns = [ACTION_BTN.guide(b), ACTION_BTN.docs(b), ACTION_BTN.fees(b)].filter(Boolean).map((x) => ({ id: x.id, title: L() === 'hi' ? x.hi : x.title }));
+            replies.push(R.buttons(`${head}\n\n${ask}`, btns));
+            return;
+          }
           if (sv && wantFee !== wantDocs && !specific) {
             const b = baseService(sv.id) || sv;
             u.svc = b.id;
