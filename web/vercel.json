@@ -15,15 +15,15 @@
     },
     {
       "source": "/privacy",
-      "destination": "https://saathi-acme-7340.vercel.app/privacy"
+      "destination": "https://saathi-u4o7.onrender.com/privacy"
     },
     {
       "source": "/app",
-      "destination": "https://saathi-acme-7340.vercel.app/app"
+      "destination": "https://saathi-u4o7.onrender.com/app"
     },
     {
       "source": "/app/:path*",
-      "destination": "https://saathi-acme-7340.vercel.app/app/:path*"
+      "destination": "https://saathi-u4o7.onrender.com/app/:path*"
     }
   ]
 }
