@@ -643,7 +643,7 @@ export const HI = {
   "Saved {n} of {total}": "{total} में से {n} सहेजे",
   "Nothing found": "कुछ नहीं मिला",
   "Try another word.": "कोई दूसरा शब्द आज़माएँ।",
-  "5 letters, 4 digits, 1 letter. For example ABCDE1234F.": "5 अक्षर, 4 अंक, 1 अक्षर। जैसे ABCDE1234F।",
+  "5 letters, 4 digits, 1 letter. For example ABCPE1234F.": "5 अक्षर, 4 अंक, 1 अक्षर। जैसे ABCPE1234F।",
   "12 digits, starting with 2 to 9. Spaces are fine.": "12 अंक, 2 से 9 से शुरू। बीच में स्पेस चलेगा।",
   "State code, RTO number, then the rest. For example MH12 20110012345.": "राज्य कोड, RTO नंबर, फिर बाकी। जैसे MH12 20110012345।",
   "1 letter then 7 digits. For example A1234567.": "1 अक्षर फिर 7 अंक। जैसे A1234567।",

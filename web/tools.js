@@ -286,7 +286,7 @@
   const renewId = (type) => { const id = type === 'pan' && svcById('pan_fix') ? 'pan_fix' : RENEW[type]; return id && svcById(id) ? id : null; };
   const lkTone = (n) => (n < 0 ? 'bad' : n <= 60 ? 'warn' : 'ok');
   const FORMAT_HINT = {
-    pan: N('5 letters, 4 digits, 1 letter. For example ABCDE1234F.'), aadhaar: N('12 digits, starting with 2 to 9. Spaces are fine.'),
+    pan: N('5 letters, 4 digits, 1 letter. For example ABCPE1234F.'), aadhaar: N('12 digits, starting with 2 to 9. Spaces are fine.'),
     driving_licence: N('State code, RTO number, then the rest. For example MH12 20110012345.'), passport: N('1 letter then 7 digits. For example A1234567.'),
     voter_id: N('3 letters then 7 digits. For example ABC1234567.'), gst: N('15 characters. For example 22AAAAA0000A1Z5.'),
   };
@@ -370,7 +370,7 @@
       const num = textInput('', '', 'text'); num.autocapitalize = 'characters'; num.setAttribute('aria-label', T('Number'));
       const exp = el('input', 'field-i'); exp.type = 'date';
       const expF = field(T('Expiry date'), exp);
-      const PH = { pan: 'ABCDE1234F', aadhaar: '2345 6789 0123', driving_licence: 'MH12 20110012345', passport: 'A1234567', voter_id: 'ABC1234567', gst: '22AAAAA0000A1Z5' };
+      const PH = { pan: 'ABCPE1234F', aadhaar: '2345 6789 0123', driving_licence: 'MH12 20110012345', passport: 'A1234567', voter_id: 'ABC1234567', gst: '22AAAAA0000A1Z5' };
       const fb = el('div', 'lk2-fb'); fb.setAttribute('aria-live', 'polite');
       const fbMsg = el('span', 'lk2-fb-m'); const fbHint = el('small', 'fld-h'); fb.append(fbMsg, fbHint);
       let seq = 0; let timer = null; let blurred = false;

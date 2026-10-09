@@ -80,7 +80,7 @@ function langHint(q) {
 function qaSystemPrompt(langName, svc, context, web = null, more = [], said = null, question = '') {
   const lines = [
     'You are Saathi, a warm helper for Indian government paperwork (PAN, licence, Aadhaar, voter ID, passport, GST, income and caste certificates). Greetings: short hello, ask what they need.',
-    'RULES: Answer first, with exact amounts, dates and steps from FACTS. Never just "check the website"; at most one short line on where the live figure shows. If FACTS miss a detail, say only what is standard and stable, with "usually"; if unknown, say so and name the one official place. NOT CONFIRMED lines: give the typical value with "usually". LATEST lines override older ones. Never ask for or repeat OTPs, passwords, Aadhaar/PAN numbers. You only guide; you cannot submit. No tax/legal advice; steer unrelated questions back.',
+    'RULES: Answer first, with exact amounts, dates and steps from FACTS. Never just "check the website"; at most one short line on where the live figure shows. If FACTS miss a detail, say only what is standard and stable, with "usually"; if unknown, say so and name the one official place. NOT CONFIRMED lines: give the typical value with "usually". LATEST lines override older ones. Never name a specific office, centre, person, phone number or web address unless FACTS has it; say "your nearest office" or "the official website" instead. Never ask for or repeat OTPs, passwords, Aadhaar/PAN numbers. You only guide; you cannot submit. No tax/legal advice; steer unrelated questions back.',
     web
       ? `${said ? `The person's latest message is in ${said}: reply in ${said}. ` : ''}Reply in the SAME language and script as the person's latest message (Hindi gets Devanagari, Hinglish gets Hinglish, other Indian languages their own script); if unclear use ${langName}. Plain short words, max 100 words, only *bold*, no headings or tables.`
       : `Reply in ${langName}, short plain words, at most 110 words, only *bold*, no headings or tables.`,
@@ -490,6 +490,14 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
       return R.pack(title, { docs, fee, fields, ids, missing }, text);
     }
 
+    /** A short card for one service: what it is, then the three things people tap next. Our own text, so it never depends on the AI. */
+    function serviceCard(b, lead = '') {
+      const head = `*${L10(b.name, L())}*: ${L10(b.blurb, L())}`;
+      const ask = L() === 'hi' ? 'आप क्या करना चाहते हैं?' : 'What do you need?';
+      const btns = [ACTION_BTN.guide(b), ACTION_BTN.docs(b), ACTION_BTN.fees(b)].filter(Boolean).map((x) => ({ id: x.id, title: L() === 'hi' ? x.hi : x.title }));
+      return R.buttons(`${lead ? lead + '\n\n' : ''}${head}\n\n${ask}`, btns);
+    }
+
     async function answerQuestion(question) {
       const shield = inspectInput(question);
       if (shield.block) { say('qa_blocked'); return; }
@@ -528,10 +536,7 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
             // Just a service name ("PAN card", "passport"): our own card with the next steps, so it never depends on the AI.
             const b = baseService(sv.id) || sv;
             u.svc = b.id;
-            const head = `*${L10(b.name, L())}*: ${L10(b.blurb, L())}`;
-            const ask = L() === 'hi' ? 'आप क्या करना चाहते हैं?' : 'What do you need?';
-            const btns = [ACTION_BTN.guide(b), ACTION_BTN.docs(b), ACTION_BTN.fees(b)].filter(Boolean).map((x) => ({ id: x.id, title: L() === 'hi' ? x.hi : x.title }));
-            replies.push(R.buttons(`${head}\n\n${ask}`, btns));
+            replies.push(serviceCard(b));
             return;
           }
           if (sv && wantFee !== wantDocs && !specific) {
@@ -590,7 +595,8 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
         if (web) {
           const btns = acts.map((k) => ACTION_BTN[k](svc)).filter(Boolean).map((b) => ({ id: b.id, title: L() === 'hi' ? b.hi : b.title }));
           if (answer) replies.push(btns.length ? R.buttons(answer, btns) : answer);
-          else if (svc?.intake?.length && !inSteps) replies.push(R.buttons(T('qa_fail'), [{ id: 'go_' + svc.id, title: L() === 'hi' ? 'गाइड शुरू करें' : 'Guide me step by step' }]));
+          // The model came back empty: give the service's own basics and next steps instead of a dead end.
+          else if (svc && !inSteps) replies.push(serviceCard(baseService(svc.id) || svc, T('qa_fail')));
           else replies.push(T('qa_fail'));
         } else if (answer && svc && !inSteps && u.state !== 'svc_q' && svc.intake?.length) {
           const title = L() === 'hi' ? 'गाइड शुरू करें' : 'Guide me step by step';

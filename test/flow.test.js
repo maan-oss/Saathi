@@ -135,6 +135,19 @@ test('AI failure degrades gracefully and refunds', async () => {
   done();
 });
 
+test('an empty AI answer gives the service card with its buttons, not a dead end', async () => {
+  const { say, run, done } = setup({}, { async answer() { return { text: '', usage: { in: 0, out: 0 } }; } });
+  try {
+    await say('hi');
+    await say('1');
+    const replies = (await run({ type: 'text', text: 'how do I change the name on my Aadhaar?' }, 'u1', { channel: 'web', ai: true })).replies;
+    const card = replies.find((r) => r.kind === 'buttons' && /Aadhaar/.test(r.body));
+    assert.ok(card, 'a card with the Aadhaar basics: ' + JSON.stringify(replies.map((r) => r.kind || r).slice(0, 3)));
+    assert.match(card.body, /can't answer that right now/);
+    assert.ok(card.buttons.length >= 2, 'at least two next steps');
+  } finally { done(); }
+});
+
 test('docs command and agent handoff work anywhere', async () => {
   const { say, run, done } = setup();
   await say('hi');
