@@ -950,7 +950,7 @@
     back.onclick = () => { if (step > 0) go(step - 1); };
 
     // About you: check the state name with the server, then save the four details
-    const tsend = async (op, args) => { const r = await api('/app/api/t', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ op, args }) }).catch(() => ({ ok: false, j: {} })); return r.ok ? { ok: true, data: r.j.data } : { ok: false, error: r.j?.error }; };
+    const tsend = async (op, args) => { const r = await api('/app/api/t', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ op, args }) }).catch(() => ({ ok: false, status: 0, j: {} })); return r.ok ? { ok: true, data: r.j.data } : { ok: false, status: r.status || 0, error: r.j?.error }; };
     const stateSeen = new Map();
     const checkState = async (v) => { const k = v.trim().toLowerCase(); if (stateSeen.has(k)) return stateSeen.get(k); const r = await tsend('state.find', { text: v }); if (r.ok) stateSeen.set(k, r); return r; };
     async function saveAbout() {
@@ -959,7 +959,7 @@
       if (v.state) { const r = await checkState(v.state); if (r.ok && !r.data.name) return bad(T('I don’t know a state like that. Try the full name of an Indian state.')); if (r.ok) v.state = r.data.name; }
       const values = Object.fromEntries(Object.entries(v).filter(([, x]) => x));
       const r = await tsend('details.set', { values });
-      if (!r.ok) return bad(T('Something went wrong. Please try again.'));
+      if (!r.ok) return bad(r.status === 429 ? T('Too many tries in a row. Wait a minute, then tap Continue again.') : r.status === 0 ? T('No connection. Check your internet and tap Continue again.') : T('Something went wrong. Please try again.'));
       if (r.data.bad?.length) return bad(T('Some of that does not look right. Check the name and date.'));
       if (about.state) store.set('saathi.state', about.state);
       return true;

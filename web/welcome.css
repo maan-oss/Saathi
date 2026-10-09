@@ -65,7 +65,7 @@ body.ob-open .app{visibility:hidden}
 .wl-chips button{height:52px;border:0;border-radius:18px;background:rgba(255,255,255,.24);color:#fff;font:inherit;font-size:16px;font-weight:600;cursor:pointer;transition:background .2s ease,color .2s ease,transform .15s ease}
 .wl-chips button:active{transform:scale(.97)}
 .wl-chips button[aria-pressed=true]{background:#fff;color:#1d1d1f;box-shadow:0 8px 20px rgba(10,30,70,.16)}
-.wl-dd .dd-btn{height:54px;border:0;border-radius:18px;background:#fff;color:#1d1d1f;font:inherit;font-size:17px;box-shadow:0 8px 22px rgba(10,30,70,.14)}
+.wl-dd .dd-btn{height:54px;border:0;border-radius:18px;background:#fff;color:var(--ink);font:inherit;font-size:17px;box-shadow:0 8px 22px rgba(10,30,70,.14)}
 .wl-err{margin:0;padding:10px 14px;border-radius:14px;background:rgba(150,24,36,.5);color:#fff;font-size:14px;font-weight:600}
 .wl-err[hidden]{display:none}
 
