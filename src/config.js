@@ -38,6 +38,8 @@ export const config = {
   // Stripe Checkout (optional: without it, top-ups are not offered)
   stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
+  // PAYMENTS_PAUSED=1 stops new top-ups and keeps the Stripe keys in place. Payments already made still reach the webhook.
+  paymentsPaused: process.env.PAYMENTS_PAUSED === '1',
 
   // WhatsApp Flow id for the details form (optional: without it the bot asks one field at a time)
   detailsFlowId: process.env.DETAILS_FLOW_ID || '',

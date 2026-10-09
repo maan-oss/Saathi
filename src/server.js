@@ -27,7 +27,7 @@ const guard = new CostGuard(store, config);
 const llm = createLlm(config);
 const wa = createWhatsApp(config);
 const vault = createVault(config.vaultKey);
-const payments = createPayments(config);
+const payments = config.paymentsPaused ? null : createPayments(config);
 const stt = createStt(config);
 // A key pasted into the admin page is kept sealed (AES-GCM, key from VAULT_KEY) and re-applied at every start.
 const aiKeySource = () => (store.getSetting('aiKey') ? 'saved' : process.env.OPENROUTER_API_KEY ? 'env' : 'none');
