@@ -971,7 +971,7 @@
       if (!store.get('saathi.lang')) store.set('saathi.lang', lang.code);
       api('/app/api/lang', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ code: C.uiLang() }) }).then(() => refreshMe()).catch(() => {});
       ob.classList.remove('on'); document.body.classList.remove('ob-open');
-      setTimeout(() => { ob.hidden = true; ob.replaceChildren(); C.openPending?.(); }, 420);
+      setTimeout(() => { ob.hidden = true; ob.replaceChildren(); C.openPending?.(); C.refreshHome?.(); }, 420);
       C.welcome(); C.applyStatic();
     }
 

@@ -61,6 +61,9 @@ export function createLlm(config) {
     const data = await res.json();
     let text = String(data.choices?.[0]?.message?.content || '');
     text = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+    // Free models sometimes return nothing at all (the budget went to hidden thinking). Try once more, with a little
+    // more room, before the person sees "I can't answer that right now".
+    if (!text && attempt < 1) return callOpenRouter({ system, content, maxTokens: maxTokens + 200 }, attempt + 1);
     return { text, usage: { in: data.usage?.prompt_tokens || 0, out: data.usage?.completion_tokens || 0 } };
   }
 

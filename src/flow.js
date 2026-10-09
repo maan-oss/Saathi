@@ -579,11 +579,15 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
         }
         if (web) {
           const btns = acts.map((k) => ACTION_BTN[k](svc)).filter(Boolean).map((b) => ({ id: b.id, title: L() === 'hi' ? b.hi : b.title }));
-          replies.push(answer ? (btns.length ? R.buttons(answer, btns) : answer) : T('qa_fail'));
+          if (answer) replies.push(btns.length ? R.buttons(answer, btns) : answer);
+          else if (svc?.intake?.length && !inSteps) replies.push(R.buttons(T('qa_fail'), [{ id: 'go_' + svc.id, title: L() === 'hi' ? 'गाइड शुरू करें' : 'Guide me step by step' }]));
+          else replies.push(T('qa_fail'));
         } else if (answer && svc && !inSteps && u.state !== 'svc_q' && svc.intake?.length) {
           const title = L() === 'hi' ? 'गाइड शुरू करें' : 'Guide me step by step';
           replies.push(R.buttons(answer, [{ id: 'go_' + svc.id, title }, btn('menu', 'btn_menu')]));
-        } else replies.push(answer || T('qa_fail'));
+        } else if (answer) replies.push(answer);
+        else if (svc?.intake?.length && !inSteps) replies.push(R.buttons(T('qa_fail'), [{ id: 'go_' + svc.id, title: L() === 'hi' ? 'गाइड शुरू करें' : 'Guide me step by step' }, btn('menu', 'btn_menu')]));
+        else replies.push(T('qa_fail'));
       } catch (e) {
         console.error('llm error:', e.message);
         if (c) refund(u, c, 'ai');

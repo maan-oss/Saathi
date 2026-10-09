@@ -88,3 +88,24 @@ test('a key set while running turns the AI on and off without a restart', async 
   l.setKey('');
   assert.equal(l.enabled, false);
 });
+
+test('openrouter: an empty reply is retried once, so a free model that returns nothing does not end in "can\'t answer"', async () => {
+  const s = stubFetch((n) => ok({ choices: [{ message: { content: n === 1 ? '' : 'Apply on the official portal.' } }], usage: { prompt_tokens: 5, completion_tokens: 0 } }));
+  try {
+    const llm = createLlm(cfg);
+    const r = await llm.answer('be kind', 'PAN card');
+    assert.equal(r.text, 'Apply on the official portal.');
+    assert.equal(s.calls.length, 2);
+    assert.ok(s.calls[1].body.max_tokens > s.calls[0].body.max_tokens, 'the retry gets a little more room');
+  } finally { s.restore(); }
+});
+
+test('openrouter: still empty after the retry gives an empty answer (the caller falls back), not an error', async () => {
+  const s = stubFetch(() => ok({ choices: [{ message: { content: '' } }] }));
+  try {
+    const llm = createLlm(cfg);
+    const r = await llm.answer('be kind', 'PAN card');
+    assert.equal(r.text, '');
+    assert.equal(s.calls.length, 2);
+  } finally { s.restore(); }
+});

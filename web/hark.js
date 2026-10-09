@@ -97,7 +97,10 @@
     if (!built) buildHome();
     const d = await C.fyData?.().catch(() => null);
     if (d) { lastItems = d.items; paintFy(d.items); }
+    else if (fyBox && !lastItems) fyBox.hidden = true; // not ready yet (first run) or no data: drop the loading rows
   }
+  // Called when onboarding finishes, so the card fills in without a tab switch.
+  C.refreshHome = () => { if (cur === 'home') drawHome(); };
 
   // ---- Guides tab ---------------------------------------------------------------------------------
   async function drawGuides() {
