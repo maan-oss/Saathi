@@ -27,8 +27,8 @@ export const DEFAULT_RATES = {
   remindPaise: 200,
   topups: [5000, 10000, 20000, 50000],
   packs: {
-    pack_quick: { id: 'pack_quick', name: 'Quick pack', paise: 2900, days: 3, scans: 3, ai: 20, voice: 8, remind: 3 },
-    pan_pack: { id: 'pan_pack', name: 'Saathi pack', paise: 4900, days: 7, scans: 8, ai: 40, voice: 20, remind: 5 },
+    pack_quick: { id: 'pack_quick', name: 'Quick pack', paise: 5000, days: 3, scans: 3, ai: 20, voice: 8, remind: 3 },
+    pan_pack: { id: 'pan_pack', name: 'Saathi pack', paise: 5000, days: 7, scans: 8, ai: 40, voice: 20, remind: 5 },
     pack_month: { id: 'pack_month', name: 'Saathi Plus', paise: 14900, days: 30, scans: 40, ai: 300, voice: 100, remind: 25 },
   },
 };

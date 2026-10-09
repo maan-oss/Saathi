@@ -64,7 +64,7 @@ test('credit is idempotent per payment reference and rejects bad amounts', () =>
 });
 
 test('pack: buys at a fixed price, covers msgs/scans/ai/sheets until its allowance or expiry, then per-item pricing returns', () => {
-  const u = { wallet: { paise: 5100, refs: [], history: [] } };
+  const u = { wallet: { paise: 5200, refs: [], history: [] } };
   assert.equal(buyPack(u, cfg, 'pan_pack', T0).ok, true);
   assert.equal(balance(u), 200);
   assert.ok(activePack(u, T0 + DAY));
@@ -78,9 +78,9 @@ test('pack: buys at a fixed price, covers msgs/scans/ai/sheets until its allowan
 });
 
 test('pack refuses when the wallet is short and takes nothing', () => {
-  const u = { wallet: { paise: 4899, refs: [], history: [] } };
+  const u = { wallet: { paise: 4999, refs: [], history: [] } };
   const r = buyPack(u, cfg, 'pan_pack', T0);
   assert.equal(r.ok, false);
   assert.equal(r.need, 1);
-  assert.equal(balance(u), 4899);
+  assert.equal(balance(u), 4999);
 });

@@ -474,7 +474,7 @@
   // ---- packs -------------------------------------------------------------------------------------
   const PACK_TAG = { pan_pack: N('Most popular'), pack_month: N('Best value') };
   const PACK_ICON = { pack_quick: 'tkt', pan_pack: 'stk', pack_month: 'crown' };
-  // The least a Stripe payment can be (billing.js MIN_TOPUP_PAISE). A short wallet pays at least this much, so a ₹29 pack can be paid for.
+  // The least a Stripe payment can be (billing.js MIN_TOPUP_PAISE). A short wallet pays at least this much, so a pack can be paid for.
   const MIN_TOPUP = 5000;
   SCREENS.packs = async () => {
     const col = frame(T('Packs'), T('One price for a whole paperwork job. No need to count messages.'));

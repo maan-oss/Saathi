@@ -297,11 +297,11 @@ test('PAN pack: needs confirmation, is paid from the wallet, then guide messages
   await say('hi');
   await say('1');
   let u = store.getUser('u1');
-  u.wallet.paise = 5000;
+  u.wallet.paise = 5100;
   u.docConsent = true;
   store.putUser('u1', u);
-  assert.match(await tapText('pack'), /Saathi pack: ₹49/);
-  assert.equal(wallet(), 5000); // nothing charged yet
+  assert.match(await tapText('pack'), /Saathi pack: ₹50/);
+  assert.equal(wallet(), 5100); // nothing charged yet
   assert.match(await tapText('confirm_pack'), /Saathi pack\* is on until/);
   assert.equal(wallet(), 100);
   await say('1'); // guide messages are free now
@@ -321,7 +321,7 @@ test('pack with too little money sends the user to top up', async () => {
   await say('1');
   await tap('pack');
   const r = await tap('confirm_pack');
-  assert.match(r.map(plain).join(''), /The pack costs \*₹49\*, and your wallet has \*₹5\*/);
+  assert.match(r.map(plain).join(''), /The pack costs \*₹50\*, and your wallet has \*₹5\*/);
   assert.equal(r.at(-1).kind, 'list');
   done();
 });
@@ -461,7 +461,7 @@ test('wallet screen shows the balance and the pack price once each, with no doub
   await say('1');
   const t = await tapText('wallet');
   assert.match(t, /Your wallet: ₹5\b(?!₹)/);
-  assert.match(t, /Saathi pack ₹49/);
+  assert.match(t, /Saathi pack ₹50/);
   assert.doesNotMatch(t, /₹5₹/);
   done();
 });
