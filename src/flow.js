@@ -451,6 +451,21 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
       await answerQuestion(raw);
     }
 
+    /**
+     * In the middle of one guide, a short message that names a different service ("PAN card" during the Aadhaar
+     * questions) means the person has moved on. Leave the guide and handle the new topic. Real questions about the
+     * current guide ("is PAN needed for this?") stay with the guide.
+     */
+    async function switchTopic(raw) {
+      const cur = svcNow();
+      const other = detectService(raw);
+      if (!cur || !other || raw.split(/\s+/).length > 3 || /\?|\b(what|why|how|can|could|is|are|do|does|will|which|who|when|where|should)\b/i.test(raw)) return false;
+      if ((baseService(other.id) || other).id === (baseService(cur.id) || cur).id) return false;
+      u.state = 'qa';
+      await chatOrRoute(raw);
+      return true;
+    }
+
     const ACTION_BTN = {
       guide: (svc) => (svc?.intake?.length ? { id: 'go_' + svc.id, title: 'Guide me step by step', hi: 'गाइड शुरू करें' } : null),
       docs: (svc) => (svc ? { id: 'docs', title: 'Documents needed', hi: 'ज़रूरी दस्तावेज़' } : null),
@@ -1325,6 +1340,7 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
           const svc = svcNow();
           const q = svc && nextQuestion(svc, u.ans);
           const isAnswer = !q || YES.has(text) || NO.has(text) || (q.type === 'opts' && matchOption(q, raw, L())) || (q.type === 'state' && !/\?/.test(raw) && raw.split(/\s+/).length <= 6);
+          if (input.type === 'text' && !isAnswer && (await switchTopic(raw))) break;
           if (input.type === 'text' && !isAnswer && raw.length > 8 && /\?|\b(what|why|how|can|could|is|are|do|does|will|which|who|when|where|should)\b/i.test(raw)) {
             await answerQuestion(raw); // a real question in the middle of the guide: answer it, then ask the same thing again
             u.state = 'svc_q';
@@ -1354,6 +1370,7 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
               stepReply();
             }
           } else if (isTap) stepReply();
+          else if (input.type === 'text' && (await switchTopic(raw))) break;
           else await answerQuestion(raw);
           break;
         }

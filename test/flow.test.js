@@ -148,6 +148,20 @@ test('an empty AI answer gives the service card with its buttons, not a dead end
   } finally { done(); }
 });
 
+test('typing another service mid-guide switches to it instead of repeating the question', async () => {
+  const { say, run, done } = setup();
+  try {
+    await say('hi');
+    await say('1');
+    await run({ type: 'reply', id: 'go_pan', title: 'Guide me step by step' }, 'u1', { channel: 'web', ai: true });
+    // a short name of another service: leave the PAN questions and show that service's card
+    const replies = (await run({ type: 'text', text: 'Aadhaar' }, 'u1', { channel: 'web', ai: true })).replies;
+    const card = replies.find((r) => r.kind === 'buttons' && /Aadhaar/.test(r.body));
+    assert.ok(card, 'the Aadhaar card: ' + JSON.stringify(replies.map((r) => r.kind || r).slice(0, 3)));
+    assert.deepEqual(card.buttons.map((b) => b.id), ['go_aadhaar', 'docs', 'fee']);
+  } finally { done(); }
+});
+
 test('docs command and agent handoff work anywhere', async () => {
   const { say, run, done } = setup();
   await say('hi');
