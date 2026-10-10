@@ -392,6 +392,22 @@
   // The sunset panel drifts as you pass it.
   G.fromTo('.final-sky', { backgroundPosition: '50% 0%' }, { backgroundPosition: '50% 100%', ease: 'none', scrollTrigger: { trigger: '.final', start: 'top bottom', end: 'bottom top', scrub: true } });
 
+  // ---- Anonymous counts: one landing view, and each tap into the app. No cookie, no id. The server keeps daily totals only,
+  // and ignores bots and anything that is not one of these two events. A failed send is silently dropped.
+  const count = (event) => {
+    try {
+      const src = new URLSearchParams(location.search).get('utm_source') || '';
+      fetch('/app/api/event', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-saathi': '1' },
+        body: JSON.stringify({ event, source: src.slice(0, 40) }),
+        keepalive: true,
+      }).catch(() => {});
+    } catch { /* counts are optional */ }
+  };
+  count('landing_view');
+  $$('[data-app]').forEach((a) => a.addEventListener('click', () => count('app_open')));
+
   // Pointer effects, for a mouse only (never on touch). Each one resets cleanly when the pointer leaves.
   if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
     // Service cards tilt a few degrees toward the pointer.

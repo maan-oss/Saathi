@@ -3,7 +3,7 @@ import { join, dirname, resolve } from 'node:path';
 import { randomBytes } from 'node:crypto';
 
 // Every file the store keeps. The daily backup copies exactly these.
-export const STORE_FILES = ['users.json', 'ledger.json', 'payments.json', 'trials.json', 'translations.json', 'settings.json', 'referrals.json', 'handoff.json'];
+export const STORE_FILES = ['users.json', 'ledger.json', 'payments.json', 'trials.json', 'translations.json', 'settings.json', 'referrals.json', 'handoff.json', 'stats.json'];
 const BACKUP_KEEP_DAYS = 14;
 
 // What an account with a wallet balance keeps after its personal details are erased. Everything else is erased,
@@ -40,6 +40,7 @@ export class Store {
     this.translations = this._load('translations.json', {});
     this.settings = this._load('settings.json', {});
     this.referrals = this._load('referrals.json', { byUser: {}, byCode: {} });
+    this.stats = this._load('stats.json', { days: {} });
     this.seen = [];
   }
 
@@ -218,6 +219,32 @@ export class Store {
 
   saveLedger() {
     this._save('ledger.json', this.ledger);
+  }
+
+  // Daily totals only (see analytics.js). Counts are per event and per source; no person, address or id is kept.
+  // Days older than 90 are dropped.
+  countEvent(event, source = '', now = Date.now()) {
+    const day = new Date(now).toISOString().slice(0, 10);
+    const d = (this.stats.days[day] ||= { events: {}, sources: {} });
+    d.events[event] = (d.events[event] || 0) + 1;
+    if (source) {
+      const k = `${event}|${source}`;
+      d.sources[k] = (d.sources[k] || 0) + 1;
+    }
+    const cutoff = new Date(now - 90 * 86400000).toISOString().slice(0, 10);
+    for (const k of Object.keys(this.stats.days)) if (k < cutoff) delete this.stats.days[k];
+    this._save('stats.json', this.stats);
+  }
+
+  // The last `days` days, oldest first, with totals per event and per source.
+  funnel(days = 30, now = Date.now()) {
+    const out = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const day = new Date(now - i * 86400000).toISOString().slice(0, 10);
+      const d = this.stats.days[day] || { events: {}, sources: {} };
+      out.push({ day, events: d.events, sources: d.sources });
+    }
+    return out;
   }
 
   // WhatsApp retries webhooks; ignore repeats.

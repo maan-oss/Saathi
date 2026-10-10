@@ -19,6 +19,7 @@ import { t } from './messages.js';
 import { SERVICES, LAST_VERIFIED, L10 } from './services.js';
 import { balance, activePack, inr, freeLeft, freeAiLeft, grantTrial, rates, MIN_TOPUP_PAISE } from './billing.js';
 import { SHIPPED_LANGS, langDef } from './i18n.js';
+import { isBot, parseClientEvent } from './analytics.js';
 import { uiDict } from './uistrings.js';
 
 const WEB_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'web');
@@ -121,6 +122,7 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
   const okUpUser = limiter(config.webUploadsPerMin ?? 10, 60_000);
   const okPoll = limiter(60, 60_000);
   const okCheck = limiter(30, 60_000);
+  const okEvent = limiter(120, 60_000); // the landing page's anonymous counts, per address per minute
   const newUsersByIp = new Map(); // ip -> [timestamps], for the welcome-credit cap
   const fileCache = new Map();
 
@@ -339,6 +341,7 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
     store.putPayment(ref, { userId: uid, paise, status: 'pending', ts: Date.now(), before, ...(packId ? { packId } : {}) });
     try {
       const { url } = await payments.createLink({ ref, paise, note: packId ? 'Saathi pack' : 'Saathi wallet top-up', origin: b.origin, pack: Boolean(packId) });
+      store.countEvent('topup_started', packId ? 'pack' : 'wallet');
       return json(res, 200, { url, ref });
     } catch (e) {
       console.error('payment link error:', e.message);
@@ -524,6 +527,17 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
     }
     if (p === '/app/api/config' && req.method === 'GET') {
       json(res, 200, { whatsapp: shell.whatsappNumber ? `https://wa.me/${shell.whatsappNumber}?text=Hi` : null, whatsappNumber: shell.whatsappNumber || null, voice: Boolean(shell.voice), pay: Boolean(shell.pay), link: Boolean(links), tools: Boolean(tools), privacy: '/privacy', prices: prices(), topups: config.rates?.topups || [], languages: [{ code: 'en', native: 'English', en: 'English' }, { code: 'hi', native: 'हिन्दी', en: 'Hindi' }, ...SHIPPED_LANGS.map((l) => ({ code: l.code, native: l.native, en: l.en }))] });
+      return true;
+    }
+    // Anonymous funnel counts from the landing page (see analytics.js). Two events only, no session, no personal data.
+    if (p === '/app/api/event' && req.method === 'POST') {
+      if (!okEvent(ipOf(req))) { json(res, 429, { error: 'slow_down' }); return true; }
+      if (isBot(req.headers['user-agent'])) { res.statusCode = 204; res.end(); return true; }
+      let ev = null;
+      try { ev = parseClientEvent((await readRaw(req, 400)).toString('utf8')); } catch { ev = null; }
+      if (!ev) { json(res, 400, { error: 'bad_event' }); return true; }
+      store.countEvent(ev.event, ev.source);
+      res.statusCode = 204; res.end();
       return true;
     }
     // Site logos for the sources screen. Only real icons pass: a missing one is a 404 so the page shows a letter badge instead of a generic arrow.

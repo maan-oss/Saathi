@@ -119,6 +119,8 @@ function processPayment(paid) {
   enqueue(rec.userId, async () => {
     const r = await bot.creditPayment(paid);
     if (!r.ok) return console.warn('payment not credited:', r.reason, paid.ref);
+    // Counted once, only when the wallet was actually credited (a repeated webhook returns not ok above).
+    store.countEvent('topup_paid', rec.packId ? 'pack' : 'wallet');
     // The referrer's share goes through their own queue, so their balance is never written twice at once.
     if (r.referral?.paise > 0 && r.referral.referrerId !== rec.userId) {
       enqueue(r.referral.referrerId, async () => creditReferrer(r.referral));
@@ -206,6 +208,7 @@ What we keep: your place in the guide and your language, deleted after ${config.
 Photos and PDFs: only read if you agree, only in memory, never saved. Voice notes: turned into text by a speech service (Sarvam or OpenAI), held in memory, never saved; the text is used only to answer you and is not kept.
 Reminders: if you set one, we keep the date, its name and your phone number (encrypted) so we can message you before it, until it passes or you type "delete". The AI service reads the photo; your saved details are never sent to it.
 Payments: made on Stripe's page. We never see your card details. While a payment is pending we hold your phone number to tell you it arrived.
+Website counts: the website keeps anonymous daily totals only: visits, taps into the app, top-ups started and paid, and the ad source from the link (for example meta or google). No cookie is set, and no IP address, phone number or identity is stored with the totals. They are deleted after 90 days.
 If you ask for a human (type "agent"), we save your phone number and what you write to them so a person can reply. Closed conversations are deleted after 30 days.
 AI: free-form questions, document reading and translation are processed by an AI service (${config.openrouterKey ? 'OpenRouter, which routes to a model provider; free models may keep what they are sent, so with a free model do not photograph documents you would not want a third party to see' : 'Anthropic'}). Other languages than English and Hindi are machine translated and may contain mistakes.
 We never ask for your OTP or password. Do not share them with anyone.
@@ -251,7 +254,8 @@ const server = http.createServer((req, res) => {
       return void res.end('forbidden');
     }
     res.setHeader('content-type', 'application/json');
-    return void res.end(JSON.stringify(guard.stats(), null, 2));
+    // Spend figures plus the last 30 days of anonymous funnel counts (landing views, app opens, top-ups started and paid).
+    return void res.end(JSON.stringify({ ...guard.stats(), funnel: store.funnel(30) }, null, 2));
   }
 
   // Operator inbox: people who asked for a human. Contains phone numbers, so everything here needs the admin key.
