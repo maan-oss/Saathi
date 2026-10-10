@@ -251,6 +251,11 @@
     }
   }
   const plain = (s) => String(s || '').replace(/[*_]/g, '');
+  // Results are written for WhatsApp, with emoji and bullet marks. The web card is plain text, so those come off here.
+  const clean = (s) => plain(s).replace(/\p{Extended_Pictographic}️?/gu, '').replace(/^[\s•·*\-]+/u, '').replace(/\s{2,}/g, ' ').trim();
+  // The first site named in the message, used only for its letter badge. Nothing is fetched from that site.
+  const siteOf = (s) => { const m = String(s).match(/(?:https?:\/\/)?(?:www\.)?((?:[a-z0-9-]+\.)+[a-z]{2,})(?=[/\s?#]|$)/i); return m ? m[1].toLowerCase() : ''; };
+  const siteBadge = (host) => { const b = el('span', 'v-site', host[0].toUpperCase()); b.setAttribute('aria-hidden', 'true'); b.title = host; let h = 0; for (const c of host) h = (h * 31 + c.charCodeAt(0)) % 360; b.style.setProperty('--site-h', String(h)); return b; };
   const findPayLink = (replies) => {
     const rep = (replies || []).map((x) => (typeof x === 'string' ? { body: x } : x));
     const linkRep = rep.find((x) => x.links && Object.values(x.links).some((i) => i.kind === 'payment'));
@@ -258,7 +263,7 @@
   };
 
   // ---- wallet ----------------------------------------------------------------------------------
-  const WHAT = { 'welcome credit': N('Welcome credit'), 'top-up': N('Money added'), referral: N('Referral bonus'), msg: N('Guide message'), ai: N('AI answer'), scan: N('Document check'), sheet: N('Form sheet'), voice: N('Voice note'), remind: N('Reminder') };
+  const WHAT = { 'welcome credit': N('Welcome credit (one time)'), 'top-up': N('Money added'), referral: N('Referral bonus'), msg: N('Guide message'), ai: N('AI answer'), scan: N('Document check'), sheet: N('Form sheet'), voice: N('Voice note'), remind: N('Reminder') };
   const whatLabel = (w) => (w.startsWith('pack ') ? T('Pack bought') : w.startsWith('refund ') ? T('Refund') : WHAT[w] ? T(WHAT[w]) : T('Other'));
   function activityRows(list) {
     const box = el('div', 'act');
@@ -271,7 +276,7 @@
     }
     return box;
   }
-  const packName = (id, fallback) => ({ pack_quick: T('Quick pack'), pan_pack: T('Saathi pack'), pack_month: T('Saathi Plus') }[id] || fallback || T('Saathi pack'));
+  const packName = (id, fallback) => ({ pan_pack: T('Saathi pack'), pack_month: T('Saathi Plus') }[id] || fallback || T('Saathi pack'));
   SCREENS.wallet = async () => {
     const col = frame(T('Wallet'), T('Your balance, packs and recent activity.'));
     const w0 = C.wallet; const p = C.prices;
@@ -295,7 +300,7 @@
         const top = el('div', 'pk-top'); top.append(el('h3', '', T('{name} is on', { name: packName(w.pack.id, w.pack.name) })), el('span', 'tag on', T('Active')));
         pk.append(top, el('p', 'mut', T('Until {date}. Guide messages and form sheets are unlimited.', { date: fmtDate(w.pack.until) })));
         const ul = el('ul', 'left');
-        for (const [n, l] of [[w.pack.scans, T('document checks left')], [w.pack.ai, T('AI answers left')], [w.pack.voice, T('voice notes left')], [w.pack.remind, T('reminders left')]]) { const li = el('li'); li.append(el('b', '', String(n)), el('span', '', l)); ul.append(li); }
+        for (const [n, l] of [[w.pack.scans, T('document checks left')], [w.pack.ai, T('AI answers left')], [w.pack.voice, T('voice notes left')], [w.pack.remind, T('reminders left')]].filter(([n]) => typeof n === 'number' && n > 0)) { const li = el('li'); li.append(el('b', '', String(n)), el('span', '', l)); ul.append(li); }
         pk.append(ul); holder.append(pk);
       }
       const hist = (w?.history || []);
@@ -319,7 +324,7 @@
         invBtn.onclick = function () { C.copyText(link, this); };
       }).catch(() => { invLink.textContent = T('Your link is not ready yet. Try again in a moment.'); });
       if (p) {
-        const rows = [[T('Guide message (after the free ones)'), p.msgPaise], [T('AI answer (after the free ones)'), p.aiPaise], [T('Document check'), p.scanPaise], [T('Form sheet'), p.sheetPaise], [T('Voice note'), p.voicePaise], [T('Reminder'), p.remindPaise]];
+        const rows = [[T('Guide message (after the free ones)'), p.msgPaise], [T('AI answer (after the free ones)'), p.aiPaise], [T('Document check'), p.scanPaise], [T('Form sheet'), p.sheetPaise], ...(C.cfg?.voice ? [[T('Voice note'), p.voicePaise]] : []), [T('Reminder'), p.remindPaise]];
         const box = el('div', 'grp-box prices');
         for (const [l, v] of rows) { const r = el('div', 'pr'); r.append(el('span', '', l), el('b', '', rupee(v))); box.append(r); }
         const g = el('section', 'grp'); g.append(el('h2', 'grp-t', T('Pay per use')), box); holder.append(g);
@@ -473,7 +478,7 @@
 
   // ---- packs -------------------------------------------------------------------------------------
   const PACK_TAG = { pan_pack: N('Most popular'), pack_month: N('Best value') };
-  const PACK_ICON = { pack_quick: 'tkt', pan_pack: 'stk', pack_month: 'crown' };
+  const PACK_ICON = { pan_pack: 'stk', pack_month: 'crown' };
   // The least a Stripe payment can be (billing.js MIN_TOPUP_PAISE). A short wallet pays at least this much, so a pack can be paid for.
   const MIN_TOPUP = 5000;
   SCREENS.packs = async () => {
@@ -492,7 +497,7 @@
         top.append(ic, nm); if (PACK_TAG[pk.id]) top.append(el('span', 'tag hot', T(PACK_TAG[pk.id])));
         const price = el('div', 'pack-price'); price.append(el('b', '', rupee(pk.paise)), el('span', '', T('about {amt} a day', { amt: rupee(Math.round(pk.paise / pk.days)) })));
         const ul = el('ul', 'incl');
-        for (const [k, t] of [['msg', T('Unlimited guide messages')], ['doc', T('Unlimited form sheets')], ['camera', T('{n} document checks', { n: pk.scans })], ['spark', T('{n} AI answers', { n: pk.ai })], ['mic', T('{n} voice notes', { n: pk.voice })], ['bell', T('{n} reminders', { n: pk.remind })]]) { const li = el('li'); const c = el('span', 'inc-ic'); c.append(ico(k, 16)); li.append(c, el('span', '', t)); ul.append(li); }
+        for (const [k, t] of [['msg', T('Unlimited guide messages')], ['doc', T('Unlimited form sheets')], ['camera', T('{n} document checks', { n: pk.scans })], ['spark', T('{n} AI answers', { n: pk.ai })]]) { const li = el('li'); const c = el('span', 'inc-ic'); c.append(ico(k, 16)); li.append(c, el('span', '', t)); ul.append(li); }
         const enough = (w?.paise || 0) >= pk.paise; const need = Math.max(MIN_TOPUP, Math.ceil((pk.paise - (w?.paise || 0)) / 100) * 100);
         const buy = btn('btn ' + (PACK_TAG[pk.id] ? 'pri' : 'ink') + ' xl', enough ? T('Get it for {amt} from your wallet', { amt: rupee(pk.paise) }) : T('Pay {amt} and get it', { amt: rupee(need) }), () => buyPack(pk, buy));
         card.append(top, price, ul, buy); holder.append(card);
@@ -622,7 +627,7 @@
   // ---- is this real? ---------------------------------------------------------------------------------
   SCREENS.check = () => {
     const col = frame(T('Is this real?'), T('Paste an SMS, WhatsApp message or link. Saathi checks it for signs of a scam.'));
-    const ta = el('textarea', 'field-i big'); ta.rows = 5; ta.maxLength = 1500; ta.placeholder = T('Paste the message or link here'); ta.setAttribute('aria-label', T('Message to check'));
+    const ta = el('textarea', 'field-i big'); ta.rows = 5; ta.maxLength = 1500; ta.spellcheck = false; ta.placeholder = T('Paste the message or link here'); ta.setAttribute('aria-label', T('Message to check'));
     const go = btn('btn pri xl', T('Check it'), async () => {
       const text = ta.value.trim(); if (text.length < 4) return toast(T('Paste something to check.'));
       go.disabled = true; go.textContent = T('Checking…');
@@ -631,10 +636,12 @@
       out.replaceChildren();
       if (!r.ok) { out.append(note(T('Could not check that right now. Please try again.'), 'warn')); return; }
       const lv = r.j.level; const tone = lv === 'danger' ? 'bad' : lv === 'caution' || lv === 'private' ? 'warn' : 'good';
-      const card = el('section', 'verdict ' + tone); const ic = el('span', 'v-ic'); ic.append(ico(tone === 'good' ? 'check' : 'warn', 26));
-      card.append(ic, el('h3', '', plain(r.j.headline)));
-      if (r.j.lines?.length) { const ul = el('ul', 'v-l'); for (const l of r.j.lines) ul.append(el('li', '', plain(l.text))); card.append(ul); }
-      if (r.j.advice) card.append(el('p', 'mut', plain(r.j.advice)));
+      const card = el('section', 'verdict ' + tone);
+      const head = el('div', 'v-head'); head.append(el('h3', '', clean(r.j.headline)));
+      const host = siteOf(text); if (host) head.append(siteBadge(host));
+      card.append(head);
+      if (r.j.lines?.length) { const list = el('div', 'v-l'); for (const l of r.j.lines) list.append(el('p', '', clean(l.text))); card.append(list); }
+      if (r.j.advice) card.append(el('p', 'v-adv', clean(r.j.advice)));
       out.append(card);
     });
     const out = el('div', 'v-out');

@@ -42,7 +42,7 @@ export function pageText(html) {
 }
 
 export function createLiveFacts({ store, llm, fetchFn = globalThis.fetch, sources = SOURCES, log = console }) {
-  const get = () => store.getSetting('livefacts') || {};
+  const get = async () => (await store.getSetting('livefacts')) || {};
 
   async function readPage(url) {
     const ctl = new AbortController();
@@ -81,7 +81,7 @@ export function createLiveFacts({ store, llm, fetchFn = globalThis.fetch, source
 
   async function refresh({ force = false } = {}) {
     if (!llm?.enabled) return { skipped: 'ai_off' };
-    const cur = get();
+    const cur = await get();
     const next = { ...cur };
     let done = 0;
     for (const id of Object.keys(sources)) {
@@ -92,7 +92,7 @@ export function createLiveFacts({ store, llm, fetchFn = globalThis.fetch, source
       else if (cur[id] && Date.now() - cur[id].ts < 7 * DAY) next[id] = cur[id];
       done++;
     }
-    store.setSetting('livefacts', next);
+    await store.setSetting('livefacts', next);
     setLiveFacts(next);
     return { checked: done, services: Object.fromEntries(Object.entries(next).map(([k, v]) => [k, v.items.length])) };
   }
@@ -100,13 +100,17 @@ export function createLiveFacts({ store, llm, fetchFn = globalThis.fetch, source
   return {
     refresh,
     /** Loads what was saved, then refreshes in the background when it is old. Never throws. */
-    start({ every = 6 * 3600 * 1000 } = {}) {
-      setLiveFacts(get());
+    async start({ every = 6 * 3600 * 1000 } = {}) {
+      try {
+        setLiveFacts(await get());
+      } catch (e) {
+        log.error?.('livefacts:', e.message);
+      }
       const run = () => refresh().catch((e) => log.error?.('livefacts:', e.message));
       setTimeout(run, 20_000).unref?.();
       const t = setInterval(run, every);
       t.unref?.();
     },
-    status: () => Object.fromEntries(Object.entries(get()).map(([k, v]) => [k, { at: new Date(v.ts).toISOString(), lines: v.items.length }])),
+    status: async () => Object.fromEntries(Object.entries(await get()).map(([k, v]) => [k, { at: new Date(v.ts).toISOString(), lines: v.items.length }])),
   };
 }

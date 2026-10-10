@@ -548,6 +548,7 @@
 
   function typing() {
     const { row, body } = botShell();
+    row.classList.add('thinking');
     const t = el('div', 'typing'); t.append(el('i'), el('i'), el('i'));
     t.setAttribute('role', 'status'); t.setAttribute('aria-label', T('Saathi is typing'));
     body.append(t);
@@ -624,6 +625,10 @@
   const sendBtn = $('sendBtn');
   const grow = () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 160) + 'px'; sendBtn.disabled = (!input.value.trim() && !recording) || busy; };
   input.addEventListener('input', grow);
+  // The mic and send buttons appear and disappear beside the text, which changes the width the text wraps in.
+  // Re-measure whenever that width changes, so the box is never left two lines tall.
+  let lastW = 0;
+  if (window.ResizeObserver) new ResizeObserver((entries) => { const w = Math.round(entries[0].contentRect.width); if (w !== lastW) { lastW = w; grow(); } }).observe(input);
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); $('form').requestSubmit(); }
   });
@@ -747,7 +752,7 @@
     recorder.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
     recorder.start();
     recording = true; recStart = Date.now();
-    $('rec').hidden = false; $('recMsg').textContent = T('Recording. Tap send when you are done.'); input.disabled = true; sendBtn.disabled = false; sendBtn.classList.add('rec-stop');
+    $('rec').hidden = false; $('recMsg').textContent = T('Recording'); input.disabled = true; sendBtn.disabled = false; sendBtn.classList.add('rec-stop');
     sendBtn.setAttribute('aria-label', T('Stop and send voice message'));
     recTimer = setInterval(() => {
       const s = Math.floor((Date.now() - recStart) / 1000);

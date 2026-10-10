@@ -268,7 +268,7 @@
         ['An AI answer', p.aiPaise],
         ['A document check', p.scanPaise],
         ['A copy sheet', p.sheetPaise],
-        ['A voice note', p.voicePaise],
+        ...(c.voice ? [['A voice note', p.voicePaise]] : []),
         ['A reminder', p.remindPaise],
       ].filter(([, v]) => Number.isFinite(v) && v > 0);
       if (!items.length) return;

@@ -90,45 +90,32 @@ export function createWebMedia() {
   };
 }
 
-/** A small in-memory limiter: at most `max` hits per `windowMs` for each key. */
-export function limiter(max, windowMs) {
-  const hits = new Map();
-  return (key) => {
-    const now = Date.now();
-    const arr = (hits.get(key) || []).filter((t) => now - t < windowMs);
-    if (arr.length >= max) {
-      hits.set(key, arr);
-      return false;
-    }
-    arr.push(now);
-    hits.set(key, arr);
-    if (hits.size > 5000) for (const [k, v] of hits) if (!v.some((t) => now - t < windowMs)) hits.delete(k);
-    return true;
-  };
+/** A shared limiter, counted in the store so every instance agrees: at most `max` hits per `windowMs` for each key. */
+export function limiter(store, name, max, windowMs) {
+  return async (key) => store.rateHit(`${name}:${key}`, windowMs, max);
 }
 
 const ALLOWED_UPLOAD = /^(image\/(jpeg|png|webp|heic|heif)|application\/pdf|audio\/(webm|ogg|mp4|mpeg|wav|x-m4a|aac)|video\/(webm|mp4))(;.*)?$/i;
 
 export function createWeb({ store, config, media, converse, enqueue, shell = {}, llm = null, vault = null, guard = null, links = null, payments = null }) {
   const tools = vault && guard ? createTools({ store, vault, llm, guard, config }) : null;
-  const okTool = limiter(120, 60_000);
-  const okToolIp = limiter(600, 60_000);
-  const okReveal = limiter(20, 60_000);
-  const okJoin = limiter(8, 900_000);
+  const okTool = limiter(store, 'okTool', 120, 60_000);
+  const okToolIp = limiter(store, 'okToolIp', 600, 60_000);
+  const okReveal = limiter(store, 'okReveal', 20, 60_000);
+  const okJoin = limiter(store, 'okJoin', 8, 900_000);
   // One phone network can put many real people behind one address, so the address limit is generous; the per-person limit is the tight one.
-  const okMsgIp = limiter(config.webMsgsPerMinIp ?? 120, 60_000);
-  const okMsgUser = limiter(config.webMsgsPerMin ?? 20, 60_000);
-  const okUpIp = limiter(config.webUploadsPerMinIp ?? 40, 60_000);
-  const okUpUser = limiter(config.webUploadsPerMin ?? 10, 60_000);
-  const okPoll = limiter(60, 60_000);
-  const okCheck = limiter(30, 60_000);
-  const okEvent = limiter(120, 60_000); // the landing page's anonymous counts, per address per minute
-  const newUsersByIp = new Map(); // ip -> [timestamps], for the welcome-credit cap
+  const okMsgIp = limiter(store, 'okMsgIp', config.webMsgsPerMinIp ?? 120, 60_000);
+  const okMsgUser = limiter(store, 'okMsgUser', config.webMsgsPerMin ?? 20, 60_000);
+  const okUpIp = limiter(store, 'okUpIp', config.webUploadsPerMinIp ?? 40, 60_000);
+  const okUpUser = limiter(store, 'okUpUser', config.webUploadsPerMin ?? 10, 60_000);
+  const okPoll = limiter(store, 'okPoll', 60, 60_000);
+  const okCheck = limiter(store, 'okCheck', 30, 60_000);
+  const okEvent = limiter(store, 'okEvent', 120, 60_000); // the landing page's anonymous counts, per address per minute
   const fileCache = new Map();
 
   const rawUidOf = (sid) => 'w' + crypto.createHmac('sha256', config.hashSalt).update('web:' + sid).digest('hex').slice(0, 23);
   // A device linked to an account works on that account's record.
-  const uidOf = (sid) => (links ? links.resolve(rawUidOf(sid)) : rawUidOf(sid));
+  const uidOf = async (sid) => (links ? await links.resolve(rawUidOf(sid)) : rawUidOf(sid));
   const validSid = (s) => typeof s === 'string' && /^[a-f0-9]{32,64}$/.test(s);
 
   function ipOf(req) {
@@ -227,19 +214,19 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
 
   /** The web app has its own language screen, so the bot's own "choose a language" step is answered for the person, quietly. */
   async function ensureLang(uid, key, code, base) {
-    const u = store.getUser(uid);
+    const u = await store.getUser(uid);
     if (u && u.lang) return;
     const name = code === 'hi' ? 'hindi' : code === 'en' ? 'english' : (langDef(code)?.en || 'english').toLowerCase();
     await converse({ key, userId: uid, input: { type: 'text', text: 'hi' }, ctx: base });
     await converse({ key, userId: uid, input: { type: 'text', text: name }, ctx: base });
-    const v = store.getUser(uid);
-    if (v && !v.lang) { v.lang = 'en'; v.state = 'menu'; store.putUser(uid, v); }
+    const v = await store.getUser(uid);
+    if (v && !v.lang) { v.lang = 'en'; v.state = 'menu'; await store.putUser(uid, v); }
   }
 
   async function message(req, res, sid) {
-    const uid = uidOf(sid);
+    const uid = await uidOf(sid);
     const ip = ipOf(req);
-    if (!okMsgIp(ip) || !okMsgUser(uid)) return json(res, 429, { error: 'slow_down' });
+    if (!(await okMsgIp(ip)) || !(await okMsgUser(uid))) return json(res, 429, { error: 'slow_down' });
     let b;
     try {
       b = JSON.parse((await readRaw(req, 20_000)).toString('utf8'));
@@ -265,14 +252,8 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
 
     // Welcome credit is once per person, and at most a few new people per address per day, so a script cannot farm it.
     let trial;
-    if (!store.getUser(uid) && !store.hadTrial?.(uid)) {
-      const now = Date.now();
-      const arr = (newUsersByIp.get(ip) || []).filter((t) => now - t < 86400000);
-      if (arr.length >= (config.webNewPerIpPerDay ?? 5)) trial = false;
-      else {
-        arr.push(now);
-        newUsersByIp.set(ip, arr);
-      }
+    if (!(await store.getUser(uid)) && !(await store.hadTrial?.(uid))) {
+      if (!(await store.rateHit('newuser:' + ip, 86400000, config.webNewPerIpPerDay ?? 5))) trial = false;
     }
 
     const phoneKey = 'web:' + uid;
@@ -285,11 +266,11 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
           await ensureLang(uid, phoneKey, wantLang, base);
           if (b.fresh === true) {
             // A new chat starts from the top, whatever the last chat was doing.
-            const f = store.getUser(uid);
+            const f = await store.getUser(uid);
             if (f && f.lang && f.state !== 'menu') {
               for (const k of ['svc', 'ans', 'route', 'step', 'pending', 'await', 'next', 'fillKeys', 'fillIdx', 'backTo', 'pickFor', 'remType', 'remLabel']) delete f[k];
               f.state = 'menu';
-              store.putUser(uid, f);
+              await store.putUser(uid, f);
             }
           }
           const r = await converse({ key: phoneKey, userId: uid, input, ctx: { ...base, ...wctx } });
@@ -304,8 +285,8 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
     });
     if (input.mediaId) media.drop(input.mediaId); // whatever the bot did with it, it is not kept
     if (out.error) return json(res, 504, { error: 'timeout' });
-    const u = store.getUser(uid);
-    const open = store.activeHandoff(phoneKey);
+    const u = await store.getUser(uid);
+    const open = await store.activeHandoff(phoneKey);
     return json(res, 200, {
       replies: [...out.pre, ...(out.replies || [])].filter((r) => r && (typeof r === 'string' ? r : true)).map(annotate).map(stripMenu),
       wallet: u ? walletInfo(u) : null,
@@ -316,17 +297,17 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
   // ---- add money and packs, from the app ----
   // The server makes the payment and returns Stripe's page. The app sends the person there straight away.
   // "Paid" is only ever said by the server, from Stripe's signed webhook, for this one payment (see payStatus).
-  function ensureUser(uid) {
-    let u = store.getUser(uid);
+  async function ensureUser(uid) {
+    let u = await store.getUser(uid);
     if (u) return u;
     u = { state: 'new', lang: null };
-    if (store.hadTrial?.(uid)) u.trialGiven = true;
-    else { grantTrial(u, config); store.markTrial?.(uid); }
-    store.putUser(uid, u);
+    if (await store.hadTrial?.(uid)) u.trialGiven = true;
+    else { grantTrial(u, config); await store.markTrial?.(uid); }
+    await store.putUser(uid, u);
     return u;
   }
   async function topupStart(req, res, sid) {
-    if (!okCheck(ipOf(req))) return json(res, 429, { error: 'slow_down' });
+    if (!(await okCheck(ipOf(req)))) return json(res, 429, { error: 'slow_down' });
     if (!payments) return json(res, 503, { error: 'payments_off' });
     let b = {};
     try { b = JSON.parse((await readRaw(req, 2_000)).toString('utf8')); } catch { return json(res, 400, { error: 'bad_request' }); }
@@ -335,26 +316,26 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
     const okAmount = rt.topups.includes(paise) || (Number.isInteger(paise) && paise % 100 === 0 && paise >= MIN_TOPUP_PAISE && paise <= 500000);
     const packId = typeof b.pack === 'string' && rt.packs[b.pack] ? b.pack : null;
     if (!okAmount || (b.pack && !packId)) return json(res, 400, { error: 'bad_amount' });
-    const uid = uidOf(sid);
-    const before = balance(ensureUser(uid)); // what the person has before this payment (a new person's welcome credit included)
+    const uid = await uidOf(sid);
+    const before = balance(await ensureUser(uid)); // what the person has before this payment (a new person's welcome credit included)
     const ref = `sv_${Date.now().toString(36)}${crypto.randomBytes(5).toString('hex')}`;
-    store.putPayment(ref, { userId: uid, paise, status: 'pending', ts: Date.now(), before, ...(packId ? { packId } : {}) });
+    await store.putPayment(ref, { userId: uid, paise, status: 'pending', ts: Date.now(), before, ...(packId ? { packId } : {}) });
     try {
       const { url } = await payments.createLink({ ref, paise, note: packId ? 'Saathi pack' : 'Saathi wallet top-up', origin: b.origin, pack: Boolean(packId) });
-      store.countEvent('topup_started', packId ? 'pack' : 'wallet');
+      await store.countEvent('topup_started', packId ? 'pack' : 'wallet');
       return json(res, 200, { url, ref });
     } catch (e) {
       console.error('payment link error:', e.message);
-      store.putPayment(ref, { userId: uid, paise, status: 'failed', ts: Date.now(), ...(packId ? { packId } : {}) });
+      await store.putPayment(ref, { userId: uid, paise, status: 'failed', ts: Date.now(), ...(packId ? { packId } : {}) });
       return json(res, 502, { error: 'stripe' });
     }
   }
   /** Where a payment stands. Only the person who started it can read it. */
-  function payStatus(url, res, sid) {
+  async function payStatus(url, res, sid) {
     const ref = String(url.searchParams.get('ref') || '');
-    const rec = /^sv_[a-z0-9]+$/.test(ref) ? store.getPayment(ref) : null;
-    if (!rec || rec.userId !== uidOf(sid)) return json(res, 404, { error: 'not_found' });
-    const u = store.getUser(rec.userId);
+    const rec = /^sv_[a-z0-9]+$/.test(ref) ? await store.getPayment(ref) : null;
+    if (!rec || rec.userId !== (await uidOf(sid))) return json(res, 404, { error: 'not_found' });
+    const u = await store.getUser(rec.userId);
     json(res, 200, { status: rec.status, paise: rec.paise, before: Number.isInteger(rec.before) ? rec.before : null, pack: rec.packId || null, wallet: u ? walletInfo(u) : null });
   }
   function walletInfo(u) {
@@ -378,8 +359,8 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
   }
 
   async function upload(req, res, sid) {
-    const uid = uidOf(sid);
-    if (!okUpIp(ipOf(req)) || !okUpUser(uid)) return json(res, 429, { error: 'slow_down' });
+    const uid = await uidOf(sid);
+    if (!(await okUpIp(ipOf(req))) || !(await okUpUser(uid))) return json(res, 429, { error: 'slow_down' });
     const mime = String(req.headers['content-type'] || '').toLowerCase();
     if (!ALLOWED_UPLOAD.test(mime)) return json(res, 415, { error: 'unsupported_type' });
     const len = Number(req.headers['content-length'] || 0);
@@ -393,11 +374,11 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
     }
   }
 
-  function poll(req, res, url, sid) {
-    const uid = uidOf(sid);
-    if (!okPoll(uid)) return json(res, 429, { error: 'slow_down' });
+  async function poll(req, res, url, sid) {
+    const uid = await uidOf(sid);
+    if (!(await okPoll(uid))) return json(res, 429, { error: 'slow_down' });
     const since = Number(url.searchParams.get('since') || 0);
-    const h = store.activeHandoff('web:' + uid);
+    const h = await store.activeHandoff('web:' + uid);
     if (!h) return json(res, 200, { human: null, msgs: [] });
     const msgs = (h.thread || []).filter((m) => m.dir === 'out' && m.ts > since).map((m) => ({ ts: m.ts, text: m.text }));
     return json(res, 200, { human: { status: h.status }, msgs });
@@ -430,9 +411,9 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
 
   /** The app's own pages: locker, details, reminders, applications, scan, synced extras. */
   async function tool(req, res, sid) {
-    const uid = uidOf(sid);
+    const uid = await uidOf(sid);
     if (!tools) return json(res, 404, { ok: false, error: 'no_tools' });
-    if (!okTool(uid) || !okToolIp(ipOf(req))) return json(res, 429, { ok: false, error: 'slow_down' });
+    if (!(await okTool(uid)) || !(await okToolIp(ipOf(req)))) return json(res, 429, { ok: false, error: 'slow_down' });
     let b;
     try {
       b = JSON.parse((await readRaw(req, 320_000)).toString('utf8'));
@@ -442,7 +423,7 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
     const op = String(b.op || '');
     const args = b.args && typeof b.args === 'object' ? b.args : {};
     if (!tools.has(op)) return json(res, 400, { ok: false, error: 'unknown_op' });
-    if (op === 'locker.reveal' && !okReveal(uid)) return json(res, 429, { ok: false, error: 'slow_down' });
+    if (op === 'locker.reveal' && !(await okReveal(uid))) return json(res, 429, { ok: false, error: 'slow_down' });
     let out;
     if (op === 'scan') {
       const id = String(args.mediaId || '');
@@ -456,7 +437,7 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
       out = await inQueue(uid, 90_000, () => tools.run(uid, 'scan', { buffer: file.buffer, mime: file.mime, consent: args.consent === true }));
     } else out = await inQueue(uid, 15_000, () => tools.run(uid, op, args));
     if (out.err) return fail(res, out.err);
-    const u = store.getUser(uid);
+    const u = await store.getUser(uid);
     return json(res, 200, { ok: true, data: out.data, wallet: u ? walletInfo(u) : null });
   }
 
@@ -464,9 +445,9 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
   async function link(req, res, sid) {
     if (!links) return json(res, 404, { ok: false, error: 'no_link' });
     const raw = rawUidOf(sid);
-    const primary = uidOf(sid);
+    const primary = await uidOf(sid);
     const ip = ipOf(req);
-    if (!okTool(primary) || !okToolIp(ip)) return json(res, 429, { ok: false, error: 'slow_down' });
+    if (!(await okTool(primary)) || !(await okToolIp(ip))) return json(res, 429, { ok: false, error: 'slow_down' });
     let b;
     try {
       b = JSON.parse((await readRaw(req, 2_000)).toString('utf8'));
@@ -475,40 +456,41 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
     }
     const op = String(b.op || '');
     const label = deviceLabel(String(req.headers['user-agent'] || ''));
-    const view = () => {
-      const d = links.devices(primary, raw);
-      return { ...d, waNumber: shell.whatsappNumber || null };
+    // The device asking always sees its own real name (browser and system), even if it was linked long ago.
+    const view = async () => {
+      const d = await links.devices(primary, raw);
+      return { ...d, list: d.list.map((x) => (x.current ? { ...x, label } : x)), waNumber: shell.whatsappNumber || null };
     };
     const out = await inQueue(primary, 15_000, async () => {
       if (op === 'devices') {
-        if (!store.getUser(primary)) return { list: [{ id: raw, label, main: true, current: true }], wa: false, waNumber: shell.whatsappNumber || null };
-        return view();
+        if (!(await store.getUser(primary))) return { list: [{ id: raw, label, main: true, current: true }], wa: false, waNumber: shell.whatsappNumber || null };
+        return await view();
       }
       if (op === 'new' || op === 'phone') {
-        if (!store.getUser(primary)) store.putUser(primary, { state: 'new', lang: null });
-        return op === 'new' ? links.newDeviceCode(primary, label) : { ...links.newWaCode(primary), number: shell.whatsappNumber || null };
+        if (!(await store.getUser(primary))) await store.putUser(primary, { state: 'new', lang: null });
+        return op === 'new' ? await links.newDeviceCode(primary, label) : { ...(await links.newWaCode(primary)), number: shell.whatsappNumber || null };
       }
       if (op === 'join') {
         if (b.confirm !== true) throw new LinkError('confirm');
-        if (!okJoin(ip)) throw new LinkError('slow_down');
-        links.joinDevice(b.code, raw, label);
+        if (!(await okJoin(ip))) throw new LinkError('slow_down');
+        await links.joinDevice(b.code, raw, label);
         return { joined: true };
       }
       if (op === 'remove') {
-        links.removeDevice(primary, String(b.id || ''));
-        return view();
+        await links.removeDevice(primary, String(b.id || ''));
+        return await view();
       }
       if (op === 'unlink') {
-        links.unlinkSelf(raw);
+        await links.unlinkSelf(raw);
         return { unlinked: true };
       }
       if (op === 'signout_others') {
-        links.signOutOthers(primary, raw);
-        return view();
+        await links.signOutOthers(primary, raw);
+        return await view();
       }
       if (op === 'wa_unlink') {
-        links.unlinkWa(primary);
-        return view();
+        await links.unlinkWa(primary);
+        return await view();
       }
       throw new LinkError('unknown_op');
     });
@@ -531,12 +513,12 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
     }
     // Anonymous funnel counts from the landing page (see analytics.js). Two events only, no session, no personal data.
     if (p === '/app/api/event' && req.method === 'POST') {
-      if (!okEvent(ipOf(req))) { json(res, 429, { error: 'slow_down' }); return true; }
+      if (!(await okEvent(ipOf(req)))) { json(res, 429, { error: 'slow_down' }); return true; }
       if (isBot(req.headers['user-agent'])) { res.statusCode = 204; res.end(); return true; }
       let ev = null;
       try { ev = parseClientEvent((await readRaw(req, 400)).toString('utf8')); } catch { ev = null; }
       if (!ev) { json(res, 400, { error: 'bad_event' }); return true; }
-      store.countEvent(ev.event, ev.source);
+      await store.countEvent(ev.event, ev.source);
       res.statusCode = 204; res.end();
       return true;
     }
@@ -577,7 +559,7 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
     }
     // The public "Is this real?" checker on the landing page. Same rules as the bot, nothing stored, nothing opened.
     if (p === '/app/api/check' && req.method === 'POST') {
-      if (!okCheck(ipOf(req))) return json(res, 429, { error: 'slow_down' }), true;
+      if (!(await okCheck(ipOf(req)))) return json(res, 429, { error: 'slow_down' }), true;
       let b;
       try { b = JSON.parse((await readRaw(req, 4_000)).toString('utf8')); } catch { return json(res, 400, { error: 'bad_request' }), true; }
       const text = String(b.text || '').slice(0, 1500).trim();
@@ -594,7 +576,7 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
     if (p === '/app/api/ui' && req.method === 'GET') {
       const code = String(url.searchParams.get('lang') || 'en');
       if (!(code === 'en' || code === 'hi' || langDef(code))) return json(res, 400, { error: 'bad_lang' }), true;
-      if (!okCheck(ipOf(req))) return json(res, 429, { error: 'slow_down' }), true;
+      if (!(await okCheck(ipOf(req)))) return json(res, 429, { error: 'slow_down' }), true;
       json(res, 200, { lang: code, strings: await uiDict(code, { llm, store }) });
       return true;
     }
@@ -608,22 +590,22 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
       else if (p === '/app/api/upload' && req.method === 'POST') await upload(req, res, sid);
       else if (p === '/app/api/t' && req.method === 'POST') await tool(req, res, sid);
       else if (p === '/app/api/link' && req.method === 'POST') await link(req, res, sid);
-      else if (p === '/app/api/poll' && req.method === 'GET') poll(req, res, url, sid);
+      else if (p === '/app/api/poll' && req.method === 'GET') await poll(req, res, url, sid);
       else if (p === '/app/api/topup' && req.method === 'POST') await topupStart(req, res, sid);
-      else if (p === '/app/api/pay' && req.method === 'GET') payStatus(url, res, sid);
+      else if (p === '/app/api/pay' && req.method === 'GET') await payStatus(url, res, sid);
       else if (p === '/app/api/lang' && req.method === 'POST') {
         let b2 = {};
         try { b2 = JSON.parse((await readRaw(req, 1_000)).toString('utf8')); } catch { /* falls to bad_lang */ }
         const code = String(b2.code || '');
         if (!(code === 'en' || code === 'hi' || langDef(code))) return json(res, 400, { error: 'bad_lang' }), true;
-        const uid = uidOf(sid);
+        const uid = await uidOf(sid);
         const key = 'web:' + uid;
         const done = await new Promise((resolve) => {
           const timer = setTimeout(() => resolve(false), 90_000);
           enqueue(uid, async () => {
             try {
               const base = { phone: null, channel: 'web', early: () => {} };
-              const had = store.getUser(uid);
+              const had = await store.getUser(uid);
               if (!had || !had.lang) await ensureLang(uid, key, code, base);
               else await converse({ key, userId: uid, input: { type: 'reply', id: 'lang_' + code, title: '' }, ctx: base });
               resolve(true);
@@ -633,10 +615,10 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
             } finally { clearTimeout(timer); }
           });
         });
-        const u = store.getUser(uid);
+        const u = await store.getUser(uid);
         json(res, done ? 200 : 504, { ok: done, lang: u?.lang || null, account: u ? accountInfo(u) : null });
       } else if (p === '/app/api/me' && req.method === 'GET') {
-        const u = store.getUser(uidOf(sid));
+        const u = await store.getUser(await uidOf(sid));
         json(res, 200, { wallet: u ? walletInfo(u) : null, account: u ? accountInfo(u) : null });
       } else json(res, 404, { error: 'not_found' });
     } catch (e) {

@@ -69,8 +69,9 @@ test('web: talking works end to end and returns rich replies, wallet and no pers
   const b = (await w.call('/app/api/message', { method: 'POST', body: { type: 'text', text: 'menu' } })).json;
   assert.ok(b.replies.length >= 1);
   // The stored user id is a hash of the session, never the session id itself.
-  const users = JSON.stringify(w.store.users);
-  assert.ok(!users.includes(SID));
+  // (No whole-store dump in the store API, so check the keys: the session id is not a user id, the hashed id is.)
+  assert.ok(!(await w.store.getUser(SID)));
+  assert.ok(await w.store.getUser(await w.web.uidOf(SID)));
   w.close();
 });
 
@@ -129,8 +130,9 @@ test('web: rate limits stop floods', async () => {
   for (let i = 0; i < 5; i++) codes.push((await w.call('/app/api/message', { method: 'POST', body: { type: 'text', text: 'hi' } })).status);
   assert.deepEqual(codes.slice(0, 3), [200, 200, 200]);
   assert.equal(codes[4], 429);
-  const l = limiter(2, 1000);
-  assert.deepEqual([l('a'), l('a'), l('a'), l('b')], [true, true, false, true]);
+  // The limiter counts in the store with fixed windows, so a long window keeps a test from straddling a window edge.
+  const l = limiter(w.store, 'test', 2, 60_000);
+  assert.deepEqual([await l('a'), await l('a'), await l('a'), await l('b')], [true, true, false, true]);
   w.close();
 });
 
@@ -140,7 +142,7 @@ test('web: the welcome credit is capped per address so scripts cannot farm it', 
   for (let i = 0; i < 4; i++) {
     const sid = String(i).repeat(32);
     await w.say('hi', sid);
-    paise.push(w.store.getUser(w.web.uidOf(sid)).wallet?.paise ?? 0);
+    paise.push((await w.store.getUser(await w.web.uidOf(sid))).wallet?.paise ?? 0);
   }
   assert.ok(paise[0] > 0 && paise[1] > 0);
   assert.equal(paise[2], 0);
@@ -152,7 +154,7 @@ test('web: there is no talk-to-a-person route on the web, and no handoff is stor
   const w = await boot();
   await w.say('hi');
   await w.say('agent');
-  assert.equal(w.store.listHandoffs().length, 0);
+  assert.equal((await w.store.listHandoffs()).length, 0);
   const p = await w.call('/app/api/poll?since=0');
   assert.equal(p.status, 200);
   w.close();

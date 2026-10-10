@@ -1,7 +1,7 @@
 import http from 'node:http';
 import crypto from 'node:crypto';
 import { config } from './config.js';
-import { Store } from './store.js';
+import { openStore } from './open-store.js';
 import { CostGuard } from './costguard.js';
 import { createLlm } from './llm.js';
 import { createWhatsApp, parseInbound } from './whatsapp.js';
@@ -22,11 +22,11 @@ import { createLiveFacts } from './livefacts.js';
 import { createLinks } from './link.js';
 import { R } from './rich.js';
 
-const store = new Store(config.dataDir); // throws (and the app will not start) if the data folder is unwritable or a file is corrupt
-const storage = store.storageInfo();
+const store = await openStore(config); // throws (and the app will not start) if the data folder is unwritable or a file is corrupt, or SUPABASE_URL is set without its key
+const storage = await store.storageInfo();
 if (!process.env.VERCEL && storage.separateDisk === false) console.warn(`⚠️  Data folder ${storage.dir} is not a separate disk. Everything saved there is lost on the next redeploy. Mount a disk at /data (see render.yaml).`);
 try {
-  const day = store.backupIfDue();
+  const day = await store.backupIfDue();
   if (day) console.log(`Backed up the data files to backups/${day}`);
 } catch (e) {
   console.error('Daily backup failed:', e.message);
@@ -38,14 +38,14 @@ const vault = createVault(config.vaultKey);
 const payments = config.paymentsPaused ? null : createPayments(config);
 const stt = createStt(config);
 // A key pasted into the admin page is kept sealed (AES-GCM, key from VAULT_KEY) and re-applied at every start.
-const aiKeySource = () => (store.getSetting('aiKey') ? 'saved' : process.env.OPENROUTER_API_KEY ? 'env' : 'none');
+const aiKeySource = async () => ((await store.getSetting('aiKey')) ? 'saved' : process.env.OPENROUTER_API_KEY ? 'env' : 'none');
 {
-  const sealed = store.getSetting('aiKey');
+  const sealed = await store.getSetting('aiKey');
   if (sealed) vault.open(sealed).then((o) => { if (o?.key) llm.setKey(o.key); });
 }
 const links = createLinks({ store, config, vault });
 const translator = createTranslator({ llm, store, guard, config });
-translator.loadCached();
+await translator.loadCached();
 const webMedia = createWebMedia();
 const downloadMedia = (id) => (String(id).startsWith('web_') ? webMedia.take(id) : wa.downloadMedia(id));
 const bot = createBot({ store, guard, llm, config, downloadMedia, vault, payments, stt, translator });
@@ -66,18 +66,18 @@ function enqueue(userId, fn) {
 
 async function sendReplies(phone, replies) {
   for (const reply of replies) {
-    if (!guard.msgAllowed()) {
-      console.warn('Spend cap reached: not sending. Stats:', guard.stats());
+    if (!(await guard.msgAllowed())) {
+      console.warn('Spend cap reached: not sending. Stats:', await guard.stats());
       break;
     }
     const n = await wa.send(phone, reply);
-    for (let i = 0; i < n; i++) guard.recordMsg();
+    for (let i = 0; i < n; i++) await guard.recordMsg();
     if (!n) break;
   }
 }
 
 async function processMessage(msg) {
-  if (!msg?.id || !msg.from || store.seenBefore(msg.id)) return;
+  if (!msg?.id || !msg.from || (await store.seenBefore(msg.id))) return;
   const phone = msg.from;
   const phoneUid = hashPhone(phone);
   const input = parseInbound(msg);
@@ -85,18 +85,18 @@ async function processMessage(msg) {
   // "LINK ABCD-EFGH" joins this phone to a Saathi account made in the app. It needs a Yes from this same phone.
   const txt = input.type === 'text' ? String(input.text || '') : '';
   const lm = /^\s*link[\s:]+([A-Za-z0-9\- ]{8,14})\s*$/i.exec(txt);
-  const linkTap = input.type === 'reply' && (input.id === 'link_yes' || input.id === 'link_no') && links.waPendingFor(phoneUid);
+  const linkTap = input.type === 'reply' && (input.id === 'link_yes' || input.id === 'link_no') && (await links.waPendingFor(phoneUid));
   if (lm || linkTap) {
     return enqueue(phoneUid, async () => {
       try {
         if (lm) {
-          links.waStart(lm[1], phoneUid);
+          await links.waStart(lm[1], phoneUid);
           await sendReplies(phone, [R.buttons('Someone asked to link this WhatsApp to a Saathi account in the app. Only say Yes if that was you.\n\nक्या यह आपने किया? तभी हाँ कहें।', [{ id: 'link_yes', title: 'Yes, link / हाँ' }, { id: 'link_no', title: 'No / नहीं' }])]);
         } else if (input.id === 'link_yes') {
           await links.waConfirm(phoneUid, phone);
           await sendReplies(phone, ['Linked. Your reminders will come here, and your locker, details and wallet are shared with the app.\n\nजुड़ गया। रिमाइंडर यहीं आएंगे, और लॉकर, विवरण और वॉलेट ऐप के साथ साझा हैं।']);
         } else {
-          links.waCancel(phoneUid);
+          await links.waCancel(phoneUid);
           await sendReplies(phone, ['Cancelled. Nothing was linked.\n\nरद्द किया। कुछ नहीं जुड़ा।']);
         }
       } catch (e) {
@@ -105,22 +105,34 @@ async function processMessage(msg) {
     });
   }
 
-  const userId = links.resolve(phoneUid);
+  const userId = await links.resolve(phoneUid);
   enqueue(userId, async () => {
-    const { replies } = await converse({ key: phone, userId, input, ctx: { phone, early: (r) => sendReplies(phone, r) } });
-    await sendReplies(phone, replies);
+    // A ConflictError means another instance saved this user first: read it again and run the message once more.
+    // Only retry while nothing has gone out to WhatsApp in this attempt (early replies count), so no message is sent twice.
+    for (let attempt = 1; ; attempt++) {
+      let sent = false;
+      try {
+        const { replies } = await converse({ key: phone, userId, input, ctx: { phone, early: (r) => { sent = true; return sendReplies(phone, r); } } });
+        sent = true;
+        await sendReplies(phone, replies);
+        return;
+      } catch (e) {
+        if (e?.code !== 'conflict' || sent || attempt >= 2) throw e;
+        console.warn('Save conflict: running the message again.');
+      }
+    }
   });
 }
 
 // Stripe tells us a checkout was paid. Credit the wallet once, then tell the user.
-function processPayment(paid) {
-  const rec = store.getPayment(paid.ref);
+async function processPayment(paid) {
+  const rec = await store.getPayment(paid.ref);
   if (!rec) return console.warn('payment for unknown ref', paid.ref);
   enqueue(rec.userId, async () => {
     const r = await bot.creditPayment(paid);
     if (!r.ok) return console.warn('payment not credited:', r.reason, paid.ref);
     // Counted once, only when the wallet was actually credited (a repeated webhook returns not ok above).
-    store.countEvent('topup_paid', rec.packId ? 'pack' : 'wallet');
+    await store.countEvent('topup_paid', rec.packId ? 'pack' : 'wallet');
     // The referrer's share goes through their own queue, so their balance is never written twice at once.
     if (r.referral?.paise > 0 && r.referral.referrerId !== rec.userId) {
       enqueue(r.referral.referrerId, async () => creditReferrer(r.referral));
@@ -135,11 +147,11 @@ function processPayment(paid) {
   });
 }
 
-function creditReferrer({ referrerId, paise, paymentId }) {
-  const u = store.getUser(referrerId);
+async function creditReferrer({ referrerId, paise, paymentId }) {
+  const u = await store.getUser(referrerId);
   if (!u) return; // the referrer has left; nothing to pay
   const r = credit(u, paise, 'ref:' + paymentId, 'referral');
-  if (r.ok) store.putUser(referrerId, u);
+  if (r.ok) await store.putUser(referrerId, u);
 }
 
 function readBody(req, res, cb) {
@@ -168,17 +180,25 @@ const jsonOut = (res, code, obj) => {
   res.setHeader('content-type', 'application/json');
   res.end(JSON.stringify(obj));
 };
+// A route that throws (for example a failed database call) answers 500 instead of taking the process down.
+const fail = (res, e) => {
+  console.error('request failed:', e?.message || e);
+  if (!res.writableEnded) {
+    res.statusCode = 500;
+    res.end('server error');
+  }
+};
 const WINDOW_MS = 23 * 3600 * 1000;
 
 /** An operator answers a person who asked for a human. Only possible inside WhatsApp's 24-hour window. */
 async function operatorReply(id, text) {
-  const h = store.getHandoff(id);
+  const h = await store.getHandoff(id);
   if (!h) return [404, { error: 'not_found' }];
   const msg = String(text || '').trim().slice(0, 1000);
   if (!msg) return [400, { error: 'empty' }];
   if (isWebKey(h.phone)) {
     // Web people read replies inside the app (it checks every few seconds), so there is no 24-hour window.
-    store.updateHandoff(id, (x) => {
+    await store.updateHandoff(id, (x) => {
       x.status = 'replied';
       x.repliedAt = Date.now();
       x.unread = false;
@@ -186,13 +206,13 @@ async function operatorReply(id, text) {
     });
     return [200, { ok: true }];
   }
-  const user = store.getUser(hashPhone(h.phone));
+  const user = await store.getUser(hashPhone(h.phone));
   if (!user || Date.now() - (user.lastInboundAt || 0) > WINDOW_MS) return [409, { error: 'window_closed', hint: 'This person has not messaged in the last 24 hours, so WhatsApp only allows an approved template message.' }];
-  if (!guard.msgAllowed()) return [429, { error: 'spend_cap' }];
+  if (!(await guard.msgAllowed())) return [429, { error: 'spend_cap' }];
   const n = await wa.send(h.phone, msg);
   if (!n) return [502, { error: 'send_failed' }];
-  guard.recordMsg();
-  store.updateHandoff(id, (x) => {
+  await guard.recordMsg();
+  await store.updateHandoff(id, (x) => {
     x.status = 'replied';
     x.repliedAt = Date.now();
     x.unread = false;
@@ -228,7 +248,7 @@ const web = createWeb({
   shell: { whatsappNumber: config.whatsappNumber, voice: stt.enabled, pay: Boolean(payments) },
 });
 
-const server = http.createServer((req, res) => {
+async function handleRequest(req, res) {
   res.setHeader('strict-transport-security', 'max-age=63072000; includeSubDomains; preload'); res.setHeader('x-content-type-options', 'nosniff'); res.setHeader('referrer-policy', 'no-referrer');
   const url = new URL(req.url, 'http://localhost');
 
@@ -239,7 +259,7 @@ const server = http.createServer((req, res) => {
         res.statusCode = 404;
         res.end('not found');
       }
-    });
+    }).catch((e) => fail(res, e));
   }
 
   if (req.method === 'GET' && url.pathname === '/health') return void res.end('ok');
@@ -255,7 +275,8 @@ const server = http.createServer((req, res) => {
     }
     res.setHeader('content-type', 'application/json');
     // Spend figures plus the last 30 days of anonymous funnel counts (landing views, app opens, top-ups started and paid).
-    return void res.end(JSON.stringify({ ...guard.stats(), funnel: store.funnel(30) }, null, 2));
+    const stats = await guard.stats();
+    return void res.end(JSON.stringify({ ...stats, funnel: await store.funnel(30) }, null, 2));
   }
 
   // Operator inbox: people who asked for a human. Contains phone numbers, so everything here needs the admin key.
@@ -270,16 +291,15 @@ const server = http.createServer((req, res) => {
   }
   if (req.method === 'GET' && url.pathname === '/admin/handoffs') {
     const now = Date.now();
-    const list = store
-      .listHandoffs()
+    const list = (await store.listHandoffs())
       .slice(-200)
       .reverse()
-      .map((h) => {
+      .map(async (h) => {
         if (isWebKey(h.phone)) return { ...h, phone: 'Web app user', channel: 'web', canReply: true };
-        const u = store.getUser(hashPhone(h.phone));
+        const u = await store.getUser(hashPhone(h.phone));
         return { ...h, canReply: Boolean(u && now - (u.lastInboundAt || 0) < WINDOW_MS) };
       });
-    return void jsonOut(res, 200, list);
+    return void jsonOut(res, 200, await Promise.all(list));
   }
   if (req.method === 'POST' && url.pathname === '/admin/reply') {
     return void readBody(req, res, async (raw) => {
@@ -293,10 +313,10 @@ const server = http.createServer((req, res) => {
     });
   }
   if (req.method === 'POST' && url.pathname === '/admin/close') {
-    return void readBody(req, res, (raw) => {
+    return void readBody(req, res, async (raw) => {
       try {
         const b = JSON.parse(raw.toString('utf8'));
-        const h = store.updateHandoff(b.id, (x) => {
+        const h = await store.updateHandoff(b.id, (x) => {
           x.status = 'closed';
           x.closedAt = Date.now();
           x.unread = false;
@@ -320,8 +340,8 @@ const server = http.createServer((req, res) => {
       : storage.separateDisk
         ? { s: 'OK ', t: 'Data on its own disk', d: `${storage.dir} is a separate disk; daily backups go to backups/` }
         : { s: 'FIX', t: 'Data on its own disk', d: `${storage.dir} is not a separate disk. Mount a disk at /data so saves survive a redeploy.` };
-    return void diagnose({ ...config, publicUrl: base }).then((rows) =>
-      jsonOut(res, 200, {
+    const rows = await diagnose({ ...config, publicUrl: base });
+    return void jsonOut(res, 200, {
         rows: [...rows, storageRow],
         base,
         publicUrlSet: Boolean(config.publicUrl),
@@ -335,9 +355,8 @@ const server = http.createServer((req, res) => {
         templates: [
           { name: config.reminderTemplate, lang: 'en', category: 'Utility', body: 'Reminder from Saathi: {{1}} is due on {{2}}. Reply here to continue.' },
         ],
-        stats: guard.stats(),
-      })
-    );
+        stats: await guard.stats(),
+    });
   }
   if (req.method === 'POST' && url.pathname === '/admin/setup/test-send') {
     return void readBody(req, res, async (raw) => {
@@ -353,7 +372,7 @@ const server = http.createServer((req, res) => {
     });
   }
   if (req.method === 'GET' && url.pathname === '/admin/ai-key') {
-    return void jsonOut(res, 200, { on: llm.enabled, provider: llm.enabled ? llm.provider : null, model: llm.provider === 'openrouter' ? config.openrouterModel : config.model, source: aiKeySource(), persistent: !process.env.VERCEL });
+    return void jsonOut(res, 200, { on: llm.enabled, provider: llm.enabled ? llm.provider : null, model: llm.provider === 'openrouter' ? config.openrouterModel : config.model, source: await aiKeySource(), persistent: !process.env.VERCEL });
   }
   if (req.method === 'POST' && url.pathname === '/admin/ai-key') {
     return void readBody(req, res, async (raw) => {
@@ -361,7 +380,7 @@ const server = http.createServer((req, res) => {
         const b = JSON.parse(raw.toString('utf8'));
         const key = String(b.key || '').trim();
         if (!key) {
-          store.setSetting('aiKey', null);
+          await store.setSetting('aiKey', null);
           llm.setKey(process.env.OPENROUTER_API_KEY || '');
           return jsonOut(res, 200, { ok: true, removed: true, on: llm.enabled });
         }
@@ -374,7 +393,7 @@ const server = http.createServer((req, res) => {
           llm.setKey(before);
           return jsonOut(res, 400, { error: 'OpenRouter did not accept that key (' + String(e.message).slice(0, 80) + '). Nothing was saved.' });
         }
-        store.setSetting('aiKey', await vault.seal({ key }));
+        await store.setSetting('aiKey', await vault.seal({ key }));
         jsonOut(res, 200, { ok: true, on: true, last4: key.slice(-4) });
       } catch {
         jsonOut(res, 400, { error: 'bad_request' });
@@ -382,10 +401,12 @@ const server = http.createServer((req, res) => {
     });
   }
   if (url.pathname === '/admin/refresh-facts') {
-    return void live.refresh({ force: true }).then((r) => jsonOut(res, 200, { ...r, status: live.status() }));
+    const r = await live.refresh({ force: true });
+    return void jsonOut(res, 200, { ...r, status: await live.status() });
   }
   if (req.method === 'POST' && url.pathname === '/admin/run-reminders') {
-    return void scheduler.run().then((n) => jsonOut(res, 200, { sent: n }));
+    const n = await scheduler.run();
+    return void jsonOut(res, 200, { sent: n });
   }
 
   // WhatsApp webhook verification handshake
@@ -411,7 +432,7 @@ const server = http.createServer((req, res) => {
         const body = JSON.parse(rawBody.toString('utf8'));
         for (const entry of body.entry || [])
           for (const change of entry.changes || [])
-            for (const msg of change.value?.messages || []) processMessage(msg);
+            for (const msg of change.value?.messages || []) processMessage(msg).catch((e) => console.error('message error:', e.message));
       } catch (e) {
         console.error('bad webhook body:', e.message);
       }
@@ -427,7 +448,7 @@ const server = http.createServer((req, res) => {
       res.end('ok');
       try {
         const paid = parsePaidEvent(JSON.parse(rawBody.toString('utf8')));
-        if (paid) processPayment(paid);
+        if (paid) processPayment(paid).catch((e) => console.error('payment error:', e.message));
       } catch (e) {
         console.error('bad stripe body:', e.message);
       }
@@ -436,18 +457,24 @@ const server = http.createServer((req, res) => {
 
   res.statusCode = 404;
   res.end('not found');
-});
+}
+const server = http.createServer((req, res) => void handleRequest(req, res).catch((e) => fail(res, e)));
 
 const live = createLiveFacts({ store, llm });
 if (!process.env.VERCEL && !process.env.NO_LIVE_FACTS) live.start();
 const scheduler = createScheduler({ store, vault, wa, guard, config, enqueue });
 
-if (!process.env.VERCEL) setInterval(() => {
-  const n = store.sweep(config.userIdleHours * 3600 * 1000, config.accountKeepDays * 86400 * 1000);
-  if (n) console.log(`cleaned up ${n} idle accounts (balances kept)`);
-  store.pruneHandoffs();
+if (!process.env.VERCEL) setInterval(async () => {
   try {
-    const day = store.backupIfDue();
+    const n = await store.sweep(config.userIdleHours * 3600 * 1000, config.accountKeepDays * 86400 * 1000);
+    if (n) console.log(`cleaned up ${n} idle accounts (balances kept)`);
+    await store.pruneHandoffs();
+    await store.pruneOld();
+  } catch (e) {
+    console.error('hourly cleanup failed:', e.message);
+  }
+  try {
+    const day = await store.backupIfDue();
     if (day) console.log(`Backed up the data files to backups/${day}`);
   } catch (e) {
     console.error('Daily backup failed:', e.message);

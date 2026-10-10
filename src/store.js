@@ -1,27 +1,15 @@
 import { mkdirSync, readFileSync, writeFileSync, renameSync, existsSync, copyFileSync, readdirSync, rmSync, statSync, unlinkSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { randomBytes } from 'node:crypto';
+import { sweepOne } from './retention.js';
 
-// Every file the store keeps. The daily backup copies exactly these.
+// Every file the file store keeps. The daily backup copies exactly these.
 export const STORE_FILES = ['users.json', 'ledger.json', 'payments.json', 'trials.json', 'translations.json', 'settings.json', 'referrals.json', 'handoff.json', 'stats.json'];
 const BACKUP_KEEP_DAYS = 14;
+const LEDGER_KEEP_DAYS = 40;
 
-// What an account with a wallet balance keeps after its personal details are erased. Everything else is erased,
-// so a new personal field is erased by default. wallet, packs and trialGiven hold the money and the welcome-credit
-// check. devices, waUid and waLinked connect the account to the person's phone and other devices, so the balance
-// can still be reached. referrerId and firstPaidAt are needed for referral and accounting records.
-const KEEP_WITH_BALANCE = ['wallet', 'packs', 'devices', 'linkTo', 'waLinked', 'waUid', 'firstPaidAt', 'referrerId', 'trialGiven', 'lang', 'updated', 'state'];
-
-// Per-session state, reset after the idle time.
-const SESSION_RESET = ['svc', 'ans', 'route', 'step', 'pending', 'await', 'next', 'fillKeys', 'fillIdx', 'backTo', 'pickFor', 'remType', 'remLabel'];
-const needsReset = (u) => u.state !== (u.lang ? 'menu' : 'new') || SESSION_RESET.some((k) => u[k] !== undefined);
-const resetSession = (u) => {
-  for (const k of SESSION_RESET) delete u[k];
-  u.state = u.lang ? 'menu' : 'new';
-};
-
-// Minimal JSON-file store. Fine for a pilot (hundreds of users/day).
-// Move to SQLite/Postgres when you outgrow it.
+// The file store: the same methods as SupabaseStore (supastore.js), kept in JSON files. It is used by the tests and
+// by local development. Production uses Supabase. Its methods are synchronous; callers await them either way.
 //
 // Safety rules:
 //  - Refuse to start if the data folder cannot be written. Nothing is saved to a folder that is not kept.
@@ -29,8 +17,9 @@ const resetSession = (u) => {
 //    next save would overwrite the file with almost nothing.
 //  - Keep a dated copy of every file in backups/ each day, for the last 14 days.
 export class Store {
-  constructor(dir) {
+  constructor(dir, now = () => Date.now()) {
     this.dir = dir;
+    this.now = now;
     mkdirSync(dir, { recursive: true });
     this._checkWritable();
     this.users = this._load('users.json', {});
@@ -42,6 +31,8 @@ export class Store {
     this.referrals = this._load('referrals.json', { byUser: {}, byCode: {} });
     this.stats = this._load('stats.json', { days: {} });
     this.seen = [];
+    this.limits = new Map(); // rate-limit windows, and short-lived values, live in memory in this store
+    this.kv = new Map();
   }
 
   getSetting(k) {
@@ -99,9 +90,9 @@ export class Store {
   // from its parent folder. If they match, the folder lives on the container and is lost on a redeploy.
   storageInfo() {
     try {
-      return { dir: this.dir, separateDisk: statSync(this.dir).dev !== statSync(dirname(resolve(this.dir))).dev };
+      return { kind: 'files', dir: this.dir, separateDisk: statSync(this.dir).dev !== statSync(dirname(resolve(this.dir))).dev };
     } catch {
-      return { dir: this.dir, separateDisk: null };
+      return { kind: 'files', dir: this.dir, separateDisk: null };
     }
   }
 
@@ -110,7 +101,7 @@ export class Store {
   }
 
   putUser(id, user) {
-    this.users[id] = { ...user, updated: Date.now() };
+    this.users[id] = { ...user, updated: this.now() };
     this._save('users.json', this.users);
   }
 
@@ -123,6 +114,10 @@ export class Store {
       delete this.referrals.byCode[code];
       this._save('referrals.json', this.referrals);
     }
+  }
+
+  listUsersWithReminders() {
+    return Object.entries(this.users).filter(([, u]) => Array.isArray(u.reminders) && u.reminders.length > 0).map(([id, u]) => [id, { ...u }]);
   }
 
   // Referral codes: one short code per person, and the person it belongs to. Codes are random, so they
@@ -146,54 +141,16 @@ export class Store {
 
   // Privacy: forget people who have been idle. Session state goes after idleMs. People who saved a
   // profile or hold wallet money keep their account until keepMs of inactivity, then it goes too.
-  // Cleanup, run hourly. Two rules:
-  //  - An account with no wallet balance is deleted after keepMs without a message (idleMs if it holds nothing).
-  //  - An account WITH a wallet balance is never deleted for inactivity. After keepMs without a message its
-  //    personal details are erased (profile, saved details, locker, reminders, phone number, chat copy, consents).
-  //    The balance, and what links the account to the person's devices and WhatsApp, stay until they use it or
-  //    ask for a refund ("Talk to a human").
-  sweep(idleMs, keepMs = idleMs, now = Date.now()) {
+  // Cleanup, run hourly. The rules are in retention.js, shared with the Supabase store.
+  sweep(idleMs, keepMs = idleMs, now = this.now()) {
     let n = 0;
     for (const [id, u] of Object.entries(this.users)) {
-      const idle = now - (u.updated || 0);
-      if ((u.wallet?.paise || 0) > 0) {
-        if (idle > keepMs) n += this._eraseDetails(u, now);
-        else if (idle > idleMs && needsReset(u)) {
-          resetSession(u);
-          n++;
-        }
-        continue;
-      }
-      // A linked-device pointer belongs to its main account. It is kept while that account exists, and removed with it.
-      if (u.linkTo) {
-        if (!this.users[u.linkTo]) {
-          delete this.users[id];
-          n++;
-        }
-        continue;
-      }
-      const hasValue = Boolean(u.vault) || (u.packs || []).some((p) => p.until > now) || (u.reminders || []).length > 0 || (u.devices || []).length > 0 || Boolean(u.locker) || Boolean(u.extras);
-      if (idle > (hasValue ? keepMs : idleMs)) {
-        delete this.users[id];
-        n++;
-      } else if (idle > idleMs && needsReset(u)) {
-        resetSession(u);
-        n++;
-      }
+      const r = sweepOne(u, now, idleMs, keepMs, u.linkTo ? Boolean(this.users[u.linkTo]) : true);
+      n += r.n;
+      if (r.op === 'delete') delete this.users[id];
     }
     if (n) this._save('users.json', this.users);
     return n;
-  }
-
-  // Erases everything on a balance-holding account except the keys it needs to keep the money reachable.
-  // Returns 1 if anything was erased, 0 if it was already clean (so the hourly run does not count it again).
-  _eraseDetails(u, now) {
-    const personal = Object.keys(u).filter((k) => !KEEP_WITH_BALANCE.includes(k));
-    if (!personal.length) return 0;
-    for (const k of personal) delete u[k];
-    u.state = u.lang ? 'menu' : 'new';
-    if (u.packs) u.packs = u.packs.filter((p) => p.until > now);
-    return 1;
   }
 
   // Remembers (by scrambled ID only) that a welcome credit was given, so delete-and-return cannot farm it.
@@ -217,13 +174,82 @@ export class Store {
     return this.payments[ref] ? { ...this.payments[ref] } : null;
   }
 
+  // ---- money: the same totals SupabaseStore keeps in spend_daily and user_daily ----------------
+
+  _ledgerDay(day) {
+    const days = this.ledger.days;
+    if (!days[day]) {
+      days[day] = { llmInr: 0, msgInr: 0, users: {} };
+      const keys = Object.keys(days).sort();
+      while (keys.length > LEDGER_KEEP_DAYS) delete days[keys.shift()];
+    }
+    return days[day];
+  }
+
+  spendAdd(day, llmInr, msgInr) {
+    const d = this._ledgerDay(day);
+    d.llmInr += llmInr;
+    d.msgInr += msgInr;
+    this.saveLedger();
+    return { llmInr: d.llmInr, msgInr: d.msgInr };
+  }
+
+  spendSnapshot(day) {
+    const d = this.ledger.days[day] || { llmInr: 0, msgInr: 0, users: {} };
+    const prefix = day.slice(0, 7);
+    let month = 0;
+    for (const [k, x] of Object.entries(this.ledger.days)) if (k.startsWith(prefix) && k <= day) month += x.llmInr + x.msgInr;
+    return { todayInr: d.llmInr + d.msgInr, monthInr: month, llmInr: d.llmInr, msgInr: d.msgInr, activeUsers: Object.keys(d.users).length };
+  }
+
+  bumpUserDay(day, userId, dLlm, dInbound) {
+    const d = this._ledgerDay(day);
+    const u = (d.users[userId] ||= { llm: 0, inbound: 0 });
+    u.llm += dLlm;
+    u.inbound += dInbound;
+    this.saveLedger();
+    return { llm: u.llm, inbound: u.inbound };
+  }
+
   saveLedger() {
     this._save('ledger.json', this.ledger);
   }
 
+  // ---- shared limits and short-lived values (in memory here; shared through Postgres in production) ---
+
+  rateHit(key, windowMs, max) {
+    const now = this.now();
+    const ws = Math.floor(now / windowMs) * windowMs;
+    const cur = this.limits.get(key);
+    const n = cur && cur.ws === ws ? cur.n + 1 : 1;
+    this.limits.set(key, { ws, n });
+    if (this.limits.size > 5000) for (const [k, v] of this.limits) if (v.ws < now - 86400000) this.limits.delete(k);
+    return n <= max;
+  }
+
+  kvGet(k) {
+    const cur = this.kv.get(k);
+    if (!cur) return null;
+    if (cur.exp <= this.now()) {
+      this.kv.delete(k);
+      return null;
+    }
+    return cur.v;
+  }
+
+  kvSet(k, v, ttlMs) {
+    this.kv.set(k, { v, exp: this.now() + ttlMs });
+  }
+
+  kvDelete(k) {
+    this.kv.delete(k);
+  }
+
+  pruneOld() {}
+
   // Daily totals only (see analytics.js). Counts are per event and per source; no person, address or id is kept.
   // Days older than 90 are dropped.
-  countEvent(event, source = '', now = Date.now()) {
+  countEvent(event, source = '', now = this.now()) {
     const day = new Date(now).toISOString().slice(0, 10);
     const d = (this.stats.days[day] ||= { events: {}, sources: {} });
     d.events[event] = (d.events[event] || 0) + 1;
@@ -237,7 +263,7 @@ export class Store {
   }
 
   // The last `days` days, oldest first, with totals per event and per source.
-  funnel(days = 30, now = Date.now()) {
+  funnel(days = 30, now = this.now()) {
     const out = [];
     for (let i = days - 1; i >= 0; i--) {
       const day = new Date(now - i * 86400000).toISOString().slice(0, 10);
@@ -293,7 +319,8 @@ export class Store {
   // Only written when the user explicitly asks for a human.
   appendHandoff(entry) {
     const list = this._handoffs();
-    const rec = { id: entry.id || `h${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`, status: 'open', thread: [], ...entry };
+    const id = entry.id || `h${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
+    const rec = { status: 'open', thread: [], ...entry, id };
     list.push(rec);
     this._save('handoff.json', list.slice(-500));
     return rec;

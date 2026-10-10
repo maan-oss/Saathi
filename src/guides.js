@@ -250,6 +250,8 @@ export function guideOps() {
         tips: (TIPS[s.id] || []).map((t) => tx(t, l)),
         after: plainMd(tx(s.after, l)),
         sheet: s.sheet || [],
+        // official domains only (the first word of each entry), so the page can link to them
+        sites: (s.sites || []).map((x) => String(x).split(' ')[0]).filter((x) => /^[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(x)).slice(0, 3),
         self: plainMd(tx(s.self, l)),
       };
     },

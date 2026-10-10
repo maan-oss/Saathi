@@ -9,8 +9,9 @@ import { istDay } from './costguard.js';
 //   sheet  one prepared application sheet
 //   voice  one voice note turned into text
 //   remind one reminder set
-// Packs are fixed-price bundles for a preselected task. While a pack is active its included
-// things are not charged per message.
+// Packs are fixed-price bundles: document checks and AI answers. While a pack is active, guide
+// messages and form sheets are not charged per message. Packs bought before voice notes and
+// reminders were taken out of packs keep the counts they already hold.
 
 // Stripe refuses a card charge under about 50 cents (₹20 failed in production). ₹50 clears it at any rate we see.
 export const MIN_TOPUP_PAISE = 5000;
@@ -27,9 +28,8 @@ export const DEFAULT_RATES = {
   remindPaise: 200,
   topups: [5000, 10000, 20000, 50000],
   packs: {
-    pack_quick: { id: 'pack_quick', name: 'Quick pack', paise: 5000, days: 3, scans: 3, ai: 20, voice: 8, remind: 3 },
-    pan_pack: { id: 'pan_pack', name: 'Saathi pack', paise: 5000, days: 7, scans: 8, ai: 40, voice: 20, remind: 5 },
-    pack_month: { id: 'pack_month', name: 'Saathi Plus', paise: 14900, days: 30, scans: 40, ai: 300, voice: 100, remind: 25 },
+    pan_pack: { id: 'pan_pack', name: 'Saathi pack', paise: 5000, days: 7, scans: 8, ai: 40 },
+    pack_month: { id: 'pack_month', name: 'Saathi Plus', paise: 14900, days: 30, scans: 40, ai: 300 },
   },
 };
 
@@ -161,7 +161,7 @@ export function buyPack(u, cfg, id, now = Date.now()) {
   w.paise -= def.paise;
   log(u, { ts: now, what: `pack ${id}`, paise: -def.paise });
   u.packs = (u.packs || []).filter((p) => p.until > now);
-  u.packs.push({ id, until: now + def.days * 86400000, scans: def.scans, ai: def.ai, voice: def.voice || 0, remind: def.remind || 0 });
+  u.packs.push({ id, until: now + def.days * 86400000, scans: def.scans, ai: def.ai });
   return { ok: true, pack: def };
 }
 

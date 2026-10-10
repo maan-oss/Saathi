@@ -24,7 +24,7 @@ for (const code of codes) {
     console.error(`unknown language ${code}`);
     continue;
   }
-  if (store.getTranslation(code)?.reviewed) {
+  if ((await store.getTranslation(code))?.reviewed) {
     console.log(`${code}: hand-reviewed, skipped`);
     continue;
   }

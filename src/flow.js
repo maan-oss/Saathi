@@ -115,15 +115,15 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
   const rt = rates(config);
 
   async function handle(userId, input, ctx = {}) {
-    if (!guard.allowInbound(userId)) return { replies: [] };
+    if (!(await guard.allowInbound(userId))) return { replies: [] };
 
-    let u = store.getUser(userId);
+    let u = await store.getUser(userId);
     if (!u) {
       u = { state: 'new', lang: null };
-      if (store.hadTrial?.(userId) || ctx.trial === false) u.trialGiven = true; // ctx.trial === false: web sign-ups over the per-address cap
+      if ((await store.hadTrial?.(userId)) || ctx.trial === false) u.trialGiven = true; // ctx.trial === false: web sign-ups over the per-address cap
       else {
         grantTrial(u, config);
-        store.markTrial?.(userId);
+        await store.markTrial?.(userId);
       }
     }
     u.lastInboundAt = Date.now();
@@ -233,13 +233,13 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
       const okAmount = rt.topups.includes(paise) || (Number.isInteger(paise) && paise % 100 === 0 && paise >= MIN_TOPUP_PAISE && paise <= 500000);
       if (!payments || !okAmount) return say('topup_off');
       const ref = `sv_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
-      store.putPayment(ref, { userId, paise, status: 'pending', ts: Date.now(), phone: ctx.phone || null, ...(packId ? { packId } : {}) });
+      await store.putPayment(ref, { userId, paise, status: 'pending', ts: Date.now(), phone: ctx.phone || null, ...(packId ? { packId } : {}) });
       try {
         const { url } = await payments.createLink({ ref, paise, note: packId ? 'Saathi pack' : 'Saathi wallet top-up', pack: Boolean(packId) });
         say('topup_link', { amt: inr(paise), url });
       } catch (e) {
         console.error('payment link error:', e.message);
-        store.putPayment(ref, { userId, paise, status: 'failed', ts: Date.now() });
+        await store.putPayment(ref, { userId, paise, status: 'failed', ts: Date.now() });
         say('topup_fail');
       }
     }
@@ -315,7 +315,7 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
       }
       const def = langDef(code);
       if (!isReady(code)) {
-        if (!translator?.enabled || !guard.llmAllowed(userId)) {
+        if (!translator?.enabled || !(await guard.llmAllowed(userId))) {
           say('lang_fail', { lang: def.en });
           if (!u.lang) u.lang = 'en';
           return;
@@ -416,10 +416,10 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
       } else {
         let st = matchState(raw);
         // Not a spelling the list knows (a city, another language, a heavy typo): let the AI place it, or say it is not a place in India.
-        if (!st && raw.length <= 60 && llm.enabled && guard.llmAllowed(userId)) {
+        if (!st && raw.length <= 60 && llm.enabled && (await guard.llmAllowed(userId))) {
           try {
             const r = await llm.answer(STATE_SYSTEM, raw.slice(0, 80), { max: 12 });
-            guard.recordLlm(userId, r.usage);
+            await guard.recordLlm(userId, r.usage);
             st = matchState(String(r.text || '').replace(/[*"'`.\n]/g, ' ').trim());
           } catch {
             /* the AI is down: fall through to asking again */
@@ -573,7 +573,7 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
       let raw0 = hit && hit.exp > Date.now() ? hit.text : null;
       let c = null;
       if (!raw0) {
-        if (!llm.enabled || !guard.llmAllowed(userId)) return say(inSteps ? 'step_help_busy' : 'qa_busy');
+        if (!llm.enabled || !(await guard.llmAllowed(userId))) return say(inSteps ? 'step_help_busy' : 'qa_busy');
         c = gate('ai');
         if (!c) return;
       }
@@ -588,7 +588,7 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
             q = `Earlier:\n${past}\n\nNew message:\n${q}`;
           }
           const r = await llm.answer(qaSystemPrompt(langName, svc, context, web, web ? detectServices(question) : [], web ? langHint(question) : null, question + ' ' + (web?.hist?.length ? web.hist.filter((h) => h.r !== 'a').slice(-1).map((h) => h.t.slice(0, 120)).join('') : '')), q, { max: web ? 220 : 250 });
-          guard.recordLlm(userId, r.usage);
+          await guard.recordLlm(userId, r.usage);
           raw0 = r.text;
           if (ckey && raw0) {
             if (QA_CACHE.size >= 300) QA_CACHE.delete(QA_CACHE.keys().next().value);
@@ -633,7 +633,7 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
         setAwait('consent');
         return ask(T('doc_consent'), [btn('1', 'btn_allow'), btn('2', 'btn_no')]);
       }
-      if (!llm.enabled || !guard.llmAllowed(userId)) return say('doc_busy');
+      if (!llm.enabled || !(await guard.llmAllowed(userId))) return say('doc_busy');
       const c = gate('scan');
       if (!c) return;
       try {
@@ -643,7 +643,7 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
           return say('doc_too_big');
         }
         const r = await llm.checkDocument(buffer, mime);
-        guard.recordLlm(userId, r.usage);
+        await guard.recordLlm(userId, r.usage);
         const lkKind = lockerFromScan(r)?.type;
         const type = lkKind ? docName(lkKind) : String(r.type || 'other').replaceAll('_', ' ');
         if (!r.readable || r.type === 'not_a_document') {
@@ -685,7 +685,7 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
         say('voice_off');
         return false;
       }
-      if (!guard.llmAllowed(userId)) {
+      if (!(await guard.llmAllowed(userId))) {
         say('voice_busy');
         return false;
       }
@@ -694,7 +694,7 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
       try {
         const { buffer, mime } = await downloadMedia(input.mediaId);
         const r = await stt.transcribe(buffer, mime);
-        guard.recordStt?.(userId, r.seconds ?? input.seconds ?? 10);
+        await guard.recordStt?.(userId, r.seconds ?? input.seconds ?? 10);
         const said = String(r.text || '').replace(/\s+/g, ' ').trim();
         if (!said) {
           refund(u, c, 'voice');
@@ -1489,21 +1489,21 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
       }
     }
 
-    if (deleted) store.deleteUser(userId);
+    if (deleted) await store.deleteUser(userId);
     else {
       if (!keepAwait) delete u.await;
-      store.putUser(userId, u);
+      await store.putUser(userId, u);
     }
     return { replies, handoff };
   }
 
   /** Called by the payment webhook. Safe to call twice for the same payment. */
   async function creditPayment({ ref, paymentId, paise }) {
-    const rec = store.getPayment(ref);
+    const rec = await store.getPayment(ref);
     if (!rec) return { ok: false, reason: 'unknown_ref' };
     if (rec.status === 'paid') return { ok: false, duplicate: true, reason: 'already_paid' };
     if (rec.paise !== paise) return { ok: false, reason: 'amount_mismatch' };
-    const u = store.getUser(rec.userId);
+    const u = await store.getUser(rec.userId);
     if (!u) return { ok: false, reason: 'no_user' };
     const r = credit(u, paise, paymentId, 'top-up');
     if (!r.ok) return { ...r, reason: r.duplicate ? 'duplicate' : 'bad_amount' };
@@ -1513,8 +1513,8 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
     const firstPaidAt = u.firstPaidAt || Date.now();
     if (!u.firstPaidAt) u.firstPaidAt = firstPaidAt;
     const referral = u.referrerId ? { referrerId: u.referrerId, paise: referralBonus(paise, firstPaidAt), paymentId } : null;
-    store.putUser(rec.userId, u);
-    store.putPayment(ref, { userId: rec.userId, paise, status: 'paid', paymentId, ts: rec.ts, paidAt: Date.now(), ...(rec.packId ? { packId: rec.packId } : {}), ...(Number.isInteger(rec.before) ? { before: rec.before } : {}) });
+    await store.putUser(rec.userId, u);
+    await store.putPayment(ref, { userId: rec.userId, paise, status: 'paid', paymentId, ts: rec.ts, paidAt: Date.now(), ...(rec.packId ? { packId: rec.packId } : {}), ...(Number.isInteger(rec.before) ? { before: rec.before } : {}) });
     return { ok: true, userId: rec.userId, phone: rec.phone, lang: u.lang || 'en', paise, balance: r.balance, packOn, referral };
   }
 

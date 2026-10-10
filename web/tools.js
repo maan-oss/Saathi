@@ -478,9 +478,6 @@
         draw(); loadReady(); toast(T('Saved'));
       }); };
       holder.append(form);
-      if (data.filled) holder.append(btn('btn', T('Copy everything'), function () {
-        C.copyText(data.fields.filter((f) => f.value).map((f) => `${fieldLabel(f)}: ${f.type === 'choice' ? optionLabel(f.options.find((o) => o.id === f.value) || { en: f.value }) : f.value}`).join('\n'), this);
-      }));
       holder.append(note(T('Stored encrypted. Never sent to the AI. Delete it any time in Settings.'), 'lock'));
     };
     draw(); loadReady();
@@ -816,6 +813,7 @@
   // ---- devices and sync -----------------------------------------------------------------------------------------------
   const codeText = (c) => c;
   S.devices = async ({ code: joinCode } = {}) => {
+    const section = (title, ...kids) => { const s = el('section', 'dv-sec'); s.append(el('h2', 'grp-t', title), ...kids); return s; };
     const col = frame(T('Devices and sync'), T('Use the same Saathi on your phone and computer. Your locker, details, reminders, applications and wallet follow you.'));
     if (!C.cfg?.link) { col.append(empty('devices', T('Not available here'), T('Linking devices needs the live Saathi server.'))); return; }
     const holder = el('div', 'dv-wrap'); col.append(holder);
@@ -831,13 +829,13 @@
         if (d.current) right.append(el('span', 'tag on', T('This device')));
         else if (!d.main) { const x = btn('btn sm danger', T('Remove'), () => showDialog({ title: T('Remove this device?'), body: T('{label} will lose access right away. Its data here stays safe.', { label: d.label }), actions: [btn('btn', T('Cancel'), closeDialog), btn('btn danger', T('Remove'), async () => { closeDialog(); const r = await lcall('remove', { id: d.id }); if (r.ok) { dev = r.data; draw(); } else toast(errText(r.error)); })] })); right.append(x); }
         else right.append(el('span', 'tag', T('Main')));
-        box.append(row({ icon: 'devices', title: d.label, sub: d.added ? T('Linked {date}', { date: U.fmtDate(d.added) }) : d.main ? T('First device') : '', right }));
+        box.append(row({ icon: /Android|iPhone|iPad/.test(d.label || '') ? 'phone' : 'devices', title: d.label, sub: d.main ? T('Main device') : T('Linked {date}', { date: U.fmtDate(d.added) }), right }));
       }
-      const g = el('section', 'grp'); g.append(el('h2', 'grp-t', T('Your devices')), box); holder.append(g);
+      holder.append(section(T('Linked devices'), box));
 
       // add a device
-      const add = el('section', 'card-i dv-add');
-      add.append(el('h3', '', T('Add another device')), el('p', 'mut', T('Open Saathi on the other device, go to Devices and sync, and enter this code. It works once and expires in 5 minutes.')));
+      const add = el('div', 'card-i dv-add');
+      add.append(el('p', 'mut', T('On the other device, open Saathi, go to Devices and enter this code. It works once and expires in 5 minutes.')));
       if (issued && issued.exp > Date.now()) {
         const cd = el('div', 'dv-code', codeText(issued.code)); const left = el('small', 'mut center'); const tick = () => { const s = Math.max(0, Math.round((issued.exp - Date.now()) / 1000)); left.textContent = T('Expires in {m}:{s}', { m: Math.floor(s / 60), s: String(s % 60).padStart(2, '0') }); if (!s) { issued = null; draw(); } };
         tick(); ticker = setInterval(tick, 1000);
@@ -845,11 +843,11 @@
         const sh = btn('btn', T('Copy link'), function () { C.copyText(location.origin + '/app#link=' + issued.code.replace('-', ''), this); });
         const two = el('div', 'two'); two.append(cp, sh); add.append(cd, left, two);
       } else add.append(btn('btn pri xl', T('Show a code'), async function () { await busyBtn(this, async () => { const r = await lcall('new'); if (!r.ok) return toast(errText(r.error)); issued = { code: r.data.code, exp: r.data.exp }; draw(); }); }));
-      holder.append(add);
+      holder.append(section(T('Add a device'), add));
 
       // enter a code
-      const join = el('section', 'card-i');
-      join.append(el('h3', '', T('Have a code from another device?')));
+      const join = el('div', 'card-i');
+      join.append(el('p', 'mut', T('Have a code from another device? Enter it here.')));
       const inp = textInput('ABCD-EFGH', joinCode || ''); inp.autocapitalize = 'characters'; inp.maxLength = 12; inp.setAttribute('aria-label', T('Code'));
       const er = errBox();
       const go = btn('btn pri', T('Link this device'), () => {
@@ -863,12 +861,13 @@
           })],
         });
       });
-      const line = el('div', 'rm-line'); line.append(inp, go); join.append(line, er); holder.append(join);
+      const line = el('div', 'rm-line'); line.append(inp, go); join.append(line, er);
       if (joinCode) { inp.focus(); }
+      holder.append(section(T('Link this device'), join));
 
       // WhatsApp
       if (C.cfg.whatsapp) {
-        const wa = el('section', 'card-i');
+        const wa = el('div', 'card-i');
         wa.append(el('h3', '', T('Connect your WhatsApp')));
         if (dev.wa) {
           wa.append(el('p', 'mut', T('Your WhatsApp is connected. Reminders arrive there and the same locker, details and wallet are used in both places.')), btn('btn danger', T('Disconnect WhatsApp'), () => showDialog({ title: T('Disconnect WhatsApp?'), body: T('Reminders will stop arriving there. Your data stays in your account.'), actions: [btn('btn', T('Cancel'), closeDialog), btn('btn danger', T('Disconnect'), async () => { closeDialog(); const r = await lcall('wa_unlink'); if (r.ok) { dev = r.data; draw(); } })] })));
@@ -880,7 +879,7 @@
         } else {
           wa.append(el('p', 'mut', T('Get reminders on your phone and use the same account there. WhatsApp itself proves the number is yours, and you confirm with a Yes.')), btn('btn pri xl', T('Connect WhatsApp'), async function () { await busyBtn(this, async () => { const r = await lcall('phone'); if (!r.ok) return toast(errText(r.error)); waCode = r.data; draw(); }); }));
         }
-        holder.append(wa);
+        holder.append(section(T('WhatsApp'), wa));
       }
 
       // sync
@@ -888,18 +887,16 @@
       const sy = el('div', 'grp-box');
       const sw = seg([['1', T('On')], ['0', T('Off')]], syncOn ? '1' : '0', async (v) => { await saveExtras({ prefs: { syncChats: v === '1' } }); if (v === '1') C.syncNow?.(); else await tcall('chats.put', { blob: '' }); toast(v === '1' ? T('Chats will sync') : T('Chats stay on this device')); });
       sy.append(row({ icon: 'sync', title: T('Sync my chats too'), sub: T('Locker, details, reminders, applications and wallet always sync. Chats only sync if you turn this on. They are stored encrypted.'), right: sw }));
-      const gs = el('section', 'grp'); gs.append(el('h2', 'grp-t', T('Sync')), sy); holder.append(gs);
+      holder.append(section(T('Sync'), sy));
 
       // security
-      const ul = el('ul', 'incl');
-      for (const t of [T('A code works once and expires in 5 minutes'), T('You confirm on the new device before anything is linked'), T('Remove any device at any time and it loses access at once'), T('Nobody can link a device without a code that only you can see')]) { const li = el('li'); li.append(ico('check', 16), el('span', '', t)); ul.append(li); }
-      holder.append(group(T('How linking stays safe'), ul));
+      holder.append(note(T('Codes work once and expire in 5 minutes. Remove a device at any time and it loses access at once.'), 'lock'));
       const me = dev.list.find((d) => d.current);
       if (dev.list.length > 1) {
         if (me && !me.main) holder.append(btn('btn', T('Unlink this device'), () => showDialog({ title: T('Unlink this device?'), body: T('This device will start empty. Your account stays on your other devices.'), actions: [btn('btn', T('Cancel'), closeDialog), btn('btn danger', T('Unlink'), async () => { closeDialog(); const r = await lcall('unlink'); if (r.ok) { C.resetAfterDelete?.(); location.reload(); } })] })));
         else holder.append(btn('btn danger', T('Sign out all other devices'), () => showDialog({ title: T('Sign out other devices?'), body: T('Every other device loses access right away.'), actions: [btn('btn', T('Cancel'), closeDialog), btn('btn danger', T('Sign out'), async () => { closeDialog(); const r = await lcall('signout_others'); if (r.ok) { dev = r.data; draw(); toast(T('Signed out')); } })] })));
       }
-      holder.append(row({ icon: 'backup', title: T('Backup and restore'), sub: T('A recovery code, if you lose this device'), onclick: () => openScreen('backup') }));
+      const bk = el('div', 'grp-box'); bk.append(row({ icon: 'backup', title: T('Backup and restore'), sub: T('A recovery code, if you lose this device'), onclick: () => openScreen('backup') })); holder.append(section(T('Recovery'), bk));
     };
     let waCode = null;
     await loadExtras();

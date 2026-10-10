@@ -21,7 +21,7 @@ export function whenText(lang, days) {
 
 export function createScheduler({ store, vault, wa, guard, config, enqueue }) {
   async function remindOne(userId, now) {
-    const stored = store.getUser(userId);
+    const stored = await store.getUser(userId);
     if (!stored?.reminders?.length) return 0;
     const work = structuredClone(stored);
     const notices = dueNotices(work, now);
@@ -33,7 +33,7 @@ export function createScheduler({ store, vault, wa, guard, config, enqueue }) {
     let sent = 0;
     const sentIds = new Set();
     for (const n of notices) {
-      if (!guard.msgAllowed()) break;
+      if (!(await guard.msgAllowed())) break;
       const when = whenText(lang, n.days);
       const date = fmtDue(n.due);
       let ok;
@@ -44,19 +44,19 @@ export function createScheduler({ store, vault, wa, guard, config, enqueue }) {
         ok = await wa.sendTemplate(phone, { name, lang: tplLang, params: [n.label, whenText(tplLang, n.days), date] });
       }
       if (ok) {
-        guard.recordMsg();
+        await guard.recordMsg();
         sentIds.add(n.id);
         sent++;
       }
     }
     // Save only what really went out. Re-read the user: they may have chatted meanwhile.
-    const fresh = store.getUser(userId);
+    const fresh = await store.getUser(userId);
     if (fresh?.reminders) {
       for (const r of fresh.reminders) {
         const w = work.reminders.find((x) => x.id === r.id);
         if (w && sentIds.has(r.id)) r.sent = w.sent;
       }
-      store.putUser(userId, fresh);
+      await store.putUser(userId, fresh);
     }
     return sent;
   }
@@ -65,13 +65,13 @@ export function createScheduler({ store, vault, wa, guard, config, enqueue }) {
     /** One pass over every user with reminders. Returns how many messages went out. */
     async run(now = Date.now()) {
       let total = 0;
-      for (const [id, u] of Object.entries(store.users)) {
+      for (const [id, u] of await store.listUsersWithReminders()) {
         if (!u.reminders?.length) continue;
         await new Promise((resolve) => {
           enqueue(id, async () => {
             try {
-              const fresh = store.getUser(id);
-              if (fresh && pruneReminders(fresh, now)) store.putUser(id, fresh);
+              const fresh = await store.getUser(id);
+              if (fresh && pruneReminders(fresh, now)) await store.putUser(id, fresh);
               total += await remindOne(id, now);
             } finally {
               resolve();

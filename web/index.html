@@ -46,11 +46,6 @@
 
   <footer class="dock">
     <div class="composer-wrap">
-      <div class="rec" id="rec" hidden>
-        <span class="rec-dot"></span><span id="recTime">0:00</span><span class="rec-msg" id="recMsg" data-t="Recording. Tap send when you are done.">Recording. Tap send when you are done.</span>
-        <button class="rec-lang" id="dictLang" type="button" hidden></button>
-        <button class="link-btn" id="recCancel" type="button" data-t="Cancel">Cancel</button>
-      </div>
       <form class="composer" id="form" autocomplete="off">
         <div class="attach-wrap">
           <button class="icon-btn round" id="attachBtn" type="button" aria-label="Attach a photo or PDF" data-ta="Attach a photo or PDF" aria-haspopup="true" aria-expanded="false">
@@ -60,6 +55,11 @@
             <button type="button" role="menuitem" id="pickCamera" data-t="Take a photo">Take a photo</button>
             <button type="button" role="menuitem" id="pickFile" data-t="Choose photo or PDF">Choose photo or PDF</button>
           </div>
+        </div>
+        <div class="rec" id="rec" hidden>
+          <button class="icon-btn round rec-x" id="recCancel" type="button" aria-label="Cancel" data-ta="Cancel"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg></button>
+          <span class="rec-dot" aria-hidden="true"></span><span id="recTime">0:00</span><span class="rec-msg" id="recMsg" data-t="Recording">Recording</span>
+          <button class="rec-lang" id="dictLang" type="button" hidden></button>
         </div>
         <textarea id="input" rows="1" placeholder="Ask anything" data-tp="Ask anything" aria-label="Message" data-ta="Message" maxlength="2000" enterkeyhint="send"></textarea>
         <button class="icon-btn round" id="micBtn" type="button" aria-label="Speak instead of typing" data-ta="Speak instead of typing" hidden>

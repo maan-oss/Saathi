@@ -23,14 +23,14 @@ export { ToolError };
 
 export function createTools({ store, vault, llm, guard, config }) {
   /** The person's record. `make` creates it (with the one-time welcome credit) the first time a tool needs to write. */
-  function load(uid, make = false) {
-    let u = store.getUser(uid);
+  async function load(uid, make = false) {
+    let u = await store.getUser(uid);
     if (!u && make) {
       u = { state: 'new', lang: null };
-      if (store.hadTrial?.(uid)) u.trialGiven = true;
+      if (await store.hadTrial?.(uid)) u.trialGiven = true;
       else {
         grantTrial(u, config);
-        store.markTrial?.(uid);
+        await store.markTrial?.(uid);
       }
     }
     return u;
@@ -65,10 +65,10 @@ export function createTools({ store, vault, llm, guard, config }) {
     if (!t) return null;
     const f = findState(t);
     if (f) return f.name;
-    if (!llm?.enabled || typeof llm.answer !== 'function' || !guard.llmAllowed(uid)) return null;
+    if (!llm?.enabled || typeof llm.answer !== 'function' || !(await guard.llmAllowed(uid))) return null;
     try {
       const r = await llm.answer(STATE_SYSTEM, t, { max: 12 });
-      guard.recordLlm(uid, r.usage);
+      await guard.recordLlm(uid, r.usage);
       return findState(String(r.text || '').replace(/[*"'`.\n]/g, ' ').trim())?.name || null;
     } catch {
       return null;
@@ -83,7 +83,7 @@ export function createTools({ store, vault, llm, guard, config }) {
     },
     // ---- overview for the tools hub ----------------------------------------------------------------
     async summary(uid) {
-      const u = load(uid);
+      const u = await load(uid);
       const empty = { locker: 0, soon: null, docs: [], reminders: [], apps: 0, appsList: [], guides: {}, details: { filled: 0, total: FIELDS.length }, devices: 0, wa: false };
       if (!u) return empty;
       const all = await open(u.locker);
@@ -114,7 +114,7 @@ export function createTools({ store, vault, llm, guard, config }) {
     },
 
     async 'locker.list'(uid) {
-      const u = load(uid);
+      const u = await load(uid);
       return { docs: lockerRows(u ? await open(u.locker) : {}), types: lockerTypes() };
     },
     async 'locker.add'(uid, a) {
@@ -126,9 +126,9 @@ export function createTools({ store, vault, llm, guard, config }) {
       if (a.expiry && !expiry) throw new ToolError('bad_date');
       if (!TYPES[type].expiry && a.expiry) throw new ToolError('no_expiry');
       if (!number && !expiry) throw new ToolError('empty');
-      const u = load(uid, true);
+      const u = await load(uid, true);
       const all = await mergeLocker(u, type, { number, expiry });
-      store.putUser(uid, u);
+      await store.putUser(uid, u);
       return { docs: lockerRows(all), types: lockerTypes() };
     },
     /** Read-only format check while typing. Nothing is stored or logged. */
@@ -139,25 +139,25 @@ export function createTools({ store, vault, llm, guard, config }) {
       return { ok: Boolean(n), pretty: n ? showNumber(type, n) : '' };
     },
     async 'locker.reveal'(uid, a) {
-      const u = load(uid);
+      const u = await load(uid);
       const d = u ? (await open(u.locker))[a.type] : null;
       if (!d?.number) throw new ToolError('not_found');
       return { number: showNumber(a.type, d.number), copy: d.number };
     },
     async 'locker.remove'(uid, a) {
-      const u = load(uid);
+      const u = await load(uid);
       if (!u?.locker) return ops['locker.list'](uid);
       const all = await open(u.locker);
       delete all[a.type];
       if (Object.keys(all).length) u.locker = await vault.seal(all);
       else delete u.locker;
-      store.putUser(uid, u);
+      await store.putUser(uid, u);
       return { docs: lockerRows(all), types: lockerTypes() };
     },
 
     // ---- details (the "form sheet" data) -----------------------------------------------------------
     async 'details.get'(uid) {
-      const u = load(uid);
+      const u = await load(uid);
       const prof = u ? await open(u.vault) : {};
       const fields = FIELDS.map((f) => ({
         key: f.key,
@@ -171,7 +171,7 @@ export function createTools({ store, vault, llm, guard, config }) {
     async 'details.set'(uid, a) {
       const values = a.values && typeof a.values === 'object' ? { ...a.values } : {};
       if (values.state && !findState(values.state)) values.state = (await resolveState(uid, values.state)) || values.state;
-      const u = load(uid, true);
+      const u = await load(uid, true);
       const prof = await open(u.vault);
       const { clean, bad } = normAll(values);
       // An empty string clears a field.
@@ -181,13 +181,13 @@ export function createTools({ store, vault, llm, guard, config }) {
         u.vault = await vault.seal(prof);
         u.vaultConsent = true;
       } else delete u.vault;
-      store.putUser(uid, u);
+      await store.putUser(uid, u);
       return { bad, ...(await ops['details.get'](uid)) };
     },
 
     /** For each guide: how many of the details its form asks for are already saved. */
     async 'details.readiness'(uid) {
-      const u = load(uid);
+      const u = await load(uid);
       const prof = u ? await open(u.vault) : {};
       const out = {};
       for (const s of SERVICES) {
@@ -200,8 +200,8 @@ export function createTools({ store, vault, llm, guard, config }) {
 
     // ---- reminders ---------------------------------------------------------------------------------
     async 'reminders.list'(uid) {
-      const u = load(uid);
-      if (u?.reminders?.length && rollYearly(u)) store.putUser(uid, u);
+      const u = await load(uid);
+      if (u?.reminders?.length && rollYearly(u)) await store.putUser(uid, u);
       const items = (u?.reminders || []).map((r) => ({ id: r.id, label: r.label, due: r.due, left: daysUntil(r.due), note: r.note || '', repeat: r.repeat || null })).sort((a, b) => a.left - b.left);
       return { items, wa: Boolean(u?.phoneSealed), max: MAX_WEB_REMINDERS };
     },
@@ -210,16 +210,16 @@ export function createTools({ store, vault, llm, guard, config }) {
       const due = parseFutureDate(a.due);
       if (!label) throw new ToolError('bad_label');
       if (!due) throw new ToolError('bad_date');
-      const u = load(uid, true);
+      const u = await load(uid, true);
       const list = (u.reminders || []).filter((r) => r.label !== label);
       if (list.length >= Math.max(MAX_REMINDERS, MAX_WEB_REMINDERS)) throw new ToolError('full');
       u.reminders = [...list, makeReminder({ id: 'r' + Date.now().toString(36) + uuid().slice(0, 3), type: 'custom', label, due, note: clip(a.note, 120), repeat: a.repeat === 'yearly' ? 'yearly' : null })];
-      store.putUser(uid, u);
+      await store.putUser(uid, u);
       return ops['reminders.list'](uid);
     },
     /** Change the name, date, note or repeat of one reminder. A new date starts its notices again. */
     async 'reminders.update'(uid, a) {
-      const u = load(uid);
+      const u = await load(uid);
       const r = (u?.reminders || []).find((x) => x.id === a.id);
       if (!r) throw new ToolError('not_found');
       const label = a.label === undefined ? r.label : clip(a.label, 40);
@@ -236,12 +236,12 @@ export function createTools({ store, vault, llm, guard, config }) {
       if (!next.note) delete next.note;
       if (!next.repeat) delete next.repeat;
       u.reminders = u.reminders.map((x) => (x.id === r.id ? next : x));
-      store.putUser(uid, u);
+      await store.putUser(uid, u);
       return ops['reminders.list'](uid);
     },
     /** Mark one as done. A yearly one moves to next year with fresh notices; any other is removed. */
     async 'reminders.done'(uid, a) {
-      const u = load(uid);
+      const u = await load(uid);
       const r = (u?.reminders || []).find((x) => x.id === a.id);
       if (!r) return ops['reminders.list'](uid);
       if (r.repeat === 'yearly') u.reminders = u.reminders.map((x) => (x.id === r.id ? rollReminder(r) : x));
@@ -249,27 +249,27 @@ export function createTools({ store, vault, llm, guard, config }) {
         u.reminders = u.reminders.filter((x) => x.id !== r.id);
         if (!u.reminders.length) delete u.reminders;
       }
-      store.putUser(uid, u);
+      await store.putUser(uid, u);
       return ops['reminders.list'](uid);
     },
     async 'reminders.remove'(uid, a) {
-      const u = load(uid);
+      const u = await load(uid);
       if (u?.reminders) {
         u.reminders = u.reminders.filter((r) => r.id !== a.id);
         if (!u.reminders.length) delete u.reminders;
-        store.putUser(uid, u);
+        await store.putUser(uid, u);
       }
       return ops['reminders.list'](uid);
     },
 
     // ---- extras: applications, checklist ticks, preferences (sealed, synced across linked devices) --
     async 'extras.get'(uid) {
-      const u = load(uid);
+      const u = await load(uid);
       const ex = u ? await open(u.extras) : {};
       return { apps: ex.apps || [], checks: ex.checks || {}, guides: ex.guides || {}, prefs: ex.prefs || {}, v: ex.v || 0 };
     },
     async 'extras.set'(uid, a) {
-      const u = load(uid, true);
+      const u = await load(uid, true);
       const ex = await open(u.extras);
       if (Array.isArray(a.apps)) {
         ex.apps = a.apps.slice(0, MAX_APPS).map((x) => ({
@@ -312,22 +312,22 @@ export function createTools({ store, vault, llm, guard, config }) {
       ex.v = (ex.v || 0) + 1;
       if (JSON.stringify(ex).length > MAX_EXTRAS_BYTES) throw new ToolError('too_big');
       u.extras = await vault.seal(ex);
-      store.putUser(uid, u);
+      await store.putUser(uid, u);
       return { apps: ex.apps || [], checks: ex.checks || {}, guides: ex.guides || {}, prefs: ex.prefs || {}, v: ex.v };
     },
 
     // ---- chats, only when the person turns sync on ---------------------------------------------------
     async 'chats.get'(uid) {
-      const u = load(uid);
+      const u = await load(uid);
       return { blob: u?.chatsSync ? (await open(u.chatsSync)).blob || null : null };
     },
     async 'chats.put'(uid, a) {
       const blob = typeof a.blob === 'string' ? a.blob : '';
       if (blob.length > MAX_CHATS_BYTES) throw new ToolError('too_big');
-      const u = load(uid, true);
+      const u = await load(uid, true);
       if (blob) u.chatsSync = await vault.seal({ blob });
       else delete u.chatsSync;
-      store.putUser(uid, u);
+      await store.putUser(uid, u);
       return { ok: true };
     },
 
@@ -336,32 +336,32 @@ export function createTools({ store, vault, llm, guard, config }) {
     async scan(uid, a) {
       const { buffer, mime } = a;
       if (!config.docCheck) throw new ToolError('off');
-      if (!llm.enabled || !guard.llmAllowed(uid)) throw new ToolError('busy');
+      if (!llm.enabled || !(await guard.llmAllowed(uid))) throw new ToolError('busy');
       if (!buffer || buffer.length > MAX_DOC_BYTES) throw new ToolError('too_big');
-      const u = load(uid, true);
+      const u = await load(uid, true);
       if (!u.docConsent && !a.consent) throw new ToolError('consent');
       u.docConsent = true;
       const c = charge(u, config, 'scan');
       if (!c.ok) {
-        store.putUser(uid, u);
+        await store.putUser(uid, u);
         throw new ToolError('paywall', { need: c.need, price: c.price });
       }
-      store.putUser(uid, u);
+      await store.putUser(uid, u);
       let r;
       try {
         r = await llm.checkDocument(buffer, mime);
-        guard.recordLlm(uid, r.usage);
+        await guard.recordLlm(uid, r.usage);
       } catch (e) {
         console.error('scan error:', e.message);
-        const v = load(uid, true);
+        const v = await load(uid, true);
         refund(v, c, 'scan');
-        store.putUser(uid, v);
+        await store.putUser(uid, v);
         throw new ToolError('failed');
       }
       const back = async (code, extra) => {
-        const v = load(uid, true);
+        const v = await load(uid, true);
         refund(v, c, 'scan');
-        store.putUser(uid, v);
+        await store.putUser(uid, v);
         throw new ToolError(code, extra);
       };
       if (!r.readable || r.type === 'not_a_document') await back('unclear', { issues: r.issues || [] });
@@ -372,10 +372,10 @@ export function createTools({ store, vault, llm, guard, config }) {
       const number = kind ? normNumber(kind, r.number ?? r.fields?.number) : null;
       const expiry = kind && TYPES[kind].expiry ? normExpiry(r.expiry ?? r.fields?.expiry) : null;
       if (!Object.keys(found).length && !number && !expiry) await back('nofields', { type: kind });
-      const v = load(uid, true);
+      const v = await load(uid, true);
       const scanId = uuid();
       v.pendingScan = await vault.seal({ id: scanId, kind, number, expiry, found, ts: Date.now() });
-      store.putUser(uid, v);
+      await store.putUser(uid, v);
       return {
         scanId,
         type: kind,
@@ -387,7 +387,7 @@ export function createTools({ store, vault, llm, guard, config }) {
       };
     },
     async 'scan.save'(uid, a) {
-      const u = load(uid);
+      const u = await load(uid);
       const p = u?.pendingScan ? await open(u.pendingScan) : null;
       if (!p || p.id !== a.scanId || Date.now() - p.ts > 15 * 60 * 1000) throw new ToolError('expired');
       let saved = 0;
@@ -403,21 +403,21 @@ export function createTools({ store, vault, llm, guard, config }) {
         saved++;
       }
       delete u.pendingScan;
-      store.putUser(uid, u);
+      await store.putUser(uid, u);
       return { saved };
     },
     // Referrals. ref.code gives this person's invite code. ref.set attaches the person who invited them,
     // once, and only before their first top-up, so nobody can switch referrers after paying.
     async 'ref.code'(uid) {
-      return { code: store.refCodeFor(uid) };
+      return { code: await store.refCodeFor(uid) };
     },
     async 'ref.set'(uid, args = {}) {
-      const u = store.getUser(uid);
+      const u = await store.getUser(uid);
       if (!u) return { done: false };
-      const owner = store.userForRefCode(args.code);
-      if (u.referrerId || u.firstPaidAt || !owner || owner === uid || !store.getUser(owner)) return { done: true, saved: false };
+      const owner = await store.userForRefCode(args.code);
+      if (u.referrerId || u.firstPaidAt || !owner || owner === uid || !(await store.getUser(owner))) return { done: true, saved: false };
       u.referrerId = owner;
-      store.putUser(uid, u);
+      await store.putUser(uid, u);
       return { done: true, saved: true };
     },
   };

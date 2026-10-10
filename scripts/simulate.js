@@ -17,7 +17,7 @@ const store = new Store('./data-sim');
 const guard = new CostGuard(store, config);
 const llm = createLlm(config);
 const translator = createTranslator({ llm, store, guard, config });
-translator.loadCached();
+await translator.loadCached();
 const bot = createBot({
   store,
   guard,
@@ -42,11 +42,11 @@ while (true) {
   const line = (await rl.question('you> ')).trim();
   if (line === '/quit') break;
   if (line === '/stats') {
-    console.log(guard.stats());
+    console.log(await guard.stats());
     continue;
   }
   if (line === '/reset') {
-    store.deleteUser(USER);
+    await store.deleteUser(USER);
     console.log('reset');
     continue;
   }

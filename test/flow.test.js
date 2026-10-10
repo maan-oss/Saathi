@@ -108,7 +108,7 @@ test('free-form question uses the AI, records cost, and charges 50 paise from th
   const answer = await say('what if I lost my phone?');
   assert.equal(answer, 'AI answer');
   assert.equal(calls.answer, 1);
-  assert.ok(guard.todayInr() > 0);
+  assert.ok((await guard.todayInr()) > 0);
   assert.equal(wallet(), 450);
   done();
 });
@@ -116,7 +116,7 @@ test('free-form question uses the AI, records cost, and charges 50 paise from th
 test('when AI budget is exhausted the scripted guide still works, the AI is not called, nothing is charged', async () => {
   const { say, calls, guard, wallet, done } = setup({ dailyBudgetInr: 100 });
   await toEpanStep1(say);
-  guard.recordLlm('other', { in: 0, out: 160_000 }); // pushes past 70%
+  await guard.recordLlm('other', { in: 0, out: 160_000 }); // pushes past 70%
   const busy = await say('what is the fee?');
   assert.match(busy, /Tap \*Next\*/);
   assert.equal(calls.answer, 0);

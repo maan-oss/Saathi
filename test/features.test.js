@@ -111,7 +111,7 @@ test('voice note: transcribed, charged 50 paise, echoed back, then handled exact
   assert.equal(res.replies.at(-1).kind, 'list');
   assert.match(plain(res.replies.at(-1)), /New PAN card/);
   assert.equal(wallet(), before - 50);
-  assert.ok(guard.todayInr() > 0); // speech cost was counted
+  assert.ok((await guard.todayInr()) > 0); // speech cost was counted
   done();
 });
 
@@ -141,26 +141,26 @@ test('voice notes are politely declined when speech-to-text is off, and when the
   s = setup({ dailyBudgetInr: 100 }, {}, { stt: fakeStt(async () => ({ text: 'menu' })) });
   await s.say('hi');
   await s.say('1');
-  s.guard.recordLlm('other', { in: 0, out: 160_000 });
+  await s.guard.recordLlm('other', { in: 0, out: 160_000 });
   const before = s.wallet();
   assert.match(plain((await s.run({ type: 'voice', mediaId: 'v' })).replies[0]), /paused for today/);
   assert.equal(s.wallet(), before);
   s.done();
 });
 
-test('the Saathi pack covers voice notes', async () => {
+test('the Saathi pack does not include voice notes: they are paid from the wallet', async () => {
   const { say, tap, run, store, wallet, done } = setup({}, {}, { stt: fakeStt(async () => ({ text: 'menu', seconds: 3 })) });
   await say('hi');
   await say('1');
   const u = store.getUser('u1');
-  u.wallet.paise = 5000;
+  u.wallet.paise = 10000;
   store.putUser('u1', u);
   await tap('pack');
   await tap('confirm_pack');
   const left = wallet();
   await run({ type: 'voice', mediaId: 'v' });
-  assert.equal(wallet(), left);
-  assert.equal(store.getUser('u1').packs[0].voice, 19);
+  assert.equal(wallet(), left - 50);
+  assert.equal(store.getUser('u1').packs[0].voice, undefined);
   done();
 });
 
@@ -515,7 +515,7 @@ test('scheduler stops at the spend cap and never touches users without reminders
   const vault = createVault('test-key');
   s.store.putUser('1000000009', { state: 'menu', lang: 'en', lastInboundAt: Date.now(), phoneSealed: await vault.seal({ phone: '91x' }), reminders: [makeReminder({ id: 'r', type: 'dl', label: 'L', due: istDate(Date.now() + 5 * D) }, Date.now() - 30 * D)] });
   s.store.putUser('1000000010', { state: 'menu', lang: 'en' });
-  s.guard.recordMsg(); s.guard.recordMsg();
+  await s.guard.recordMsg(); await s.guard.recordMsg();
   let n = 0;
   const wa = { async send() { n++; return 1; }, async sendTemplate() { n++; return true; } };
   const sch = createScheduler({ store: s.store, vault, wa, guard: s.guard, config: { reminderTemplate: 't' }, enqueue: (id, fn) => Promise.resolve().then(fn) });

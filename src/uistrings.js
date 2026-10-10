@@ -49,14 +49,17 @@ export async function uiDict(code, { llm, store }) {
   const cacheKey = 'ui_' + code;
   const all = uiKeys();
   let have = {};
-  try { have = store.getSetting?.(cacheKey) || {}; } catch { have = {}; }
+  try { have = (await store.getSetting?.(cacheKey)) || {}; } catch { have = {}; }
   const out = {};
   if (code === 'hi') for (const k of all) if (good(k, HI[k])) out[k] = HI[k];
   const pre = bundled(code); for (const k of all) if (good(k, pre[k])) out[k] = pre[k];
   for (const k of all) if (have[k] && good(k, have[k])) out[k] = have[k];
   const missing = all.filter((k) => !out[k]);
   if (!missing.length || !llm?.enabled) return out;
-  if (inflight.has(code)) return inflight.get(code).then(() => uiDict(code, { llm, store }));
+  if (inflight.has(code)) {
+    await inflight.get(code);
+    return uiDict(code, { llm, store });
+  }
   const job = (async () => {
     const learned = {};
     for (let i = 0; i < missing.length; i += 45) {
@@ -68,12 +71,14 @@ export async function uiDict(code, { llm, store }) {
         console.error('ui translate error:', e.message);
       }
     }
-    if (Object.keys(learned).length) store.setSetting?.(cacheKey, { ...have, ...learned });
+    if (Object.keys(learned).length) {
+      try { await store.setSetting?.(cacheKey, { ...have, ...learned }); } catch (e) { console.error('ui cache save error:', e.message); }
+    }
   })().finally(() => inflight.delete(code));
   inflight.set(code, job);
   await job;
   let after = {};
-  try { after = store.getSetting?.(cacheKey) || {}; } catch { after = {}; }
+  try { after = (await store.getSetting?.(cacheKey)) || {}; } catch { after = {}; }
   for (const k of all) if (!out[k] && after[k] && good(k, after[k])) out[k] = after[k];
   return out;
 }

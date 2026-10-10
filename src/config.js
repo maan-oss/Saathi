@@ -20,6 +20,11 @@ const flag = (key, def) => {
 export const config = {
   port: num('PORT', 3000),
   dataDir: process.env.DATA_DIR || (process.env.VERCEL ? '/tmp/saathi-data' : './data'),
+  // Supabase is the data layer when SUPABASE_URL is set. The secret key (service role) is needed too: it is kept in
+  // the host's environment settings and never shipped. Without SUPABASE_URL the app keeps its data in DATA_DIR files
+  // (local development and tests only).
+  supabaseUrl: (process.env.SUPABASE_URL || '').replace(/\/+$/, ''),
+  supabaseKey: process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '',
 
   // WhatsApp Cloud API
   whatsappToken: process.env.WHATSAPP_TOKEN || '',
@@ -93,9 +98,8 @@ export const config = {
     remindPaise: num('REMIND_PAISE', 200),
     topups: [5000, 10000, 20000, 50000], // ₹50 is the floor (billing.js MIN_TOPUP_PAISE): the old ₹20 preset failed at Stripe in production
     packs: {
-      pack_quick: { id: 'pack_quick', name: 'Quick pack', paise: num('QUICK_PACK_PAISE', 5000), days: 3, scans: 3, ai: 20, voice: 8, remind: 3 },
-      pan_pack: { id: 'pan_pack', name: 'Saathi pack', paise: num('PAN_PACK_PAISE', 5000), days: 7, scans: 8, ai: 40, voice: 20, remind: 5 },
-      pack_month: { id: 'pack_month', name: 'Saathi Plus', paise: num('PLUS_PACK_PAISE', 14900), days: 30, scans: 40, ai: 300, voice: 100, remind: 25 },
+      pan_pack: { id: 'pan_pack', name: 'Saathi pack', paise: num('PAN_PACK_PAISE', 5000), days: 7, scans: 8, ai: 40 },
+      pack_month: { id: 'pack_month', name: 'Saathi Plus', paise: num('PLUS_PACK_PAISE', 14900), days: 30, scans: 40, ai: 300 },
     },
   },
   adminKey: process.env.ADMIN_KEY || '',

@@ -68,10 +68,10 @@ export function createTranslator({ llm, store, guard, config = {} }) {
   const inflight = new Map();
   const isOn = () => Boolean(llm?.enabled);
 
-  function loadCached() {
+  async function loadCached() {
     let n = 0;
     for (const l of i18n.LANGS) {
-      const rec = store.getTranslation(l.code);
+      const rec = await store.getTranslation(l.code);
       if (rec?.messages) {
         i18n.register(l.code, rec);
         n++;
@@ -88,7 +88,7 @@ export function createTranslator({ llm, store, guard, config = {} }) {
 
     async function attempt(batch) {
       const { map, usage } = await llm.translate(langName, batch);
-      guard?.recordLlm?.('translate', usage);
+      await guard?.recordLlm?.('translate', usage);
       const failed = [];
       for (const it of batch) {
         const out = map[it.k];
@@ -142,7 +142,7 @@ export function createTranslator({ llm, store, guard, config = {} }) {
     async ensure(code) {
       if (i18n.isReady(code)) return true;
       if (!i18n.langDef(code) || !isOn()) return false;
-      const cached = store.getTranslation(code);
+      const cached = await store.getTranslation(code);
       if (cached?.messages) {
         i18n.register(code, cached);
         return true;
@@ -150,15 +150,18 @@ export function createTranslator({ llm, store, guard, config = {} }) {
       if (!inflight.has(code)) {
         inflight.set(
           code,
-          translateAll(code)
-            .then((r) => {
+          (async () => {
+            try {
+              const r = await translateAll(code);
               if (!r.ok) return false;
               const rec = { ...r.data, machine: true, at: Date.now(), missing: r.missing };
-              store.putTranslation(code, rec);
+              await store.putTranslation(code, rec);
               i18n.register(code, rec);
               return true;
-            })
-            .finally(() => inflight.delete(code)),
+            } finally {
+              inflight.delete(code);
+            }
+          })(),
         );
       }
       return inflight.get(code);

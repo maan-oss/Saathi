@@ -11,7 +11,8 @@ export function istDay(ts = Date.now()) {
  *  - Outbound WhatsApp messages stop at 100% of the daily/monthly budget.
  *  - Each user has a daily cap on AI calls and on inbound messages.
  *
- * Worst-case monthly spend = monthlyBudgetInr (+ a few rupees of overshoot).
+ * The totals and per-person counts live in the store, so every instance sees the same numbers. Each change is one
+ * atomic write (see supastore.js). Worst-case monthly spend = monthlyBudgetInr (+ a few rupees of overshoot).
  */
 export class CostGuard {
   constructor(store, cfg, clock = () => Date.now()) {
@@ -20,96 +21,69 @@ export class CostGuard {
     this.clock = clock;
   }
 
-  _today() {
-    const key = istDay(this.clock());
-    const days = this.store.ledger.days;
-    if (!days[key]) {
-      days[key] = { llmInr: 0, msgInr: 0, users: {} };
-      // keep ~40 days
-      const keys = Object.keys(days).sort();
-      while (keys.length > 40) delete days[keys.shift()];
-    }
-    return days[key];
+  _day() {
+    return istDay(this.clock());
   }
 
-  _user(userId) {
-    const d = this._today();
-    if (!d.users[userId]) d.users[userId] = { llm: 0, inbound: 0 };
-    return d.users[userId];
+  async todayInr() {
+    return (await this.store.spendSnapshot(this._day())).todayInr;
   }
 
-  todayInr() {
-    const d = this._today();
-    return d.llmInr + d.msgInr;
-  }
-
-  monthInr() {
-    const prefix = istDay(this.clock()).slice(0, 7);
-    let sum = 0;
-    for (const [k, d] of Object.entries(this.store.ledger.days)) {
-      if (k.startsWith(prefix)) sum += d.llmInr + d.msgInr;
-    }
-    return sum;
+  async monthInr() {
+    return (await this.store.spendSnapshot(this._day())).monthInr;
   }
 
   /** Count an inbound message; false means this user is over their daily cap. */
-  allowInbound(userId) {
-    const u = this._user(userId);
-    u.inbound++;
-    this.store.saveLedger();
-    return u.inbound <= this.cfg.perUserDailyMsgs;
+  async allowInbound(userId) {
+    const me = await this.store.bumpUserDay(this._day(), userId, 0, 1);
+    return me.inbound <= this.cfg.perUserDailyMsgs;
   }
 
-  llmAllowed(userId) {
-    const u = this._user(userId);
-    return (
-      u.llm < this.cfg.perUserDailyLlm &&
-      this.todayInr() < this.cfg.dailyBudgetInr * 0.7 &&
-      this.monthInr() < this.cfg.monthlyBudgetInr * 0.7
-    );
+  async llmAllowed(userId) {
+    const day = this._day();
+    const [me, s] = await Promise.all([this.store.bumpUserDay(day, userId, 0, 0), this.store.spendSnapshot(day)]);
+    return me.llm < this.cfg.perUserDailyLlm && s.todayInr < this.cfg.dailyBudgetInr * 0.7 && s.monthInr < this.cfg.monthlyBudgetInr * 0.7;
   }
 
-  msgAllowed() {
-    return this.todayInr() < this.cfg.dailyBudgetInr && this.monthInr() < this.cfg.monthlyBudgetInr;
+  async msgAllowed() {
+    const s = await this.store.spendSnapshot(this._day());
+    return s.todayInr < this.cfg.dailyBudgetInr && s.monthInr < this.cfg.monthlyBudgetInr;
   }
 
-  recordLlm(userId, usage = { in: 0, out: 0 }) {
+  async recordLlm(userId, usage = { in: 0, out: 0 }) {
     const usd = (usage.in * this.cfg.llmInUsdPerM + usage.out * this.cfg.llmOutUsdPerM) / 1e6;
     const inr = usd * this.cfg.usdInr;
-    const d = this._today();
-    d.llmInr += inr;
-    this._user(userId).llm++;
-    this.store.saveLedger();
+    const day = this._day();
+    await Promise.all([this.store.spendAdd(day, inr, 0), this.store.bumpUserDay(day, userId, 1, 0)]);
     return inr;
   }
 
   /** Speech-to-text cost, counted against the same daily and monthly budget as AI answers. */
-  recordStt(userId, seconds = 0) {
+  async recordStt(userId, seconds = 0) {
     const inr = (Math.max(0, seconds) / 3600) * (this.cfg.sttInrPerHour ?? 30);
-    this._today().llmInr += inr;
-    this._user(userId).llm++;
-    this.store.saveLedger();
+    const day = this._day();
+    await Promise.all([this.store.spendAdd(day, inr, 0), this.store.bumpUserDay(day, userId, 1, 0)]);
     return inr;
   }
 
-  recordMsg() {
-    this._today().msgInr += this.cfg.waMsgInr;
-    this.store.saveLedger();
+  async recordMsg() {
+    await this.store.spendAdd(this._day(), 0, this.cfg.waMsgInr);
   }
 
-  stats() {
-    const d = this._today();
+  async stats() {
+    const day = this._day();
+    const s = await this.store.spendSnapshot(day);
     return {
-      day: istDay(this.clock()),
-      todayInr: round(this.todayInr()),
-      llmInr: round(d.llmInr),
-      msgInr: round(d.msgInr),
-      monthInr: round(this.monthInr()),
+      day,
+      todayInr: round(s.todayInr),
+      llmInr: round(s.llmInr),
+      msgInr: round(s.msgInr),
+      monthInr: round(s.monthInr),
       dailyBudgetInr: this.cfg.dailyBudgetInr,
       monthlyBudgetInr: this.cfg.monthlyBudgetInr,
-      activeUsersToday: Object.keys(d.users).length,
-      llmEnabledNow: this.todayInr() < this.cfg.dailyBudgetInr * 0.7 && this.monthInr() < this.cfg.monthlyBudgetInr * 0.7,
-      messagingEnabledNow: this.msgAllowed(),
+      activeUsersToday: s.activeUsers,
+      llmEnabledNow: s.todayInr < this.cfg.dailyBudgetInr * 0.7 && s.monthInr < this.cfg.monthlyBudgetInr * 0.7,
+      messagingEnabledNow: s.todayInr < this.cfg.dailyBudgetInr && s.monthInr < this.cfg.monthlyBudgetInr,
     };
   }
 }

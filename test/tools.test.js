@@ -117,21 +117,21 @@ test('tools: an unreadable scan is refunded', async () => {
 test('link: a code works once, only the right way, and links a device', async () => {
   const r = rig();
   r.store.putUser('main', { state: 'menu', lang: 'hi', reminders: [] });
-  const c = r.links.newDeviceCode('main', 'Laptop');
+  const c = await r.links.newDeviceCode('main', 'Laptop');
   assert.match(c.code, /^[A-Z2-9]{4}-[A-Z2-9]{4}$/);
   assert.doesNotMatch(JSON.stringify(r.store.getSetting('linkcodes')), new RegExp(normCode(c.code)));
   assert.equal(await r.code(Promise.resolve().then(() => r.links.joinDevice('AAAA-AAAA', 'dev2'))), 'bad_code');
-  r.links.joinDevice(c.code.toLowerCase(), 'dev2', 'Phone');
-  assert.equal(r.links.resolve('dev2'), 'main');
+  await r.links.joinDevice(c.code.toLowerCase(), 'dev2', 'Phone');
+  assert.equal(await r.links.resolve('dev2'), 'main');
   assert.equal(await r.code(Promise.resolve().then(() => r.links.joinDevice(c.code, 'dev3'))), 'bad_code');
-  assert.equal(r.links.devices('main', 'dev2').list.length, 2);
+  assert.equal((await r.links.devices('main', 'dev2')).list.length, 2);
   r.done();
 });
 
 test('link: expired codes fail, and you cannot join yourself', async () => {
   const r = rig();
   r.store.putUser('main', { state: 'menu' });
-  const c = r.links.newDeviceCode('main');
+  const c = await r.links.newDeviceCode('main');
   assert.equal(await r.code(Promise.resolve().then(() => r.links.joinDevice(c.code, 'main'))), 'same');
   const all = r.store.getSetting('linkcodes');
   for (const k of Object.keys(all)) all[k].exp = Date.now() - 1;
@@ -143,15 +143,15 @@ test('link: expired codes fail, and you cannot join yourself', async () => {
 test('link: removing a device cuts access at once; limit of 5', async () => {
   const r = rig();
   r.store.putUser('main', { state: 'menu' });
-  for (let i = 0; i < 5; i++) r.links.joinDevice(r.links.newDeviceCode('main').code, 'd' + i);
+  for (let i = 0; i < 5; i++) await r.links.joinDevice((await r.links.newDeviceCode('main')).code, 'd' + i);
   assert.equal(await r.code(Promise.resolve().then(() => r.links.newDeviceCode('main'))), 'too_many');
-  r.links.removeDevice('main', 'd0');
-  assert.equal(r.links.resolve('d0'), 'd0');
-  assert.equal(r.links.resolve('d1'), 'main');
-  r.links.signOutOthers('main', 'd1');
-  assert.equal(r.links.resolve('d2'), 'd2');
-  r.links.unlinkSelf('d1');
-  assert.equal(r.links.resolve('d1'), 'd1');
+  await r.links.removeDevice('main', 'd0');
+  assert.equal(await r.links.resolve('d0'), 'd0');
+  assert.equal(await r.links.resolve('d1'), 'main');
+  await r.links.signOutOthers('main', 'd1');
+  assert.equal(await r.links.resolve('d2'), 'd2');
+  await r.links.unlinkSelf('d1');
+  assert.equal(await r.links.resolve('d1'), 'd1');
   r.done();
 });
 
@@ -159,26 +159,26 @@ test('link: WhatsApp needs the code and then a Yes; data from that number merges
   const r = rig();
   r.store.putUser('main', { state: 'menu', reminders: [] });
   r.store.putUser('wa1', { state: 'menu', wallet: { paise: 500 }, reminders: [{ id: 'r9', label: 'Passport', due: '2030-01-01' }] });
-  const c = r.links.newWaCode('main');
+  const c = await r.links.newWaCode('main');
   assert.equal(await r.code(Promise.resolve().then(() => r.links.waStart('WRONG-CODE', 'wa1'))), 'bad_code');
-  r.links.waStart(c.code, 'wa1');
-  assert.equal(r.links.waPendingFor('wa1'), true);
+  await r.links.waStart(c.code, 'wa1');
+  assert.equal(await r.links.waPendingFor('wa1'), true);
   await r.links.waConfirm('wa1', '919999999999');
-  assert.equal(r.links.resolve('wa1'), 'main');
+  assert.equal(await r.links.resolve('wa1'), 'main');
   const m = r.store.getUser('main');
   assert.equal(m.waLinked, true);
   assert.equal(m.reminders.length, 1);
   assert.ok(m.wallet.paise >= 500);
   assert.doesNotMatch(JSON.stringify(m), /919999999999/);
-  r.links.unlinkWa('main');
-  assert.equal(r.links.resolve('wa1'), 'wa1');
+  await r.links.unlinkWa('main');
+  assert.equal(await r.links.resolve('wa1'), 'wa1');
   r.done();
 });
 
 test('link: guessing codes over WhatsApp is rate limited', async () => {
   const r = rig();
   r.store.putUser('main', { state: 'menu' });
-  r.links.newWaCode('main');
+  await r.links.newWaCode('main');
   const codes = [];
   for (let i = 0; i < 8; i++) codes.push(await r.code(Promise.resolve().then(() => r.links.waStart('BAD' + i + 'XXXXX', 'wa1'))));
   assert.equal(codes.at(-1), 'slow_down');

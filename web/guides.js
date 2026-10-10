@@ -62,18 +62,7 @@
     const doc = new DOMParser().parseFromString('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="30" height="30" class="gi" aria-hidden="true">' + body + '</svg>', 'image/svg+xml');
     return document.importNode(doc.documentElement, true);
   };
-  let lastRing = null; let lastMeter = null;
-  function ring(p, size = 64) {
-    const box = el('div', 'gr-ring'); const pv = Math.max(0, Math.min(1, p));
-    box.style.setProperty('--p', String(lastRing === null ? pv : lastRing)); if (lastRing !== null && lastRing !== pv) requestAnimationFrame(() => requestAnimationFrame(() => box.style.setProperty('--p', String(pv)))); lastRing = pv;
-    const ns = 'http://www.w3.org/2000/svg';
-    const s = document.createElementNS(ns, 'svg'); s.setAttribute('viewBox', '0 0 36 36'); s.setAttribute('aria-hidden', 'true');
-    const bg = document.createElementNS(ns, 'circle'); bg.setAttribute('cx', 18); bg.setAttribute('cy', 18); bg.setAttribute('r', 15.5); bg.setAttribute('class', 'gr-bg');
-    const fg = document.createElementNS(ns, 'circle'); fg.setAttribute('cx', 18); fg.setAttribute('cy', 18); fg.setAttribute('r', 15.5); fg.setAttribute('class', 'gr-fg'); fg.setAttribute('pathLength', 100);
-    s.append(bg, fg); box.append(s);
-    const t = el('span', 'gr-pct', Math.round(pv * 100) + '%'); box.append(t);
-    return box;
-  }
+  let lastMeter = null;
   const tick = (on, label, onclick) => {
     const b = el('button', 'gk' + (on ? ' on' : '')); b.type = 'button'; b.setAttribute('role', 'checkbox'); b.setAttribute('aria-checked', String(on)); b.setAttribute('aria-label', label);
     b.append(ico('check', 15)); b.onclick = onclick; return b;
@@ -82,7 +71,7 @@
 
   S.service = async ({ id }) => {
     S.__svc = id;
-    const meta = U.svcMeta(id); lastRing = null; lastMeter = null;
+    const meta = U.svcMeta(id); lastMeter = null;
     const lang = C.uiLang();
     const col = frame(T(meta[1]), '');
     col.classList.add('wide-col', 'guide');
@@ -133,20 +122,25 @@
       else status = T('Step {i} of {n} is next', { i: nextStep() + 1, n: stepsTotal() });
       info.append(el('div', 'gh-st', status));
       const gi = el('span', 'gh-ic'); gi.setAttribute('aria-hidden', 'true'); gi.append(gIcon(id, meta[2]));
-      const top = el('div', 'gh-top'); top.append(gi, info, ring(p, 52));
+      const top = el('div', 'gh-top'); top.append(gi, info);
       head.append(top);
       const acts = el('div', 'gh-acts');
       acts.append(btn('btn sm', T('Ask Saathi'), () => U.startServiceChat(id)));
       if (route?.kind === 'steps' && P.steps.length) acts.append(btn('btn sm ghost', T('Start over'), confirmReset));
       head.append(acts);
+      if (G.sites?.length) {
+        const sites = el('div', 'gh-sites'); sites.append(el('span', 'gh-sl', T('Official site')));
+        for (const h of G.sites) { const a = el('a', 'gh-site', h); a.href = 'https://' + h + '/'; a.target = '_blank'; a.rel = 'noopener noreferrer'; sites.append(a); }
+        head.append(sites);
+      }
       tabsDraw();
     }
     function tabsDraw() {
       tabs.replaceChildren();
       const items = [
-        ['steps', T('Steps'), stepsTotal() ? `${P.steps.filter((n) => n < stepsTotal()).length}/${stepsTotal()}` : ''],
-        ['docs', T('What you need'), G.docs.length ? `${docsDone()}/${G.docs.length}` : ''],
-        ['me', T('Fill it'), G.sheet.length ? `${haveCount()}/${G.sheet.length}` : ''],
+        ['steps', T('Steps'), ''],
+        ['docs', T('What you need'), ''],
+        ['me', T('Fill it'), ''],
       ];
       for (const [k, label, badge] of items) {
         const b = el('button', 'g-tab'); b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', String(tab === k));
@@ -498,7 +492,7 @@
         });
         pane.append(er, save1);
       }
-      pane.append(U.note(T('Stored encrypted. Never sent to the AI.'), 'lock'));
+      const enc = U.note(T('Stored encrypted. Never sent to the AI.'), 'lock'); enc.classList.add('me-foot'); pane.append(enc);
     }
 
     drawHead();
