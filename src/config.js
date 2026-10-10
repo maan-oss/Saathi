@@ -78,7 +78,7 @@ export const config = {
   // Features
   docCheck: flag('DOC_CHECK', false), // photo check is OFF until you have a privacy notice
   userIdleHours: num('USER_IDLE_HOURS', 24),
-  accountKeepDays: num('ACCOUNT_KEEP_DAYS', 180), // saved profile / wallet kept this long after last message
+  accountKeepDays: num('ACCOUNT_KEEP_DAYS', 180), // saved details erased this long after the last message. A wallet balance is never deleted for inactivity.
 
   // Prices in paise (placeholders to test, not researched market prices)
   rates: {

@@ -43,7 +43,8 @@ test('sweep: idle sessions reset, accounts with a profile or money survive until
   assert.equal(s.getUser('vaulted').vault, 'v1.x.y.z');
   s.users.rich.updated = Date.now() - 200 * 86400000;
   s.sweep(24 * 3600000, 180 * 86400000);
-  assert.equal(s.getUser('rich'), null);
+  assert.equal(s.getUser('rich').wallet.paise, 500, 'the balance is kept after 180 days idle');
+  assert.equal(s.getUser('rich').state, 'menu', 'back to the menu, with the language kept');
   rmSync(dir, { recursive: true, force: true });
 });
 

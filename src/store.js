@@ -6,6 +6,20 @@ import { randomBytes } from 'node:crypto';
 export const STORE_FILES = ['users.json', 'ledger.json', 'payments.json', 'trials.json', 'translations.json', 'settings.json', 'referrals.json', 'handoff.json'];
 const BACKUP_KEEP_DAYS = 14;
 
+// What an account with a wallet balance keeps after its personal details are erased. Everything else is erased,
+// so a new personal field is erased by default. wallet, packs and trialGiven hold the money and the welcome-credit
+// check. devices, waUid and waLinked connect the account to the person's phone and other devices, so the balance
+// can still be reached. referrerId and firstPaidAt are needed for referral and accounting records.
+const KEEP_WITH_BALANCE = ['wallet', 'packs', 'devices', 'linkTo', 'waLinked', 'waUid', 'firstPaidAt', 'referrerId', 'trialGiven', 'lang', 'updated', 'state'];
+
+// Per-session state, reset after the idle time.
+const SESSION_RESET = ['svc', 'ans', 'route', 'step', 'pending', 'await', 'next', 'fillKeys', 'fillIdx', 'backTo', 'pickFor', 'remType', 'remLabel'];
+const needsReset = (u) => u.state !== (u.lang ? 'menu' : 'new') || SESSION_RESET.some((k) => u[k] !== undefined);
+const resetSession = (u) => {
+  for (const k of SESSION_RESET) delete u[k];
+  u.state = u.lang ? 'menu' : 'new';
+};
+
 // Minimal JSON-file store. Fine for a pilot (hundreds of users/day).
 // Move to SQLite/Postgres when you outgrow it.
 //
@@ -131,24 +145,46 @@ export class Store {
 
   // Privacy: forget people who have been idle. Session state goes after idleMs. People who saved a
   // profile or hold wallet money keep their account until keepMs of inactivity, then it goes too.
-  sweep(idleMs, keepMs = idleMs) {
-    const now = Date.now();
+  // Cleanup, run hourly. Two rules:
+  //  - An account with no wallet balance is deleted after keepMs without a message (idleMs if it holds nothing).
+  //  - An account WITH a wallet balance is never deleted for inactivity. After keepMs without a message its
+  //    personal details are erased (profile, saved details, locker, reminders, phone number, chat copy, consents).
+  //    The balance, and what links the account to the person's devices and WhatsApp, stay until they use it or
+  //    ask for a refund ("Talk to a human").
+  sweep(idleMs, keepMs = idleMs, now = Date.now()) {
     let n = 0;
     for (const [id, u] of Object.entries(this.users)) {
       const idle = now - (u.updated || 0);
-      const hasValue = Boolean(u.vault) || (u.wallet && u.wallet.paise > 0) || (u.packs || []).some((p) => p.until > now) || (u.reminders || []).length > 0 || Boolean(u.linkTo) || (u.devices || []).length > 0 || Boolean(u.locker) || Boolean(u.extras);
+      if ((u.wallet?.paise || 0) > 0) {
+        if (idle > keepMs) n += this._eraseDetails(u, now);
+        else if (idle > idleMs && needsReset(u)) {
+          resetSession(u);
+          n++;
+        }
+        continue;
+      }
+      const hasValue = Boolean(u.vault) || (u.packs || []).some((p) => p.until > now) || (u.reminders || []).length > 0 || Boolean(u.linkTo) || (u.devices || []).length > 0 || Boolean(u.locker) || Boolean(u.extras);
       if (idle > (hasValue ? keepMs : idleMs)) {
         delete this.users[id];
         n++;
-      } else if (idle > idleMs && u.state !== 'menu') {
-        for (const k of ['svc', 'ans', 'route', 'step', 'pending', 'await', 'next', 'fillKeys', 'fillIdx', 'backTo', 'pickFor', 'remType', 'remLabel'])
-          delete u[k];
-        u.state = u.lang ? 'menu' : 'new';
+      } else if (idle > idleMs && needsReset(u)) {
+        resetSession(u);
         n++;
       }
     }
     if (n) this._save('users.json', this.users);
     return n;
+  }
+
+  // Erases everything on a balance-holding account except the keys it needs to keep the money reachable.
+  // Returns 1 if anything was erased, 0 if it was already clean (so the hourly run does not count it again).
+  _eraseDetails(u, now) {
+    const personal = Object.keys(u).filter((k) => !KEEP_WITH_BALANCE.includes(k));
+    if (!personal.length) return 0;
+    for (const k of personal) delete u[k];
+    u.state = u.lang ? 'menu' : 'new';
+    if (u.packs) u.packs = u.packs.filter((p) => p.until > now);
+    return 1;
   }
 
   // Remembers (by scrambled ID only) that a welcome credit was given, so delete-and-return cannot farm it.

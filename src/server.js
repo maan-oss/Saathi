@@ -202,7 +202,7 @@ async function operatorReply(id, text) {
 const PRIVACY = `Saathi privacy notice
 
 What we do: Saathi guides you through government paperwork on WhatsApp: PAN, driving licence, Aadhaar, voter ID, passport, GST registration, and income and caste certificates.
-What we keep: your place in the guide and your language, deleted after ${config.userIdleHours} hours of inactivity. If you choose to save your details (name, date of birth, parents' names, gender, address, PIN code, mobile number, email) they are stored encrypted until you type "forget" or ${config.accountKeepDays} days without a message. Your locker (only if you add to it): ID numbers such as PAN, licence or passport, and expiry dates, encrypted with a server key, hidden until you tap Unlock, erased with "forget". We can technically decrypt them with that key, so we never look and only the code that answers you does. We never store Aadhaar cards as photos, card numbers or OTPs. Your wallet balance and payment records (amount, date, reference) are kept for accounts. Everything under a scrambled ID, not your phone number. Type "delete" to erase it all.
+What we keep: your place in the guide and your language, deleted after ${config.userIdleHours} hours of inactivity. If you choose to save your details (name, date of birth, parents' names, gender, address, PIN code, mobile number, email) they are stored encrypted until you type "forget", or until ${config.accountKeepDays} days without a message, when we erase them. Your locker (only if you add to it): ID numbers such as PAN, licence or passport, and expiry dates, encrypted with a server key, hidden until you tap Unlock, erased with "forget". We can technically decrypt them with that key, so we never look and only the code that answers you does. We never store Aadhaar cards as photos, card numbers or OTPs. Your wallet balance stays until you use it or ask for a refund: ask for a human, and a person refunds unused money (it is not automatic). An account with a balance is never deleted for inactivity, so the balance is not lost after ${config.accountKeepDays} days. Payment records (amount, date, reference) are kept for tax and accounts. Everything under a scrambled ID, not your phone number. Type "delete" to erase it all.
 Photos and PDFs: only read if you agree, only in memory, never saved. Voice notes: turned into text by a speech service (Sarvam or OpenAI), held in memory, never saved; the text is used only to answer you and is not kept.
 Reminders: if you set one, we keep the date, its name and your phone number (encrypted) so we can message you before it, until it passes or you type "delete". The AI service reads the photo; your saved details are never sent to it.
 Payments: made on Stripe's page. We never see your card details. While a payment is pending we hold your phone number to tell you it arrived.
@@ -440,7 +440,7 @@ const scheduler = createScheduler({ store, vault, wa, guard, config, enqueue });
 
 if (!process.env.VERCEL) setInterval(() => {
   const n = store.sweep(config.userIdleHours * 3600 * 1000, config.accountKeepDays * 86400 * 1000);
-  if (n) console.log(`swept ${n} idle users`);
+  if (n) console.log(`cleaned up ${n} idle accounts (balances kept)`);
   store.pruneHandoffs();
   try {
     const day = store.backupIfDue();
