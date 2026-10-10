@@ -8,11 +8,11 @@ gates below.
 1. **Backups: accepted without.** The Supabase organization (Moventra) is on the free plan, which has no daily backups
    and no point-in-time recovery. The owner has decided this is acceptable (2026-10-10). Keep the dated file copies
    from the switch for at least 14 days, as step 9 says.
-2. **Region: not confirmed.** The Supabase project is in `ap-south-1` (Mumbai). `render.yaml` does not set a region, and
-   this session cannot see the Render service. Its public address is `https://saathi-u4o7.onrender.com`, and `/health`
-   returns `ok`, but the response does not show the region. Check it in Render (service, Settings, Region). A region
-   cannot be changed on an existing service: moving to Singapore, the nearest Render region to Mumbai, means a new
-   service and a new disk, then the same copy as below.
+2. **Region: Oregon (US West). Decision needed.** The Supabase project is in `ap-south-1` (Mumbai). The Render service
+   `saathi` (`srv-db3lf0rncjis73at6jj0`) is in Oregon, read from its Settings page on 2026-10-10. Every database call
+   therefore crosses from Oregon to Mumbai, which adds a long round trip to each request. A region cannot be changed on
+   an existing service: moving to Singapore, the nearest Render region to Mumbai, means a new service and a new disk,
+   then the same copy as below. Decide this before the switch.
 3. **Secret key: not yet created.** Create the secret key in Supabase (Project Settings, API Keys). Put it in Render as
    `SUPABASE_SECRET_KEY`. Never paste it into chat, a file, or the repo.
 4. **A real API test: not done.** The schema was checked on a local Postgres 16, and the functions were checked on the
