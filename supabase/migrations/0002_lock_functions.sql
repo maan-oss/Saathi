@@ -1,9 +1,10 @@
 -- Locks the atomic functions so only the service role can run them.
 --
--- Status: PROPOSED, not applied to project edvtumklsjvcwipmqgfx. In the live project every function below can still
--- be run by anon and authenticated (has_function_privilege is true for both). Table access stops them today, because
--- the functions run as the caller and anon has no table rights. This migration removes the execute right as well, so
--- the public API cannot call them even if a table grant is added later.
+-- Status: APPLIED to project edvtumklsjvcwipmqgfx (migration recorded as lock_functions, 2026-10-10). Before it, every
+-- function below could be run by anon and authenticated. Table access stopped them, because the functions run as the
+-- caller and anon had no table rights. This removes the execute right as well, so the public API cannot call them
+-- even if a table grant is added later. Checked after applying: the service role can still call rate_hit, and anon
+-- gets "permission denied for function rate_hit".
 --
 -- The app calls these with the secret key (the service role), which keeps its execute right below.
 
