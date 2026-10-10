@@ -99,7 +99,9 @@ export const config = {
     },
   },
   adminKey: process.env.ADMIN_KEY || '',
-  whatsappNumber: (process.env.WHATSAPP_NUMBER || '').replace(/\D/g, ''), // your public WhatsApp number with country code, for the web app's "Chat on WhatsApp" button
+  // your public WhatsApp number with country code, for the "Chat on WhatsApp" buttons. Meta's shared test sender is not a line
+  // people can message, so it is never shown to visitors (a button that leads there is a dead end).
+  whatsappNumber: ((n) => (n === '15556400228' ? '' : n))((process.env.WHATSAPP_NUMBER || '').replace(/\D/g, '')),
   trustProxy: flag('TRUST_PROXY', false), // true on Render/Fly: read the visitor's address from the proxy header
   webMsgsPerMin: num('WEB_MSGS_PER_MIN', 20), // per person
   webMsgsPerMinIp: num('WEB_MSGS_PER_MIN_IP', 120), // per network address (many people can share one)

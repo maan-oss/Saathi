@@ -1,5 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
+  "rewrites": [{ "source": "/(.*)", "destination": "https://saathi-u4o7.onrender.com/$1" }],
   "functions": { "api/index.js": { "includeFiles": "{web,src,flows,assets}/**", "maxDuration": 60 } }
 }
