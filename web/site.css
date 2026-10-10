@@ -203,24 +203,25 @@ button,input,textarea{font:inherit;color:inherit}
 }
 .pv{display:flex;flex-wrap:wrap;gap:8px;width:100%;margin-top:auto;padding-top:14px}
 .pv i{display:inline-block;padding:8px 14px;border-radius:999px;background:#fff;border:1px solid var(--line);font-style:normal;font-size:14px;font-weight:600;line-height:1.2}
-.pv-otp{position:relative;flex-wrap:nowrap;width:max-content}
-.pv-otp i{display:block;width:46px;height:54px;padding:0;border-radius:14px}
-.pv-otp::after{content:"";position:absolute;left:-8px;right:-8px;top:50%;height:2px;border-radius:2px;background:var(--ink);transform:rotate(-7deg)}
+.pv-photo{display:block;padding-top:0;aspect-ratio:16/10;border-radius:22px;overflow:hidden;position:relative;background:#dfe9f4}
+.pv-photo img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 45%;transition:transform 1.2s var(--ease)}
+.promises li:hover .pv-photo img{transform:scale(1.04)}
 .pv-lang i:first-child{background:var(--ink);border-color:var(--ink);color:#fff}
 
 /* ---- the last step: photo opens up, words come in from the side ---- */
 .feature{display:grid;grid-template-columns:minmax(0,1fr);gap:clamp(40px,6vw,88px);align-items:center}
-.feature-photo{position:relative;aspect-ratio:4/5;border-radius:32px;overflow:hidden;background:#d8d4cc}
+.feature-photo{position:relative;aspect-ratio:4/3;border-radius:32px;overflow:hidden;background:#d8d4cc}
 .feature-copy .btn{margin-top:32px}
 @media (min-width:900px){
   .feature{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)}
-  .feature-photo{aspect-ratio:auto;height:min(680px,80vh)}
 }
 
 /* ---- language: two bubbles over the photo, text swaps with a fade ---- */
 .lang{display:grid;grid-template-columns:minmax(0,1fr);gap:clamp(56px,7vw,96px);align-items:center}
 .lang-art{position:relative}
-.lang-photo{position:relative;aspect-ratio:4/5;border-radius:32px;overflow:hidden;background:#d8d4cc}
+.lang-photo{position:relative;aspect-ratio:4/3;border-radius:32px;overflow:hidden;background:#d8d4cc}
+/* the family photo is wide: a smaller drift keeps more of it, and the crop window sits right so both faces stay in */
+.lang-photo .par{top:-4%;height:108%;object-position:62% 45%}
 .lang-card{position:absolute;left:clamp(12px,3vw,28px);right:clamp(12px,3vw,28px);bottom:clamp(12px,3vw,28px);display:grid;gap:10px}
 .bub{font-size:15px}
 .bub.me{justify-self:end;max-width:80%;padding:12px 16px;border-radius:20px 20px 6px 20px;background:var(--ink);color:#fff}
