@@ -23,7 +23,7 @@ body.ob-open .app{visibility:hidden}
 .wl-back:active{transform:scale(.92)}
 .wl-back.off{visibility:hidden}
 /* five steps: a dot for each step; the step you are on becomes a pill, and it goes back to a dot when you leave it */
-.wl-prog{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.wl-prog{flex:0 1 auto;min-width:0;display:flex;align-items:center;justify-content:flex-start;gap:8px}
 .wl-prog i{flex:none;width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.4);transition:width .35s cubic-bezier(.2,.8,.2,1),background .3s ease}
 .wl-prog i.done{background:#fff}
 .wl-prog i.on{width:44px;border-radius:99px;background:#fff}
