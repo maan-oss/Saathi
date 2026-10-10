@@ -27,6 +27,8 @@ Use **Render**, not Vercel. The bot keeps saved details and wallet balances on a
 2. Render asks for the secrets in the table below. Paste them there.
 3. After the first deploy, copy the service address (for example `https://saathi-xxxx.onrender.com`) into `PUBLIC_URL`. Stripe uses it to send people back after a payment.
 4. Open `https://YOUR-URL/health`. It should say `ok`.
+5. Check the disk. In Render, the service's **Disks** tab must show `saathi-data` mounted at `/data`. Then open `https://YOUR-URL/admin/setup?key=YOUR_ADMIN_KEY`: the row "Data on its own disk" must say OK. If it says FIX, saves are lost on every redeploy.
+6. The app keeps a dated copy of its data in `/data/backups/` each day for 14 days. The copies are on the same disk, so also download one now and then.
 
 | Variable | What it is | Where it comes from |
 |---|---|---|

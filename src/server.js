@@ -22,7 +22,15 @@ import { createLiveFacts } from './livefacts.js';
 import { createLinks } from './link.js';
 import { R } from './rich.js';
 
-const store = new Store(config.dataDir);
+const store = new Store(config.dataDir); // throws (and the app will not start) if the data folder is unwritable or a file is corrupt
+const storage = store.storageInfo();
+if (!process.env.VERCEL && storage.separateDisk === false) console.warn(`⚠️  Data folder ${storage.dir} is not a separate disk. Everything saved there is lost on the next redeploy. Mount a disk at /data (see render.yaml).`);
+try {
+  const day = store.backupIfDue();
+  if (day) console.log(`Backed up the data files to backups/${day}`);
+} catch (e) {
+  console.error('Daily backup failed:', e.message);
+}
 const guard = new CostGuard(store, config);
 const llm = createLlm(config);
 const wa = createWhatsApp(config);
@@ -303,9 +311,14 @@ const server = http.createServer((req, res) => {
   }
   if (req.method === 'GET' && url.pathname === '/admin/setup/status') {
     const base = config.publicUrl || `${req.headers['x-forwarded-proto'] || 'http'}://${req.headers.host}`;
+    const storageRow = process.env.VERCEL
+      ? { s: '-- ', t: 'Data', d: 'Vercel keeps nothing between restarts. Use Render for the real service.' }
+      : storage.separateDisk
+        ? { s: 'OK ', t: 'Data on its own disk', d: `${storage.dir} is a separate disk; daily backups go to backups/` }
+        : { s: 'FIX', t: 'Data on its own disk', d: `${storage.dir} is not a separate disk. Mount a disk at /data so saves survive a redeploy.` };
     return void diagnose({ ...config, publicUrl: base }).then((rows) =>
       jsonOut(res, 200, {
-        rows,
+        rows: [...rows, storageRow],
         base,
         publicUrlSet: Boolean(config.publicUrl),
         webhook: `${base}/webhook`,
@@ -429,6 +442,12 @@ if (!process.env.VERCEL) setInterval(() => {
   const n = store.sweep(config.userIdleHours * 3600 * 1000, config.accountKeepDays * 86400 * 1000);
   if (n) console.log(`swept ${n} idle users`);
   store.pruneHandoffs();
+  try {
+    const day = store.backupIfDue();
+    if (day) console.log(`Backed up the data files to backups/${day}`);
+  } catch (e) {
+    console.error('Daily backup failed:', e.message);
+  }
   scheduler.run().then((sent) => sent && console.log(`sent ${sent} reminders`)).catch((e) => console.error('reminder run failed:', e.message));
 }, 3600 * 1000).unref();
 

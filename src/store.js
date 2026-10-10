@@ -1,13 +1,24 @@
-import { mkdirSync, readFileSync, writeFileSync, renameSync } from 'node:fs';
-import { join } from 'node:path';
+import { mkdirSync, readFileSync, writeFileSync, renameSync, existsSync, copyFileSync, readdirSync, rmSync, statSync, unlinkSync } from 'node:fs';
+import { join, dirname, resolve } from 'node:path';
 import { randomBytes } from 'node:crypto';
+
+// Every file the store keeps. The daily backup copies exactly these.
+export const STORE_FILES = ['users.json', 'ledger.json', 'payments.json', 'trials.json', 'translations.json', 'settings.json', 'referrals.json', 'handoff.json'];
+const BACKUP_KEEP_DAYS = 14;
 
 // Minimal JSON-file store. Fine for a pilot (hundreds of users/day).
 // Move to SQLite/Postgres when you outgrow it.
+//
+// Safety rules:
+//  - Refuse to start if the data folder cannot be written. Nothing is saved to a folder that is not kept.
+//  - Refuse to start if a data file exists but cannot be read. Otherwise the app would start empty and the
+//    next save would overwrite the file with almost nothing.
+//  - Keep a dated copy of every file in backups/ each day, for the last 14 days.
 export class Store {
   constructor(dir) {
     this.dir = dir;
     mkdirSync(dir, { recursive: true });
+    this._checkWritable();
     this.users = this._load('users.json', {});
     this.ledger = this._load('ledger.json', { days: {} });
     this.payments = this._load('payments.json', {});
@@ -28,11 +39,24 @@ export class Store {
     this._save('settings.json', this.settings);
   }
 
-  _load(file, fallback) {
+  _checkWritable() {
+    const probe = join(this.dir, '.write-check');
     try {
-      return JSON.parse(readFileSync(join(this.dir, file), 'utf8'));
-    } catch {
-      return fallback;
+      writeFileSync(probe, String(Date.now()));
+      unlinkSync(probe);
+    } catch (e) {
+      throw new Error(`Saathi data folder ${this.dir} cannot be written (${e.code || e.message}). Refusing to start so no data is lost. Check the disk in your host settings.`);
+    }
+  }
+
+  // A missing file is a fresh install. A file that is there but cannot be read is an error, not an empty store.
+  _load(file, fallback) {
+    const p = join(this.dir, file);
+    if (!existsSync(p)) return fallback;
+    try {
+      return JSON.parse(readFileSync(p, 'utf8'));
+    } catch (e) {
+      throw new Error(`Saathi data file ${p} cannot be read (${e.message}). Refusing to start: saving now would overwrite it. Restore it from ${join(this.dir, 'backups')} or repair it by hand.`);
     }
   }
 
@@ -40,6 +64,30 @@ export class Store {
     const p = join(this.dir, file);
     writeFileSync(p + '.tmp', JSON.stringify(obj));
     renameSync(p + '.tmp', p);
+  }
+
+  // Copies every store file into backups/YYYY-MM-DD/ and drops folders older than 14 days.
+  // Returns the day it wrote, or null when today's copy already exists.
+  backupIfDue(now = Date.now()) {
+    const day = new Date(now).toISOString().slice(0, 10);
+    const root = join(this.dir, 'backups');
+    const dest = join(root, day);
+    if (existsSync(dest)) return null;
+    mkdirSync(dest, { recursive: true });
+    for (const f of STORE_FILES) if (existsSync(join(this.dir, f))) copyFileSync(join(this.dir, f), join(dest, f));
+    const cutoff = new Date(now - BACKUP_KEEP_DAYS * 86400000).toISOString().slice(0, 10);
+    for (const name of readdirSync(root)) if (/^\d{4}-\d{2}-\d{2}$/.test(name) && name < cutoff) rmSync(join(root, name), { recursive: true, force: true });
+    return day;
+  }
+
+  // Tells whether the data folder is its own disk. On Render a mounted disk at /data has a different device
+  // from its parent folder. If they match, the folder lives on the container and is lost on a redeploy.
+  storageInfo() {
+    try {
+      return { dir: this.dir, separateDisk: statSync(this.dir).dev !== statSync(dirname(resolve(this.dir))).dev };
+    } catch {
+      return { dir: this.dir, separateDisk: null };
+    }
   }
 
   getUser(id) {
