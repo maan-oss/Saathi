@@ -11,7 +11,7 @@ These need you or an approval. Nothing below works around them.
 3. **WhatsApp number approved by Meta.** The site hides WhatsApp until it is approved. Until then every link goes to `https://getsaathi.in/app`.
 4. **A real live payment test.** One ₹50 top-up, then refund it if you want. I could not run this (the checkout step was blocked).
 5. **Render disk confirmed.** In Render, `saathi-data` must be mounted at `/data`. The admin setup page shows "Data on its own disk".
-6. **Analytics decision.** Nothing is installed, so you can't see where sign-ups come from. See section 6.
+6. **Analytics.** Built: anonymous daily counts (landing views, app opens, top-ups started and paid) by ad source. See section 6.
 7. **Production deploy.** Done: `main` carries the current code and is live on getsaathi.in.
 
 ## 2. Positioning
@@ -37,10 +37,10 @@ These need you or an approval. Nothing below works around them.
 
 ## 3. Channels, in order
 
-1. **Search (organic).** One page per service: PAN, driving licence, passport, Aadhaar update, voter ID, GST. Each shows the checklist, the fee and the official link. *Not built yet. This is the biggest gap.*
+1. **Search (organic).** Built: one page per service at /pan, /driving-licence, /passport, /aadhaar-update, /voter-id, /gst-registration. Each shows what to keep ready, the fee and the official sites, checked on 30 September 2026. Linked from the footer and the sitemap.
 2. **WhatsApp**, after Meta approval. Share the link. Send nothing in bulk without the person's opt-in.
 3. **Social posts** (drafts below), 3 a week.
-4. **Paid ads: Google is closed; Meta is untested.**
+4. **Paid ads: Google is closed; Meta is prepared, not running.** The test package (budget options, UTM links, copy, risks) is in docs/meta-campaign.md and waits for your approval.
    - **Google:** Ads for government-document services need a government provider or an authorised non-government provider. An authorised provider must be linked from an official government website that names it as authorised. Commercial contracts, licences and registry entries do not count. India is excluded only for "regional identification numbers" (for example ration cards), not for PAN, passport, driving licence, Aadhaar, voter ID or GST. Saathi is not authorised, so Google Ads for these services cannot run. Source: https://support.google.com/adspolicy/answer/13156083?hl=en
    - **Meta:** the India rules Meta has published cover investment products and real-money gaming, not government-document help. I found nothing that blocks this category, but Meta reviews every ad, so only a small test shows the answer. No spend until you approve a budget.
 

@@ -316,6 +316,7 @@ button,input,textarea{font:inherit;color:inherit}
 .legal li{margin-bottom:8px}
 .legal a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 .legal a:hover{color:var(--sun-hi)}
+.legal a.btn-solid,.legal a.btn-solid:hover{color:#fff;text-decoration:none}
 
 /* The panel is full width at every size; on wide screens its words line up with the page grid. */
 @media (min-width:900px){.final-sky{padding-inline:max(40px,calc((100% - 1240px) / 2 + 40px))}}

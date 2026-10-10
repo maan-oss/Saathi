@@ -26,6 +26,30 @@
       "destination": "/refund.html"
     },
     {
+      "source": "/gst-registration",
+      "destination": "/gst-registration.html"
+    },
+    {
+      "source": "/voter-id",
+      "destination": "/voter-id.html"
+    },
+    {
+      "source": "/aadhaar-update",
+      "destination": "/aadhaar-update.html"
+    },
+    {
+      "source": "/passport",
+      "destination": "/passport.html"
+    },
+    {
+      "source": "/driving-licence",
+      "destination": "/driving-licence.html"
+    },
+    {
+      "source": "/pan",
+      "destination": "/pan.html"
+    },
+    {
       "source": "/app",
       "destination": "https://saathi-u4o7.onrender.com/app"
     },
