@@ -119,7 +119,7 @@ test('link: a code works once, only the right way, and links a device', async ()
   r.store.putUser('main', { state: 'menu', lang: 'hi', reminders: [] });
   const c = await r.links.newDeviceCode('main', 'Laptop');
   assert.match(c.code, /^[A-Z2-9]{4}-[A-Z2-9]{4}$/);
-  assert.doesNotMatch(JSON.stringify(r.store.getSetting('linkcodes')), new RegExp(normCode(c.code)));
+  assert.doesNotMatch(JSON.stringify([...r.store.kv.entries()]), new RegExp(normCode(c.code)));
   assert.equal(await r.code(Promise.resolve().then(() => r.links.joinDevice('AAAA-AAAA', 'dev2'))), 'bad_code');
   await r.links.joinDevice(c.code.toLowerCase(), 'dev2', 'Phone');
   assert.equal(await r.links.resolve('dev2'), 'main');
@@ -133,9 +133,7 @@ test('link: expired codes fail, and you cannot join yourself', async () => {
   r.store.putUser('main', { state: 'menu' });
   const c = await r.links.newDeviceCode('main');
   assert.equal(await r.code(Promise.resolve().then(() => r.links.joinDevice(c.code, 'main'))), 'same');
-  const all = r.store.getSetting('linkcodes');
-  for (const k of Object.keys(all)) all[k].exp = Date.now() - 1;
-  r.store.setSetting('linkcodes', all);
+  for (const entry of r.store.kv.values()) entry.exp = Date.now() - 1;
   assert.equal(await r.code(Promise.resolve().then(() => r.links.joinDevice(c.code, 'dev2'))), 'bad_code');
   r.done();
 });
@@ -172,6 +170,32 @@ test('link: WhatsApp needs the code and then a Yes; data from that number merges
   assert.doesNotMatch(JSON.stringify(m), /919999999999/);
   await r.links.unlinkWa('main');
   assert.equal(await r.links.resolve('wa1'), 'wa1');
+  r.done();
+});
+
+test('link: a code and a Yes can each be used once, so a second Yes merges nothing', async () => {
+  const r = rig();
+  r.store.putUser('main', { state: 'menu', reminders: [] });
+  r.store.putUser('wa2', { state: 'menu', wallet: { paise: 700 } });
+  const c = await r.links.newWaCode('main');
+  await r.links.waStart(c.code, 'wa2');
+  // Two Yes replies at once (two instances, or a double tap): exactly one gets the pending link.
+  const yes = await Promise.allSettled([r.links.waConfirm('wa2', '919999999999'), r.links.waConfirm('wa2', '919999999999')]);
+  assert.equal(yes.filter((x) => x.status === 'fulfilled').length, 1);
+  assert.equal(yes.filter((x) => x.status === 'rejected' && x.reason.code === 'expired').length, 1);
+  assert.equal(r.store.getUser('main').wallet.paise, 700);
+  // The code is spent: a new WhatsApp link from the same number needs a fresh code.
+  assert.equal(await r.code(Promise.resolve().then(() => r.links.waStart(c.code, 'wa3'))), 'bad_code');
+  r.done();
+});
+
+test('link: two devices entering one code at once, only one joins', async () => {
+  const r = rig();
+  r.store.putUser('main', { state: 'menu' });
+  const c = await r.links.newDeviceCode('main');
+  const joins = await Promise.allSettled([r.links.joinDevice(c.code, 'devA'), r.links.joinDevice(c.code, 'devB')]);
+  assert.equal(joins.filter((x) => x.status === 'fulfilled').length, 1);
+  assert.equal((await r.links.devices('main', 'main')).list.length, 2);
   r.done();
 });
 

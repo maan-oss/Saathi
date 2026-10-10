@@ -245,6 +245,13 @@ export class Store {
     this.kv.delete(k);
   }
 
+  // Reads and removes in one step: whoever gets the value owns it. Null when it is missing or expired.
+  kvTake(k) {
+    const v = this.kvGet(k);
+    this.kvDelete(k);
+    return v;
+  }
+
   pruneOld() {}
 
   // Daily totals only (see analytics.js). Counts are per event and per source; no person, address or id is kept.

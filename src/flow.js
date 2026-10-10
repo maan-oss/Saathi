@@ -1506,7 +1506,19 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
   }
 
   /** Called by the payment webhook. Safe to call twice for the same payment. */
-  async function creditPayment({ ref, paymentId, paise }) {
+  async function creditPayment(paid) {
+    // If another instance saved this person first, read again and credit again. credit() is idempotent by payment id,
+    // so a repeat never adds the money twice, and a paid top-up is never dropped on a conflict.
+    for (let attempt = 1; ; attempt++) {
+      try {
+        return await creditOnce(paid);
+      } catch (e) {
+        if (e?.code !== 'conflict' || attempt >= 5) throw e;
+      }
+    }
+  }
+
+  async function creditOnce({ ref, paymentId, paise }) {
     const rec = await store.getPayment(ref);
     if (!rec) return { ok: false, reason: 'unknown_ref' };
     if (rec.status === 'paid') return { ok: false, duplicate: true, reason: 'already_paid' };

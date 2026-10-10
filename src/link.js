@@ -28,25 +28,23 @@ const pretty = (c) => c.slice(0, 4) + '-' + c.slice(4);
 
 export function createLinks({ store, config, vault }) {
   const keyed = (code) => crypto.createHmac('sha256', config.hashSalt).update('link:' + code).digest('hex').slice(0, 32);
-  const codes = async () => {
-    const now = Date.now();
-    const all = (await store.getSetting('linkcodes')) || {};
-    let changed = false;
-    for (const [k, v] of Object.entries(all)) if (v.exp < now) { delete all[k]; changed = true; }
-    if (changed) await store.setSetting('linkcodes', all);
-    return all;
-  };
-  const saveCodes = async (c) => {
-    await store.setSetting('linkcodes', c);
-  };
+  // Each code is its own short-lived row in the shared store, keyed by its hash. Several instances can make and use
+  // codes at the same time without overwriting each other, and a code can be taken once: taking it is one step, so
+  // only the caller that gets it can use it. The store never holds the code itself.
+  const codeKey = (h) => 'linkcode:' + h;
+  const ofKey = (uid, kind) => 'linkof:' + uid + ':' + kind;
+  const peekCode = (h) => store.kvGet(codeKey(h));
+  const takeCode = (h) => store.kvTake(codeKey(h));
   // WhatsApp pending links ('link:' + phone uid) and attempt counts ('linktry:' + phone uid) live in the shared store.
 
   async function make(uid, kind) {
-    const all = await codes();
-    for (const [k, v] of Object.entries(all)) if (v.uid === uid && v.kind === kind) delete all[k];
     const raw = Array.from({ length: 8 }, () => ALPHA[crypto.randomInt(ALPHA.length)]).join('');
-    all[keyed(raw)] = { uid, kind, exp: Date.now() + TTL };
-    await saveCodes(all);
+    const h = keyed(raw);
+    // A new code replaces the person's previous code of the same kind.
+    const old = await store.kvGet(ofKey(uid, kind));
+    if (old) await store.kvDelete(codeKey(old));
+    await store.kvSet(codeKey(h), { uid, kind }, TTL);
+    await store.kvSet(ofKey(uid, kind), h, TTL);
     return { code: pretty(raw), exp: Date.now() + TTL };
   }
 
@@ -85,9 +83,8 @@ export function createLinks({ store, config, vault }) {
     async joinDevice(code, deviceUid, label) {
       const c = normCode(code);
       if (c.length !== 8) throw new LinkError('bad_code');
-      const all = await codes();
       const k = keyed(c);
-      const rec = all[k];
+      const rec = await peekCode(k);
       if (!rec || rec.kind !== 'device') throw new LinkError('bad_code');
       const primary = rec.uid;
       if (primary === deviceUid) throw new LinkError('same');
@@ -97,8 +94,8 @@ export function createLinks({ store, config, vault }) {
       if (mine?.linkTo) throw new LinkError('already_linked');
       if (mine?.devices?.length) throw new LinkError('has_devices');
       if ((p.devices || []).length >= MAX_DEVICES) throw new LinkError('too_many');
-      delete all[k];
-      await saveCodes(all);
+      // Claim the code before linking: of two devices that enter it at the same moment, only one gets through.
+      if (!(await takeCode(k))) throw new LinkError('bad_code');
       const now = Date.now();
       await store.putUser(deviceUid, { linkTo: primary, label: String(label || 'Device').slice(0, 40), added: now, state: 'menu', lang: p.lang || null });
       p.devices = [...(p.devices || []), { id: deviceUid, label: String(label || 'Device').slice(0, 40), added: now }];
@@ -152,9 +149,10 @@ export function createLinks({ store, config, vault }) {
       // Every attempt counts, valid or not: at most 6 an hour per phone.
       if (!(await store.rateHit('linktry:' + phoneUid, HOUR, 6))) throw new LinkError('slow_down');
       const c = normCode(code);
-      const rec = c.length === 8 ? (await codes())[keyed(c)] : null;
+      const k = c.length === 8 ? keyed(c) : null;
+      const rec = k ? await peekCode(k) : null;
       if (!rec || rec.kind !== 'wa') throw new LinkError('bad_code');
-      await store.kvSet('link:' + phoneUid, { key: keyed(c), exp: now + TTL }, TTL);
+      await store.kvSet('link:' + phoneUid, { key: k, exp: now + TTL }, TTL);
       return true;
     },
     async waPendingFor(phoneUid) {
@@ -166,11 +164,11 @@ export function createLinks({ store, config, vault }) {
     },
     /** The person said Yes on WhatsApp. Joins that number to the account and moves any data it had into it. */
     async waConfirm(phoneUid, phone) {
-      const pend = await store.kvGet('link:' + phoneUid);
-      await store.kvDelete('link:' + phoneUid);
+      // Claim the pending link and its code in single steps: a second "Yes" (or a second instance) finds nothing
+      // and cannot merge the same data twice.
+      const pend = await store.kvTake('link:' + phoneUid);
       if (!pend || pend.exp < Date.now()) throw new LinkError('expired');
-      const all = await codes();
-      const rec = all[pend.key];
+      const rec = await takeCode(pend.key);
       if (!rec || rec.kind !== 'wa') throw new LinkError('expired');
       const primary = rec.uid;
       const p = await store.getUser(primary);
@@ -180,8 +178,6 @@ export function createLinks({ store, config, vault }) {
         const old = await store.getUser(p.waUid);
         if (old?.linkTo === primary) await store.deleteUser(p.waUid);
       }
-      delete all[pend.key];
-      await saveCodes(all);
       const w = await store.getUser(phoneUid);
       if (w && !w.linkTo) {
         if (!p.locker && w.locker) p.locker = w.locker;

@@ -354,6 +354,12 @@ export class SupabaseStore {
     await this._req('DELETE', 'kv', { query: { k: `eq.${k}` }, prefer: 'return=minimal' });
   }
 
+  // Removes and returns the value in one statement, so only one caller can get it. Null when it is missing or expired.
+  async kvTake(k) {
+    const rows = await this._req('DELETE', 'kv', { query: { k: `eq.${k}`, expires_ms: `gt.${this.now()}`, select: 'v' }, prefer: 'return=representation' });
+    return rows[0] ? rows[0].v : null;
+  }
+
   // Removes rows nothing reads any more. Run hourly, next to the account sweep.
   async pruneOld(now = this.now()) {
     const cut = (ms) => dayOf(now - ms);

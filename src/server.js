@@ -148,10 +148,19 @@ async function processPayment(paid) {
 }
 
 async function creditReferrer({ referrerId, paise, paymentId }) {
-  const u = await store.getUser(referrerId);
-  if (!u) return; // the referrer has left; nothing to pay
-  const r = credit(u, paise, 'ref:' + paymentId, 'referral');
-  if (r.ok) await store.putUser(referrerId, u);
+  // Read, credit, save. On a conflict, read again and credit again: credit() is idempotent by payment id.
+  for (let attempt = 1; ; attempt++) {
+    const u = await store.getUser(referrerId);
+    if (!u) return; // the referrer has left; nothing to pay
+    const r = credit(u, paise, 'ref:' + paymentId, 'referral');
+    if (!r.ok) return;
+    try {
+      await store.putUser(referrerId, u);
+      return;
+    } catch (e) {
+      if (e?.code !== 'conflict' || attempt >= 5) throw e;
+    }
+  }
 }
 
 function readBody(req, res, cb) {

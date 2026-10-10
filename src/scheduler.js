@@ -20,6 +20,21 @@ export function whenText(lang, days) {
 }
 
 export function createScheduler({ store, vault, wa, guard, config, enqueue }) {
+  // Applies `change` to the person's latest record and saves it. If another instance saved first (a conflict), reads
+  // the record again and applies the change again, so no change is lost and nothing is sent twice.
+  async function saveLatest(userId, change) {
+    for (let attempt = 1; ; attempt++) {
+      const fresh = await store.getUser(userId);
+      if (!fresh || !change(fresh)) return false;
+      try {
+        await store.putUser(userId, fresh);
+        return true;
+      } catch (e) {
+        if (e?.code !== 'conflict' || attempt >= 4) throw e;
+      }
+    }
+  }
+
   async function remindOne(userId, now) {
     const stored = await store.getUser(userId);
     if (!stored?.reminders?.length) return 0;
@@ -49,14 +64,16 @@ export function createScheduler({ store, vault, wa, guard, config, enqueue }) {
         sent++;
       }
     }
-    // Save only what really went out. Re-read the user: they may have chatted meanwhile.
-    const fresh = await store.getUser(userId);
-    if (fresh?.reminders) {
-      for (const r of fresh.reminders) {
-        const w = work.reminders.find((x) => x.id === r.id);
-        if (w && sentIds.has(r.id)) r.sent = w.sent;
-      }
-      await store.putUser(userId, fresh);
+    // Save only what really went out. The person may have chatted meanwhile, so the save works on their latest record.
+    if (sentIds.size) {
+      await saveLatest(userId, (fresh) => {
+        if (!fresh.reminders) return false;
+        for (const r of fresh.reminders) {
+          const w = work.reminders.find((x) => x.id === r.id);
+          if (w && sentIds.has(r.id)) r.sent = w.sent;
+        }
+        return true;
+      });
     }
     return sent;
   }
@@ -70,8 +87,7 @@ export function createScheduler({ store, vault, wa, guard, config, enqueue }) {
         await new Promise((resolve) => {
           enqueue(id, async () => {
             try {
-              const fresh = await store.getUser(id);
-              if (fresh && pruneReminders(fresh, now)) await store.putUser(id, fresh);
+              await saveLatest(id, (fresh) => pruneReminders(fresh, now));
               total += await remindOne(id, now);
             } finally {
               resolve();
