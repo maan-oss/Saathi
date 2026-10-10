@@ -875,8 +875,12 @@
       const q = new URLSearchParams(location.search);
       if (q.get('topup')) {
         const ref = q.get('pay') || '';
+        const pay = { ref: /^sv_[a-z0-9]+$/i.test(ref) ? ref : '', cancelled: q.get('topup') === 'cancelled' };
         history.replaceState(null, '', location.pathname);
-        core.openScreen?.('payreturn', { ref: /^sv_[a-z0-9]+$/i.test(ref) ? ref : '', cancelled: q.get('topup') === 'cancelled' });
+        if (document.body.classList.contains('ob-open')) {
+          // The welcome is still open on a first visit: hold the return until it closes (C.openPending opens it then).
+          try { sessionStorage.setItem('saathi.topup', JSON.stringify(pay)); } catch { /* private mode */ }
+        } else core.openScreen?.('payreturn', pay);
       }
     } catch { /* no address bar here: nothing to show */ }
     const { ok, j } = await api('/app/api/me').catch(() => ({ ok: false }));

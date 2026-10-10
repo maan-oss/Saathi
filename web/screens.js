@@ -1021,6 +1021,12 @@
 
   // A service picked on the landing page (?service=pan, or kept from its onboarding) opens once the app is ready.
   C.openPending = () => {
+    // A payment return held during the welcome opens now that the welcome is closed.
+    if (store.get('saathi.onboarded') && !document.body.classList.contains('ob-open')) {
+      let pay = null;
+      try { pay = JSON.parse(sessionStorage.getItem('saathi.topup') || 'null'); sessionStorage.removeItem('saathi.topup'); } catch { pay = null; }
+      if (pay) { openScreen('payreturn', pay); return; }
+    }
     const q = new URLSearchParams(location.search).get('service');
     if (q) { try { sessionStorage.setItem('saathi.open', q); } catch { /* private mode */ } history.replaceState(null, '', '/app'); }
     let id = null; try { id = sessionStorage.getItem('saathi.open'); } catch { /* private mode */ }
