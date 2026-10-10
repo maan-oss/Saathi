@@ -24,6 +24,22 @@
     {
       "source": "/app/:path*",
       "destination": "https://saathi-u4o7.onrender.com/app/:path*"
+    },
+    {
+      "source": "/health",
+      "destination": "https://saathi-u4o7.onrender.com/health"
+    },
+    {
+      "source": "/webhook",
+      "destination": "https://saathi-u4o7.onrender.com/webhook"
+    },
+    {
+      "source": "/stripe",
+      "destination": "https://saathi-u4o7.onrender.com/stripe"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "https://saathi-u4o7.onrender.com/admin/:path*"
     }
   ]
 }
