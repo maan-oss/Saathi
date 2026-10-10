@@ -26,7 +26,8 @@
 :root[data-style] .app[data-tab="chat"]>.dock{order:0!important}
 :root[data-style="sky"] .app[data-tab="chat"] .hello{padding:12vh 0 3vh}
 
-.hk-pane{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;width:100%;max-width:640px;margin:0 auto;padding:6px 14px 110px;display:flex;flex-direction:column;gap:14px;color:var(--hk-ink);--ink:var(--hk-ink);--mut:var(--hk-mut)}
+/* the whole screen is the scroller, so the wheel and trackpad work everywhere; the content keeps a 640px column in the middle */
+.hk-pane{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;width:100%;max-width:none;margin:0;padding:6px max(14px,calc((100% - 612px) / 2)) 110px;display:flex;flex-direction:column;gap:14px;color:var(--hk-ink);--ink:var(--hk-ink);--mut:var(--hk-mut);scrollbar-width:thin}
 .hk-pane.fresh>*{animation:hkrise .55s var(--hk-ease) both;animation-delay:var(--d,0ms)}
 .hk-pane.in-r{animation:hkInR .42s var(--hk-ease) both}.hk-pane.in-l{animation:hkInL .42s var(--hk-ease) both}
 .app>.chat.in-r,.app>.dock.in-r{animation:hkInR .42s var(--hk-ease) both}.app>.chat.in-l,.app>.dock.in-l{animation:hkInL .42s var(--hk-ease) both}
@@ -141,9 +142,10 @@ body.screen-open .app{visibility:hidden}
 @keyframes hkpulse{50%{transform:scale(.88)}}
 .hk-tab:not(.on):hover{color:#000}
 .app[data-tab="home"]>.hk-float{display:none}
-:root[data-style="sky"] .langs{border-radius:28px;overflow:hidden}
+/* the language list scrolls inside itself; its rows stay square so the corners never show a gap */
+:root[data-style="sky"] .langs{border-radius:22px;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain}
 :root[data-style="sky"] .lang{border-radius:0!important}
-:root[data-style="sky"] .lang.on{border-radius:20px!important}
+:root[data-style="sky"] .lang.on{border-radius:0!important}
 
 /* ---- round 3 ---- */
 .hk-float{display:none!important}
@@ -210,7 +212,7 @@ html,body{overflow-x:hidden;overscroll-behavior-x:none}
 .app[data-search] .hk-sp{opacity:1;transform:none;pointer-events:auto}
 .app>.hk-pane,.app>.chat,.app>.dock{transition:opacity .25s}
 .app[data-search]>.hk-pane,.app[data-search]>.chat,.app[data-search]>.dock{opacity:0;pointer-events:none}
-.hk-sb{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:6px 14px 20px;display:flex;flex-direction:column;max-width:640px;width:100%;margin:0 auto;justify-content:flex-start}
+.hk-sb{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:6px max(14px,calc((100% - 612px) / 2)) 20px;display:flex;flex-direction:column;max-width:none;width:100%;margin:0;justify-content:flex-start;scrollbar-width:thin}
 .hk-big{margin:4px 8px 12px;font:600 30px/1.1 var(--sans);letter-spacing:-.03em;color:#fff;text-shadow:0 2px 18px rgba(20,50,100,.3)}
 .hk-sbar{display:block;padding:8px 14px max(16px,env(safe-area-inset-bottom));max-width:640px;width:100%;margin:0 auto;animation:none}
 .hk-sfield{width:100%;box-sizing:border-box}

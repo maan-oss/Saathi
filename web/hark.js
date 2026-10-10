@@ -198,3 +198,16 @@
   showTab('home');
   app.dataset.hk = '1';
 })();
+
+// Desktop: a mouse wheel moves a row of cards sideways (Quick start, the guide and hub rails), and the page keeps scrolling
+// up and down when the row reaches its end. A trackpad's own sideways swipe still works as before.
+(() => {
+  document.addEventListener('wheel', (e) => {
+    if (e.ctrlKey || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+    const row = e.target instanceof Element ? e.target.closest('.hk-rail, .hub-cont') : null;
+    if (!row || row.scrollWidth <= row.clientWidth + 2) return;
+    const before = row.scrollLeft;
+    row.scrollLeft += e.deltaY;
+    if (row.scrollLeft !== before) e.preventDefault();
+  }, { passive: false });
+})();

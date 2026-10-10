@@ -142,9 +142,13 @@ h2{font:600 clamp(30px,4.6vw,46px)/1.06 var(--display);letter-spacing:-.03em;tex
 .points b{color:var(--ink);font-weight:600}
 
 /* ---- prices ---- */
-.rc{display:grid;gap:10px;margin-top:28px}
-.rrow{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 22px;border-radius:999px;background:var(--glass);border:1px solid var(--glass-line);box-shadow:var(--shadow)}
-.rv{font-weight:600;font-variant-numeric:tabular-nums}
+/* each action is its own light-blue pill, always light, in either theme; the pack is the light-orange one */
+.rc{display:grid;gap:12px;margin-top:28px}
+.rrow{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:64px;padding:12px 24px;border-radius:999px;background:#d6e8fa;color:#10294a;border:0;box-shadow:0 1px 2px rgba(20,30,60,.08)}
+.rrow.pk{background:#ffe0bd;color:#4a2300}
+.rt{min-width:0;font:600 16px/1.3 var(--display)}
+.rt small{display:block;margin-top:3px;font:400 13.5px/1.4 var(--sans);opacity:.85}
+.rv{flex:none;font:700 17px/1 var(--display);font-variant-numeric:tabular-nums;white-space:nowrap}
 
 /* ---- scam check ---- */
 .field-i{display:block;width:100%;min-height:104px;margin-top:22px;padding:16px 18px;border-radius:22px;border:1px solid var(--glass-line);background:var(--scr);color:var(--ink);font:400 16px/1.5 var(--sans);resize:vertical}

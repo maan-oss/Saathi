@@ -67,7 +67,13 @@
       r.append(el('span', 'rt', label), el('span', 'rv', rupees(v)));
       rows.append(r);
     }
-    if (p.pack) $('#packNote').textContent = `Or a ${p.pack.days}-day PAN pack for ${rupees(p.pack.paise)}: ${p.pack.scans} document checks, ${p.pack.ai} AI answers, ${p.pack.voice} voice notes and ${p.pack.remind} reminders.`;
+    if (p.pack) {
+      const r = el('div', 'rrow pk'); r.setAttribute('role', 'listitem');
+      const t = el('span', 'rt', `${p.pack.days}-day PAN pack`);
+      t.append(el('small', '', `${p.pack.scans} document checks, ${p.pack.ai} AI answers, ${p.pack.voice} voice notes and ${p.pack.remind} reminders`));
+      r.append(t, el('span', 'rv', rupees(p.pack.paise)));
+      rows.append(r);
+    }
     sec.hidden = false;
   }).catch(() => {});
 })();
