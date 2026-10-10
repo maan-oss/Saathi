@@ -35,51 +35,86 @@
 
 <main id="main">
 
-  <!-- HERO -->
+  <!-- HERO: one clear question box, example questions under it, and a real photo -->
   <section class="hero" aria-labelledby="hT">
     <div class="wrap hero-in">
       <div class="hero-copy">
         <h1 id="hT">Government<br>forms,<br>step by step.</h1>
         <p class="lede">Saathi tells you which documents to keep ready, what it costs and which official page to use. You do the final step yourself.</p>
-        <div class="cta">
-          <a class="btn btn-solid" href="/app" data-app>Open Saathi</a>
-          <a class="btn btn-line" href="#how">See how it works</a>
-        </div>
+
+        <a class="ask" href="/app" data-app>
+          <span class="ask-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v10H9l-5 4z"/></svg></span>
+          <span class="ask-in">Describe what you need</span>
+          <span class="ask-go">Ask</span>
+        </a>
+        <p class="ask-try">Try:</p>
+        <ul class="ask-ex">
+          <li><a href="/app?service=pan" data-app>New PAN card</a></li>
+          <li><a href="/app?service=aadhaar" data-app>Fix my Aadhaar address</a></li>
+          <li><a href="/app?service=passport" data-app>Renew my passport</a></li>
+        </ul>
       </div>
 
-      <!-- A picture of the app. Decorative: the text beside it says the same. -->
-      <div class="hero-art" aria-hidden="true">
-        <div class="sky">
-        <div class="phone">
-          <div class="chat-top"><span class="av">s</span><b>Saathi</b><em>English</em></div>
-          <p class="bub me">I need a new PAN card</p>
-          <div class="bub them">
-            <p class="bub-h">New PAN card</p>
-            <p>Keep these ready before you start.</p>
-            <ul class="scr-list">
-              <li><span class="tk"></span>Aadhaar card</li>
-              <li><span class="tk"></span>Passport-size photo</li>
-              <li><span class="tk"></span>Mobile number</li>
-            </ul>
-            <div class="scr-box"><span>Official page</span><b class="no-link">incometax.gov.in</b></div>
-            <div class="scr-btn">Finish on the official site</div>
+      <figure class="hero-photo">
+        <img src="/photos/phone.jpg" width="1200" height="800" alt="A person holding a smartphone" fetchpriority="high">
+        <div class="hero-card" aria-hidden="true">
+          <div class="phone">
+            <div class="chat-top"><span class="av">s</span><b>Saathi</b><em>English</em></div>
+            <p class="bub me">I need a new PAN card</p>
+            <div class="bub them">
+              <p class="bub-h">New PAN card</p>
+              <p>Keep these ready before you start.</p>
+              <ul class="scr-list">
+                <li><span class="tk"></span>Aadhaar card</li>
+                <li><span class="tk"></span>Passport-size photo</li>
+                <li><span class="tk"></span>Mobile number</li>
+              </ul>
+              <div class="scr-box"><span>Official page</span><b class="no-link">incometax.gov.in</b></div>
+              <div class="scr-btn">Finish on the official site</div>
+            </div>
           </div>
         </div>
-        </div>
-      </div>
+      </figure>
+    </div>
+  </section>
+
+  <!-- OFFICIAL SITES: the only places Saathi sends you -->
+  <section class="sites-band" aria-labelledby="stT">
+    <div class="wrap sites-in">
+      <h2 id="stT" class="sites-t">Saathi only sends you to these official sites.</h2>
+      <ul class="sites" aria-label="Official sites">
+        <li><a href="https://www.incometax.gov.in" target="_blank" rel="noopener">incometax.gov.in</a></li>
+        <li><a href="https://uidai.gov.in" target="_blank" rel="noopener">uidai.gov.in</a></li>
+        <li><a href="https://sarathi.parivahan.gov.in" target="_blank" rel="noopener">sarathi.parivahan.gov.in</a></li>
+        <li><a href="https://www.passportindia.gov.in" target="_blank" rel="noopener">passportindia.gov.in</a></li>
+        <li><a href="https://voters.eci.gov.in" target="_blank" rel="noopener">voters.eci.gov.in</a></li>
+        <li><a href="https://www.gst.gov.in" target="_blank" rel="noopener">gst.gov.in</a></li>
+      </ul>
     </div>
   </section>
 
   <!-- PROMISES -->
   <ul class="promises wrap" aria-label="What Saathi promises">
-    <li><b>Official sites only</b><span>Every final step is on a government website.</span></li>
-    <li><b>Never asks for an OTP</b><span>Not for an OTP, PIN, password or card number.</span></li>
-    <li><b>English and Hindi</b><span>Ask in the language you write in.</span></li>
+    <li>
+      <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg></span>
+      <b>Official sites only</b><span>Every final step is on a government website.</span>
+    </li>
+    <li>
+      <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></span>
+      <b>Never asks for an OTP</b><span>Not for an OTP, PIN, password or card number.</span>
+    </li>
+    <li>
+      <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg></span>
+      <b>English and Hindi</b><span>Ask in the language you write in.</span>
+    </li>
   </ul>
 
   <!-- HOW -->
   <section class="sec" id="how" aria-labelledby="howT">
     <div class="wrap">
+      <figure class="band">
+        <img src="/photos/form.jpg" width="1200" height="800" loading="lazy" alt="Someone writing on a paper form">
+      </figure>
       <div class="sec-head">
         <h2 id="howT">Three steps.</h2>
         <p>Saathi prepares the checklist and the link. You do the official form.</p>
@@ -104,26 +139,52 @@
     </div>
   </section>
 
-  <!-- SERVICES: each row opens the app on that service -->
-  <section class="sec" id="services" aria-labelledby="svT">
+  <!-- SERVICES: each tile opens the app on that service -->
+  <section class="sec sec-tint" id="services" aria-labelledby="svT">
     <div class="wrap">
       <div class="sec-head">
         <h2 id="svT">What Saathi helps with.</h2>
         <p>Each one opens the app on that service, with the checklist and the official link.</p>
       </div>
-      <ul class="svc">
-        <li><a href="/app?service=pan" data-app><span class="svc-t"><b>New PAN card</b><span>Apply, or fix a wrong name or date</span></span><small>incometax.gov.in</small><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a></li>
-        <li><a href="/app?service=aadhaar" data-app><span class="svc-t"><b>Update Aadhaar</b><span>Address and details, and the proofs to keep ready</span></span><small>uidai.gov.in</small><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a></li>
-        <li><a href="/app?service=dl" data-app><span class="svc-t"><b>Driving licence</b><span>Learner licence and renewal</span></span><small>sarathi.parivahan.gov.in</small><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a></li>
-        <li><a href="/app?service=passport" data-app><span class="svc-t"><b>Passport</b><span>Fresh application or renewal</span></span><small>passportindia.gov.in</small><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a></li>
-        <li><a href="/app?service=voter" data-app><span class="svc-t"><b>Voter ID</b><span>Correct your details</span></span><small>voters.eci.gov.in</small><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a></li>
-        <li><a href="/app?service=gst" data-app><span class="svc-t"><b>GST registration</b><span>Register from your phone</span></span><small>gst.gov.in</small><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a></li>
+      <ul class="tiles">
+        <li><a class="tile" href="/app?service=pan" data-app>
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg></span>
+          <b>New PAN card</b><span>Apply, or fix a wrong name or date</span><small>incometax.gov.in</small></a></li>
+        <li><a class="tile" href="/app?service=aadhaar" data-app>
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.6 1.8-2.4 3-2.4s2.4.8 3 2.4M14 10h4M14 13h3"/></svg></span>
+          <b>Update Aadhaar</b><span>Address and details, and the proofs to keep ready</span><small>uidai.gov.in</small></a></li>
+        <li><a class="tile" href="/app?service=dl" data-app>
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 13l2-5h8l2 5"/><path d="M3 13h18v4H3z"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/></svg></span>
+          <b>Driving licence</b><span>Learner licence and renewal</span><small>sarathi.parivahan.gov.in</small></a></li>
+        <li><a class="tile" href="/app?service=passport" data-app>
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M9 17h6"/></svg></span>
+          <b>Passport</b><span>Fresh application or renewal</span><small>passportindia.gov.in</small></a></li>
+        <li><a class="tile" href="/app?service=voter" data-app>
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-6"/></svg></span>
+          <b>Voter ID</b><span>Correct your details</span><small>voters.eci.gov.in</small></a></li>
+        <li><a class="tile" href="/app?service=gst" data-app>
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg></span>
+          <b>GST registration</b><span>Register from your phone</span><small>gst.gov.in</small></a></li>
       </ul>
     </div>
   </section>
 
+  <!-- OFFICIAL FINAL STEP: photo left, text right -->
+  <section class="sec" aria-labelledby="ofT">
+    <div class="wrap feature">
+      <figure class="feature-photo">
+        <img src="/photos/secretariat.jpg" width="1200" height="800" loading="lazy" alt="A government building in New Delhi with domes and colonnades">
+      </figure>
+      <div>
+        <h2 id="ofT">The last step is always on an official site.</h2>
+        <p class="lede-s">Saathi gets you to the right page with the right details ready. You log in, pay and submit there, yourself.</p>
+        <a class="btn btn-line" href="#services">See the services</a>
+      </div>
+    </div>
+  </section>
+
   <!-- SAFETY -->
-  <section class="sec" id="safe" aria-labelledby="sfT">
+  <section class="sec sec-tint" id="safe" aria-labelledby="sfT">
     <div class="wrap">
       <div class="sec-head">
         <h2 id="sfT">Built to keep you safe.</h2>
@@ -151,6 +212,20 @@
     </div>
   </section>
 
+  <!-- LANGUAGE: photo right, text left -->
+  <section class="sec" aria-labelledby="lgT">
+    <div class="wrap feature">
+      <div>
+        <h2 id="lgT">Ask in the language you write in.</h2>
+        <p class="lede-s">English or Hindi. Saathi answers in the same language and explains each step as you go.</p>
+        <a class="btn btn-solid" href="/app" data-app>Open Saathi</a>
+      </div>
+      <figure class="feature-photo">
+        <img src="/photos/family.jpg" width="1200" height="800" loading="lazy" alt="A family talking together at home">
+      </figure>
+    </div>
+  </section>
+
   <!-- PRICES: real prices from the server; hidden if the server has none -->
   <section class="sec" id="price" aria-labelledby="prT" hidden>
     <div class="wrap split">
@@ -164,7 +239,7 @@
   </section>
 
   <!-- SCAM CHECK -->
-  <section class="sec" id="check" aria-labelledby="chT">
+  <section class="sec sec-tint" id="check" aria-labelledby="chT">
     <div class="wrap check">
       <div>
         <h2 id="chT">Strange message? Check it first.</h2>
@@ -217,10 +292,27 @@
       <a class="brand" href="/" aria-label="Saathi home"><img src="/logo.svg" width="24" height="24" alt=""><span>saathi</span></a>
       <p class="foot-note">Saathi is an independent helper and is not affiliated with or endorsed by any government body. Always confirm rules and fees on the official website.</p>
     </div>
-    <div class="foot-r">
-      <nav class="flinks" aria-label="Footer"><a href="/app" data-app>Open the app</a><a href="#faq">Questions</a><a href="/privacy">Privacy</a></nav>
-      <p class="help">Help: <a href="mailto:gethelp.saathi@gmail.com">gethelp.saathi@gmail.com</a></p>
-    </div>
+    <nav class="foot-cols" aria-label="Footer">
+      <div>
+        <h3>Saathi</h3>
+        <a href="/app" data-app>Open the app</a>
+        <a href="#how">How it works</a>
+        <a href="#price">Prices</a>
+        <a href="#faq">Questions</a>
+      </div>
+      <div>
+        <h3>Official sites</h3>
+        <a href="https://www.incometax.gov.in" target="_blank" rel="noopener">incometax.gov.in</a>
+        <a href="https://uidai.gov.in" target="_blank" rel="noopener">uidai.gov.in</a>
+        <a href="https://www.passportindia.gov.in" target="_blank" rel="noopener">passportindia.gov.in</a>
+        <a href="https://www.gst.gov.in" target="_blank" rel="noopener">gst.gov.in</a>
+      </div>
+      <div>
+        <h3>Help</h3>
+        <a href="mailto:gethelp.saathi@gmail.com">gethelp.saathi@gmail.com</a>
+        <a href="/privacy">Privacy</a>
+      </div>
+    </nav>
   </div>
 </footer>
 

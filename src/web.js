@@ -202,7 +202,9 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
   }
 
   function serveStatic(req, res, url) {
-    const ent = STATIC[url.pathname];
+    // Photos for the landing page: only plain file names from web/photos, nothing else.
+    const photo = /^\/photos\/([a-z0-9-]+\.jpg)$/.exec(url.pathname);
+    const ent = photo ? [`photos/${photo[1]}`, 'image/jpeg'] : STATIC[url.pathname];
     if (!ent) return false;
     const [file, type] = ent;
     let buf = fileCache.get(file);
@@ -214,7 +216,7 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
     }
     let body = buf;
     if (file === 'index.html' || file === 'app.js') body = Buffer.from(buf.toString('utf8').replaceAll('__WA_NUMBER__', shell.whatsappNumber || ''));
-    headers(res, { 'content-type': type, 'cache-control': (file === 'sw.js' || /\.(js|css|html)$/.test(file)) ? 'no-cache' : file.startsWith('fonts/') ? 'public, max-age=31536000, immutable' : 'public, max-age=300' });
+    headers(res, { 'content-type': type, 'cache-control': (file === 'sw.js' || /\.(js|css|html)$/.test(file)) ? 'no-cache' : file.startsWith('fonts/') ? 'public, max-age=31536000, immutable' : file.startsWith('photos/') ? 'public, max-age=2592000' : 'public, max-age=300' });
     res.end(req.method === 'HEAD' ? undefined : body);
     return true;
   }

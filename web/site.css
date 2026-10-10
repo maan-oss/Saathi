@@ -1,4 +1,4 @@
-/* Saathi marketing page. The app's light theme at sunset: white glass cards on the sunset sky, ink text, orange accents. */
+/* Saathi marketing page. The layout borrows the calm structure of a public-service site: one clear question box, real photos, simple line icons, a plain list of official sites. Colours, type and buttons are Saathi's own: the sunset sky, black and white buttons, orange only in soft fills. */
 @font-face{font-family:"Bricolage";src:url(/fonts/bricolage.woff2) format("woff2");font-weight:200 800;font-style:normal;font-display:swap}
 @font-face{font-family:"Instrument Sans";src:url(/fonts/instrument.woff2) format("woff2");font-weight:400 700;font-style:normal;font-display:swap}
 
@@ -8,13 +8,15 @@
   --sky-top:#3f5f9a;
   --sky-mid:#b7a0a6;
   --sky-low:#f0b98a;
-  /* the app's light surfaces and ink */
+  /* surfaces and ink */
   --paper:#ffffff;
-  --page:#fbfbfd;
+  --page:#f5f6f8;
+  --hover:#f1f3f7;
   --ink:#1d1d1f;
   --mut:#5b6472;
   --line:rgba(60,80,120,.16);
-  --glass:rgba(255,255,255,.8);
+  --line-2:rgba(60,80,120,.26);
+  --glass:rgba(255,255,255,.86);
   /* orange is the sky and the soft fills only. Buttons, badges and avatars are black and white. */
   --sun:#f5a35c;
   --sun-hi:#f08d4a;
@@ -33,30 +35,39 @@
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--paper);color:var(--ink);font:400 17px/1.6 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
 img{display:block;max-width:100%}
+figure{margin:0}
+ul,ol{margin:0;padding:0}
 h1,h2,h3{font-family:var(--display);color:var(--ink);margin:0;text-wrap:balance}
+h1{font-weight:700;font-size:clamp(44px,11.5vw,80px);line-height:1;letter-spacing:-.045em}
+h2{font-weight:700;font-size:clamp(32px,4.6vw,50px);line-height:1.06;letter-spacing:-.035em}
+h3{font-weight:600}
 p{margin:0}
 section[id]{scroll-margin-top:84px}
-:where(a,button,summary,textarea):focus-visible{outline:3px solid var(--sun-hi);outline-offset:3px;border-radius:8px}
+:where(a,button,summary,textarea,input):focus-visible{outline:3px solid var(--sun-hi);outline-offset:3px;border-radius:8px}
 
 .wrap{width:var(--wrap);margin-inline:auto}
 .skip{position:absolute;left:-999px;top:0}
 .skip:focus{left:16px;top:12px;z-index:60;background:#fff;padding:8px 12px;border-radius:8px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
+/* ---- icons: one soft circle and a thin ink line, used everywhere ---- */
+.ico{display:grid;place-items:center;flex:none;width:52px;height:52px;border-radius:50%;background:var(--sun-soft)}
+.ico svg{width:24px;height:24px;fill:none;stroke:var(--ink);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
 /* ---- buttons ---- */
-.btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 26px;border-radius:var(--r-pill,999px);border:1.5px solid transparent;font:600 16px/1 var(--display);color:var(--ink);text-decoration:none;cursor:pointer;transition:background-color .2s,border-color .2s}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 26px;border-radius:999px;border:1.5px solid transparent;font:600 16px/1 var(--display);color:var(--ink);text-decoration:none;cursor:pointer;transition:background-color .2s,border-color .2s}
+.btn:disabled{opacity:.55;cursor:default}
 .btn-sm{min-height:42px;padding:0 18px;font-size:15px}
 .btn-solid{background:var(--ink);color:#fff}
-.btn-solid:hover{background:#000}
-.btn-line{background:var(--glass);border-color:rgba(255,255,255,.9);box-shadow:var(--shadow)}
-.btn-line:hover{background:#fff}
+.btn-solid:hover{background:#2c2c2e}
+.btn-line{background:#fff;border-color:var(--ink)}
+.btn-line:hover{background:var(--hover)}
 .btn-block{width:100%}
-.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
 
 /* ---- nav ---- */
-.nav{position:fixed;inset:0 0 auto 0;z-index:30;background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid transparent;transition:border-color .2s}
+.nav{position:fixed;inset:0 0 auto 0;z-index:30;background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid transparent;transition:border-color .2s}
 .nav.scrolled{border-bottom-color:var(--line)}
-.nav-in{display:flex;align-items:center;gap:24px;height:72px}
+.nav-in{display:flex;align-items:center;gap:24px;height:64px}
 .nav-in>.btn{margin-left:auto}
 .brand{display:inline-flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font:700 22px/1 var(--display);letter-spacing:-.03em}
 .navlinks{display:none;gap:30px;margin-left:auto}
@@ -64,20 +75,29 @@ section[id]{scroll-margin-top:84px}
 .navlinks a:hover{color:var(--ink)}
 .nav-in .navlinks+.btn{margin-left:0}
 
-/* ---- hero ---- */
-.hero{padding:124px 0 72px}
+/* ---- hero: the question, its examples, and a real photo with the app on top ---- */
+.hero{padding:112px 0 64px}
 .hero-in{display:grid;gap:44px;align-items:center}
-h1{font-weight:700;font-size:clamp(42px,11vw,76px);line-height:1.02;letter-spacing:-.04em}
+.hero-copy{min-width:0}
 .lede{margin-top:22px;max-width:40ch;font-size:19px;line-height:1.55;color:var(--mut)}
-.fine{list-style:none;display:flex;flex-wrap:wrap;gap:10px 22px;margin:28px 0 0;padding:0;font-size:14.5px;color:var(--mut)}
-.fine li{display:flex;align-items:center;gap:8px}
-.fine li::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--sun)}
 
-.hero-art{position:relative;height:500px}
-.sky{position:absolute;inset:0;display:grid;place-items:center;padding:36px 22px;border-radius:36px;background:var(--sunset);overflow:hidden}
-.phone{width:min(300px,100%);background:var(--glass);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.85);border-radius:32px;padding:14px;box-shadow:0 34px 60px -28px rgba(20,30,60,.55);animation:rise .9s cubic-bezier(.2,.8,.2,1) both}
-@keyframes rise{from{opacity:0;translate:0 28px}to{opacity:1;translate:0 0}}
-.scr{background:#fff;border-radius:22px;padding:14px}
+.ask{display:flex;align-items:center;gap:12px;margin-top:34px;min-height:68px;padding:8px 8px 8px 20px;background:#fff;border:1px solid var(--line-2);border-radius:999px;box-shadow:var(--shadow);color:var(--ink);text-decoration:none;transition:border-color .2s}
+.ask:hover{border-color:rgba(20,32,60,.42)}
+.ask:hover .ask-go{background:#2c2c2e}
+.ask-ic{flex:none;display:grid;place-items:center;width:24px;height:24px}
+.ask-ic svg{width:22px;height:22px;fill:none;stroke:var(--ink);stroke-width:2;stroke-linejoin:round}
+.ask-in{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:17px;color:var(--mut)}
+.ask-go{flex:none;display:inline-flex;align-items:center;min-height:52px;padding:0 24px;border-radius:999px;background:var(--ink);color:#fff;font:600 16px/1 var(--display);transition:background-color .2s}
+.ask-try{margin-top:20px;font-size:14.5px;color:var(--mut)}
+.ask-ex{list-style:none;display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.ask-ex a{display:inline-flex;align-items:center;min-height:38px;padding:0 15px;border:1px solid var(--line-2);border-radius:999px;background:#fff;color:var(--ink);text-decoration:none;font-size:14.5px;font-weight:500;transition:background-color .2s}
+.ask-ex a:hover{background:var(--hover)}
+
+.hero-photo{position:relative}
+.hero-photo>img{width:100%;height:300px;object-fit:cover;border-radius:28px;background:#e9ecf2}
+.hero-card{position:relative;z-index:1;margin:-88px 12px 0}
+.phone{width:min(320px,100%);margin:0 auto;background:rgba(255,255,255,.93);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.9);border-radius:28px;padding:16px;box-shadow:0 30px 60px -28px rgba(20,30,60,.55);animation:rise .9s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{opacity:0;translate:0 24px}to{opacity:1;translate:0 0}}
 .chat-top{display:flex;align-items:center;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--line);font-size:15px}
 .chat-top b{font:600 15px/1 var(--display)}
 .chat-top em{margin-left:auto;font-style:normal;font-size:12px;color:var(--mut)}
@@ -90,59 +110,77 @@ h1{font-weight:700;font-size:clamp(42px,11vw,76px);line-height:1.02;letter-spaci
 .scr-list{list-style:none;margin:12px 0;padding:0;display:grid;gap:6px}
 .scr-list li{display:flex;align-items:center;gap:10px;background:var(--sun-soft);border-radius:12px;padding:9px 10px;font-size:14px}
 .tk{position:relative;flex:none;width:20px;height:20px;border-radius:50%;background:var(--ink)}
-.tk::after{content:"";position:absolute;left:7px;top:4px;width:4px;height:8px;border:solid var(--ink);border-width:0 2px 2px 0;transform:rotate(45deg)}
+.tk::after{content:"";position:absolute;left:7px;top:4px;width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
 .scr-box{display:grid;gap:2px;margin-top:8px;border:1px solid var(--line);border-radius:12px;padding:9px 12px;font-size:12px;color:var(--mut)}
 .scr-box b{font:600 14px/1.3 var(--sans);color:var(--ink)}
 .scr-btn{margin-top:12px;background:var(--ink);color:#fff;text-align:center;border-radius:999px;padding:11px 10px;font:600 14px/1.2 var(--display);white-space:nowrap}
 
-/* ---- promises ---- */
-.promises{list-style:none;margin-block:0;padding:0;display:grid;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.promises li{padding:24px 4px}
+/* ---- official sites: the only places Saathi sends you ---- */
+.sites-band{background:var(--page);border-block:1px solid var(--line);padding:26px 0}
+.sites-in{display:grid;gap:16px}
+.sites-t{font:600 17px/1.35 var(--display);color:var(--ink);letter-spacing:-.01em}
+.sites{list-style:none;display:flex;flex-wrap:wrap;gap:8px}
+.sites a{display:inline-flex;align-items:center;min-height:38px;padding:0 15px;border-radius:999px;background:#fff;border:1px solid var(--line-2);color:var(--ink);text-decoration:none;font-size:14.5px;font-weight:500;transition:background-color .2s}
+.sites a:hover{background:var(--hover)}
+
+/* ---- promises: icon, one line, one sentence ---- */
+.promises{display:grid;margin-block:64px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.promises li{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:18px;align-items:center;padding:24px 2px}
 .promises li+li{border-top:1px solid var(--line)}
-.promises b{display:block;font:600 19px/1.25 var(--display);color:var(--ink)}
-.promises span{display:block;margin-top:6px;font-size:15.5px;color:var(--mut)}
+.promises .ico{grid-row:span 2}
+.promises b{font:600 19px/1.25 var(--display);color:var(--ink)}
+.promises li>span:not(.ico){margin-top:4px;font-size:15.5px;line-height:1.5;color:var(--mut)}
 
 /* ---- sections ---- */
 .sec{padding:96px 0}
+.sec-tint{background:var(--page)}
 .sec-head{display:grid;gap:14px;margin-bottom:44px}
-.sec-head h2,.split h2,.check h2{font-weight:700;font-size:clamp(34px,5vw,54px);line-height:1.05;letter-spacing:-.035em}
-.sec-head p{max-width:42ch;font-size:18px;color:var(--mut)}
+.sec-head p{max-width:44ch;font-size:18px;color:var(--mut)}
 .lede-s{margin-top:16px;max-width:46ch;font-size:17px;color:var(--mut)}
 
-/* how */
+/* a wide photo band above a section */
+.band{position:relative;aspect-ratio:16/9;margin-bottom:56px;border-radius:28px;overflow:hidden;background:#e9ecf2}
+.band img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+
+/* how: three numbered steps */
 .steps{list-style:none;margin:0;padding:0;display:grid;gap:44px}
 .step{position:relative;padding-top:36px;border-top:2px solid var(--line)}
 .num{position:absolute;top:-22px;left:0;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--ink);color:#fff;font:700 18px/1 var(--display)}
 .step h3{font-size:23px;line-height:1.2;letter-spacing:-.01em}
 .step p{margin-top:10px;max-width:34ch;color:var(--mut)}
 
-/* services */
-.svc{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
-.svc li{border-bottom:1px solid var(--line)}
-.svc a{display:grid;grid-template-columns:1fr auto;grid-template-areas:"t i" "s i";align-items:center;gap:6px 16px;padding:24px 4px;color:var(--ink);text-decoration:none}
-.svc-t{grid-area:t;display:grid;gap:4px}
-.svc-t b{font:600 21px/1.2 var(--display)}
-.svc-t span{font-size:15.5px;color:var(--mut)}
-.svc small{grid-area:s;font-size:13.5px;font-weight:600;color:var(--sun-deep)}
-.svc svg{grid-area:i;width:22px;height:22px;fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:translate .2s}
-.svc a:hover svg{translate:3px 0}
-.svc a:hover .svc-t b{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px}
+/* services: one white tile per service, each opens the app on it */
+.tiles{list-style:none;display:grid;gap:14px}
+.tiles>li{display:flex}
+.tile{position:relative;flex:1;display:grid;grid-template-rows:auto auto 1fr auto;gap:8px;padding:26px 26px 24px;background:#fff;border:1px solid var(--line);border-radius:24px;color:var(--ink);text-decoration:none;transition:background-color .2s}
+.tile:hover{background:var(--hover)}
+.tile::after{content:"";position:absolute;top:30px;right:30px;width:9px;height:9px;border-top:2px solid var(--ink);border-right:2px solid var(--ink);transform:rotate(45deg);opacity:.5;transition:translate .2s,opacity .2s}
+.tile:hover::after{translate:3px -3px;opacity:1}
+.tile .ico{margin-bottom:12px}
+.tile b{font:600 20px/1.2 var(--display)}
+.tile>span:not(.ico){font-size:15.5px;line-height:1.45;color:var(--mut)}
+.tile small{margin-top:6px;font-size:13.5px;font-weight:600;color:var(--mut)}
+
+/* photo beside text. The order in the HTML alternates the photo side. */
+.feature{display:grid;gap:44px;align-items:center}
+.feature-photo{position:relative;aspect-ratio:4/3;border-radius:28px;overflow:hidden;background:#e9ecf2}
+.feature-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.feature .btn{margin-top:28px}
 
 /* safety */
 .dn{display:grid;gap:20px}
-.dn-panel{border:1px solid var(--line);border-radius:var(--r-card,28px);padding:34px 32px;background:#fff;box-shadow:var(--shadow)}
+.dn-panel{border:1px solid var(--line);border-radius:28px;padding:34px 30px;background:#fff;box-shadow:var(--shadow)}
 .dn-never{background:var(--sun-soft);border-color:transparent;box-shadow:none}
 .dn-panel h3{font-size:27px;letter-spacing:-.02em}
 .ticks{list-style:none;margin:22px 0 0;padding:0;display:grid;gap:16px}
 .ticks li{position:relative;padding-left:36px;font-size:16px;line-height:1.5}
 .ticks li::before{content:"";position:absolute;left:0;top:1px;width:24px;height:24px;border-radius:50%;background:var(--ink)}
 .ticks li::after{content:"";position:absolute;left:9px;top:6px;width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
-.ticks.no li::before{background:var(--ink)}
-.ticks.no li::after{left:7px;top:13px;width:10px;height:10px;border:0;transform:rotate(45deg);background:linear-gradient(#fff,#fff) center/10px 2px no-repeat,linear-gradient(#fff,#fff) center/2px 10px no-repeat}
+.ticks.no li::after{left:7px;top:7px;width:10px;height:10px;border:0;transform:rotate(45deg);background:linear-gradient(#fff,#fff) center/10px 2px no-repeat,linear-gradient(#fff,#fff) center/2px 10px no-repeat}
 
 /* prices */
 .split{display:grid;gap:44px;align-items:start}
-.receipt{background:#fff;border:1px solid var(--line);border-radius:var(--r-card,28px);padding:8px 26px;box-shadow:var(--shadow)}
+.receipt{background:#fff;border:1px solid var(--line);border-radius:28px;padding:8px 26px;box-shadow:var(--shadow)}
 .rrow{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:18px 0;border-bottom:1px dashed var(--line)}
 .rrow:last-child{border-bottom:0}
 .rt{font-size:16px;color:var(--ink)}
@@ -153,13 +191,13 @@ h1{font-weight:700;font-size:clamp(42px,11vw,76px);line-height:1.02;letter-spaci
 
 /* scam check */
 .check{display:grid;gap:32px;align-items:start}
-.check-box{background:var(--page);border:1px solid var(--line);border-radius:var(--r-card,28px);padding:28px}
-.field{width:100%;min-height:124px;padding:14px 16px;border:1px solid rgba(60,80,120,.22);border-radius:18px;background:#fff;color:var(--ink);font:400 16px/1.5 var(--sans);resize:vertical}
+.check-box{background:#fff;border:1px solid var(--line);border-radius:28px;padding:28px;box-shadow:var(--shadow)}
+.field{width:100%;min-height:124px;padding:14px 16px;border:1px solid var(--line-2);border-radius:18px;background:#fff;color:var(--ink);font:400 16px/1.5 var(--sans);resize:vertical}
 .field::placeholder{color:#8a8f99}
 .field:focus{outline:3px solid var(--sun-hi);outline-offset:2px;border-color:transparent}
 .try{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 16px}
-.chip{border:1px solid rgba(60,80,120,.22);background:#fff;color:var(--ink);border-radius:999px;padding:8px 14px;font:500 14px/1.2 var(--sans);cursor:pointer;transition:border-color .2s}
-.chip:hover{border-color:var(--sun-hi)}
+.chip{border:1px solid var(--line-2);background:#fff;color:var(--ink);border-radius:999px;padding:8px 14px;font:500 14px/1.2 var(--sans);cursor:pointer;transition:background-color .2s}
+.chip:hover{background:var(--hover)}
 .hint{margin-top:12px;font-size:14px;color:var(--mut)}
 .verdict{margin-top:20px;padding:22px 24px;border-radius:20px;background:#fff;border:1px solid var(--line)}
 .verdict .vt{font:600 22px/1.25 var(--display);color:var(--ink)}
@@ -172,8 +210,8 @@ h1{font-weight:700;font-size:clamp(42px,11vw,76px);line-height:1.02;letter-spaci
 .verdict[data-l="safe"]{border-color:#abefc6;background:#ecfdf3}
 .verdict[data-l="safe"] .vt{color:var(--ok)}
 
-/* faq */
-.faq-wrap h2{font-weight:700;font-size:clamp(34px,5vw,54px);letter-spacing:-.035em;margin-bottom:28px}
+/* questions */
+.faq-wrap h2{margin-bottom:28px}
 .faq{max-width:820px;border-top:1px solid var(--line)}
 .faq details{border-bottom:1px solid var(--line)}
 .faq summary{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:22px 4px;list-style:none;cursor:pointer;font:600 19px/1.3 var(--display);color:var(--ink)}
@@ -186,58 +224,50 @@ h1{font-weight:700;font-size:clamp(42px,11vw,76px);line-height:1.02;letter-spaci
 /* closing call: the sunset sky with one white glass card */
 .final{margin-block:0 96px}
 .final-sky{background:var(--sunset);border-radius:36px;padding:72px 22px;display:grid;place-items:center}
-.final-card{width:min(560px,100%);background:var(--glass);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.85);border-radius:30px;padding:44px 40px;box-shadow:0 34px 60px -28px rgba(20,30,60,.5);display:grid;justify-items:start;gap:16px}
-.final h2{font-weight:700;font-size:clamp(34px,5.4vw,52px);line-height:1.04;letter-spacing:-.035em}
+.final-card{width:min(560px,100%);background:var(--glass);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.9);border-radius:30px;padding:44px 40px;box-shadow:0 34px 60px -28px rgba(20,30,60,.5);display:grid;justify-items:start;gap:16px}
+.final h2{font-size:clamp(34px,5.4vw,52px);line-height:1.04;letter-spacing:-.035em}
 .final p{font-size:18.5px;color:var(--mut)}
 .final .btn{margin-top:8px}
 
 /* footer */
 .foot{border-top:1px solid var(--line);padding:52px 0 60px}
-.foot-in{display:grid;gap:30px}
+.foot-in{display:grid;gap:36px}
 .foot-note{margin-top:14px;max-width:52ch;font-size:14.5px;color:var(--mut)}
-.flinks{display:flex;flex-wrap:wrap;gap:12px 24px}
-.flinks a,.help a{color:var(--ink);text-decoration:none;font-size:15px}
-.flinks a:hover,.help a:hover{text-decoration:underline;text-underline-offset:3px}
-.help{margin-top:14px;font-size:15px;color:var(--mut)}
-.help a{color:var(--sun-deep)}
+.foot-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:32px 24px}
+.foot-cols h3{margin-bottom:14px;font:600 14px/1.2 var(--display);color:var(--mut)}
+.foot-cols a{display:block;padding:5px 0;color:var(--ink);text-decoration:none;font-size:15px}
+.foot-cols a:hover{text-decoration:underline;text-underline-offset:3px}
 
 /* ---- wider screens ---- */
 @media (min-width:760px){
   .navlinks{display:flex}
-  .promises{grid-template-columns:repeat(3,1fr)}
-  .promises li{padding:28px 28px}
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .promises{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .promises li{padding:30px 28px}
   .promises li+li{border-top:0;border-left:1px solid var(--line)}
   .promises li:first-child{padding-left:0}
-  .steps{grid-template-columns:repeat(3,1fr);gap:28px}
+  .steps{grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}
   .step{padding-right:20px}
-  .svc{grid-template-columns:1fr 1fr;column-gap:48px}
 }
 @media (min-width:900px){
-  .hero{padding:150px 0 104px}
-  .hero-in{grid-template-columns:1fr 1fr;gap:72px}
-  .hero-art{height:620px}
+  .hero{padding:148px 0 112px}
+  .hero-in{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:72px}
+  .hero-photo{height:660px;border-radius:36px;overflow:hidden}
+  .hero-photo>img{position:absolute;inset:0;height:100%;border-radius:0}
+  .hero-card{position:absolute;left:28px;bottom:28px;width:min(320px,calc(100% - 56px));margin:0}
+  .phone{width:100%}
+  .sites-in{grid-template-columns:minmax(0,1fr) minmax(0,2fr);align-items:center;gap:40px}
   .sec{padding:120px 0}
-  .sec-head{grid-template-columns:1fr 1fr;align-items:end;gap:40px}
-  .sec-head p{justify-self:end}
-  .dn{grid-template-columns:1fr 1fr}
-  .split{grid-template-columns:1fr 1fr;gap:88px}
-  .check{grid-template-columns:1fr 1.1fr;gap:88px}
-  .foot-in{grid-template-columns:1fr auto;align-items:start}
-  .foot-r{text-align:right;justify-items:end}
-  .flinks{justify-content:flex-end}
+  .tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .dn{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .split{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:88px}
+  .feature{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:88px}
+  .feature-photo{aspect-ratio:4/5}
+  .check{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:88px}
+  .foot-in{grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);align-items:start;gap:56px}
+  .foot-cols{grid-template-columns:repeat(3,minmax(0,1fr))}
   .final-sky{padding:96px 64px}
-  .final-card{padding:52px 52px}
-}
-@media (max-width:759px){
-  .nav-in{height:64px}
-  .hero{padding-top:112px}
-  .hero-art{height:520px}
-  .sec{padding:76px 0}
-  .final-sky{padding:44px 14px}
-  .final-card{padding:32px 24px}
-  .receipt{padding:6px 18px}
-  .rrow.pk{margin:8px -18px;padding:18px}
-  .check-box{padding:22px}
+  .final-card{padding:52px}
 }
 @media (max-width:359px){
   .nav-in .btn{padding:0 14px}

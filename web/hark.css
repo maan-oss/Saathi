@@ -1,20 +1,24 @@
-/* Hark-style shell: round + button, Home | Chat | Guides pill, avatar, frosted card feed, white/pale-blue chat. */
-.hk-legacy{display:none!important}
+/* Hark-style shell: round + button, Home | Chat | Guides pill, avatar, solid cards, white chat. No side menu: the profile (avatar) holds the rest.
+   One set of rules for the whole app: cards are one solid colour, hover is one grey tint, and every change moves at the same speed. */
+.hk-legacy,#sidebar,#scrim{display:none!important}
+.screen{left:0!important}
 /* Until hark.js has built the Sky shell (it sets data-hk on #app), the old static markup stays hidden: no Classic flash on open or reload. */
 #app:not([data-hk]){visibility:hidden}
-:root{--hk-ink:#1d1d1f;--hk-mut:#5d6675;--hk-card:rgba(238,244,251,.86);--hk-tile:rgba(255,255,255,.78);--hk-ease:cubic-bezier(.22,.9,.28,1)}
+:root{--hk-ink:#1d1d1f;--hk-mut:#5d6675;--hk-card:#F1F4F8;--hk-tile:#FFFFFF;--hk-ease:cubic-bezier(.22,.9,.28,1);
+  --hk-hover:inset 0 0 0 999px rgba(20,32,60,.06);--hk-press:inset 0 0 0 999px rgba(20,32,60,.12);
+  --hk-fast:.16s;--hk-mid:.28s;--hk-slow:.45s}
 .hk-top{display:flex!important;align-items:center;gap:10px;justify-content:space-between;max-width:640px;width:100%;margin:0 auto;padding:max(12px,env(safe-area-inset-top)) 14px 8px!important;background:transparent!important;border:0!important;position:relative;z-index:3}
 .hk-round,.hk-av{flex:none;width:46px;height:46px;border-radius:50%!important;display:grid;place-items:center;padding:0;border:0;cursor:pointer;transition:transform .18s var(--hk-ease),background .2s}
 .hk-round{background:rgba(255,255,255,.7)}
 .hk-av{background:#1d1d1f;color:#fff}
 :root[data-style="sky"] .top.hk-top .hk-round,:root[data-style="sky"] .top.hk-top .hk-round *{color:var(--hk-ink);stroke:var(--hk-ink)}
 :root[data-style="sky"] .top.hk-top .hk-av,:root[data-style="sky"] .top.hk-top .hk-av *{color:#fff;stroke:#fff}
-.hk-round:hover{background:rgba(255,255,255,.8)}
+.hk-round:hover{background:#fff}
 .hk-round:active,.hk-av:active{transform:scale(.92)}
-.hk-seg{position:relative;flex:1;max-width:310px;height:46px;padding:4px;border-radius:999px;display:grid;grid-template-columns:repeat(3,1fr);background:rgba(110,135,175,.4);margin:0 auto;min-width:0}
+.hk-seg{position:relative;flex:1;max-width:310px;height:46px;padding:4px;border-radius:999px;display:grid;grid-template-columns:repeat(3,1fr);background:rgba(20,24,34,.22);margin:0 auto;min-width:0}
 .hk-thumb{position:absolute;top:4px;bottom:4px;left:0;width:var(--w,33%);border-radius:999px;background:#111;transform:translateX(var(--x,0px));transition:transform .45s var(--hk-ease),width .45s var(--hk-ease);will-change:transform;box-shadow:0 2px 8px rgba(0,0,0,.2)}
 .hk-tab{position:relative;z-index:1;min-width:0;overflow:hidden;white-space:nowrap;text-align:center;background:none;border:0;border-radius:999px!important;font:600 clamp(13px,3.7vw,15px)/1 var(--sans);cursor:pointer;padding:0 4px;transition:color .25s,transform .15s}
-:root[data-style="sky"] .top.hk-top .hk-tab{color:rgba(29,29,31,.72)}
+:root[data-style="sky"] .top.hk-top .hk-tab{color:#fff}
 :root[data-style="sky"] .top.hk-top .hk-tab.on{color:#fff}
 .hk-tab:active{transform:scale(.94)}
 
@@ -45,7 +49,8 @@
 .hk-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .hk-wide{display:flex;align-items:center;justify-content:center;min-height:56px;padding:0 16px;border:0;border-radius:22px!important;font:600 16px var(--sans);cursor:pointer;background:#fff;color:#1d1d1f!important;transition:transform .18s var(--hk-ease),filter .2s}
 .hk-wide.dark{background:#111;color:#fff!important}.hk-wide.light{background:#fff}
-.hk-wide:hover,.hk-tile:hover,.hk-svc:hover,.hk-row:hover{filter:brightness(.97)}
+.hk-wide.light:hover,.hk-tile:hover,.hk-svc:hover,.hk-row:hover{box-shadow:var(--hk-hover)}
+.hk-wide.dark:hover{background:#2c2c2e}
 .hk-wide:active,.hk-tile:active,.hk-row:active,.hk-svc:active,.hk-float:active{transform:scale(.97)}
 .hk-tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .hk-tile{display:flex;flex-direction:column;gap:8px;align-items:flex-start;text-align:left;padding:16px;border:0;border-radius:24px!important;background:var(--hk-tile);cursor:pointer;color:var(--hk-ink);transition:transform .18s var(--hk-ease),filter .2s}
@@ -67,12 +72,12 @@
 .hk-float{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));width:min(360px,calc(100% - 32px));height:56px;margin-left:calc(min(360px,100% - 32px)/-2);display:flex;align-items:center;gap:12px;padding:0 22px;border:0;border-radius:999px!important;background:rgba(255,255,255,.94);box-shadow:0 8px 28px rgba(30,60,110,.2);color:var(--hk-mut);font:500 16px var(--sans);cursor:pointer;z-index:4;animation:hkrise .6s .25s var(--hk-ease) both;transition:transform .18s var(--hk-ease)}
 .hk-float svg{color:var(--hk-ink)}
 
-/* chat bubbles: white assistant, pale-blue you */
+/* chat bubbles: white for Saathi, soft neutral grey for you. Links are ink with an underline, never blue. */
 :root[data-style="sky"] .msg.botrow .bot{background:rgba(255,255,255,.96);color:#1d1d1f;border-radius:30px;padding:14px 20px;--ink:#1d1d1f;--mut:#5d6675;--line:rgba(0,0,0,.1);box-shadow:0 1px 0 rgba(255,255,255,.4)}
-:root[data-style="sky"] .msg.botrow .bot a{color:#0b57c9}
+:root[data-style="sky"] .msg.botrow .bot a{color:#1d1d1f;text-decoration:underline;text-decoration-color:rgba(29,29,31,.35);text-underline-offset:3px}
 :root[data-style="sky"] .msg.botrow .bot:has(.err,.sheet,.pack,.g-card,.vault){background:transparent;padding:0;box-shadow:none}
-:root[data-style="sky"] body .msg.me .bubble-me{background:rgba(196,216,242,.78)!important;color:#1d1d1f!important;border:0!important;border-radius:30px!important;padding:13px 20px}
-:root[data-style="sky"] .bubble-me a{color:#0b57c9}
+:root[data-style="sky"] body .msg.me .bubble-me{background:#E6E9EF!important;color:#1d1d1f!important;border:0!important;border-radius:30px!important;padding:13px 20px}
+:root[data-style="sky"] .bubble-me a{color:inherit;text-decoration:underline;text-decoration-color:rgba(29,29,31,.35);text-underline-offset:3px}
 .msg.me{animation:hkpop .4s var(--hk-ease) both;transform-origin:bottom right}.msg.botrow{animation:hkrise .5s var(--hk-ease) both}
 @keyframes hkpop{from{opacity:0;transform:translateY(12px) scale(.92)}to{opacity:1;transform:none}}
 
@@ -94,7 +99,7 @@
 :root[data-style="sky"][data-sky="night"] .top.hk-top .hk-tab.on{color:#111}
 :root[data-style="sky"][data-sky="night"] .top.hk-top .hk-round{background:rgba(255,255,255,.18)}
 :root[data-style="sky"][data-sky="night"] .top.hk-top .hk-round,:root[data-style="sky"][data-sky="night"] .top.hk-top .hk-round *{color:#fff;stroke:#fff}
-:root[data-style="sky"][data-sky="night"] .hk-card{--hk-card:rgba(30,46,82,.72);--hk-tile:rgba(255,255,255,.1);--hk-ink:#f2f5fb;--hk-mut:#aebbd2;color:#f2f5fb}
+:root[data-style="sky"][data-sky="night"] .hk-card{--hk-ink:#f2f5fb;--hk-mut:#aebbd2;color:#f2f5fb}
 :root[data-style="sky"][data-sky="night"] .hk-wide.light,:root[data-style="sky"][data-sky="night"] .hk-circ{color:#1d1d1f}
 :root[data-style="sky"][data-sky="night"] .hk-v,:root[data-style="sky"][data-sky="night"] .hk-wide.dark{background:#fff;color:#111}
 :root[data-style="sky"][data-sky="night"] .hk-wide.light{background:rgba(255,255,255,.92)}
@@ -108,11 +113,11 @@ body.screen-open .app{visibility:hidden}
 .hk-hello h1{margin:0;font:500 clamp(34px,10vw,46px)/1.05 var(--serif);letter-spacing:-.035em}
 .hk-ask{display:flex;align-items:center;gap:12px;height:56px;padding:0 20px;border:0;border-radius:999px!important;background:#fff;color:#5d6675;font:500 16px var(--sans);cursor:pointer;text-align:left;transition:transform .18s var(--hk-ease)}
 .hk-ask span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hk-ask svg{flex:none;color:#1d1d1f}
+.hk-ask:hover{background:#f4f5f8}
 .hk-ask:active,.hk-q:active{transform:scale(.97)}
 .hk-qs{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .hk-q{display:flex;align-items:center;gap:12px;padding:12px;border:0;border-radius:24px!important;background:var(--hk-tile);color:var(--hk-ink);font:600 15px/1.2 var(--sans);text-align:left;cursor:pointer;transition:transform .18s var(--hk-ease),filter .2s}
-.hk-q:hover{filter:brightness(.97)}.hk-q .hk-circ{width:42px;height:42px;border:0;flex:none;background:#fff;color:#1d1d1f}
-.hk-card:hover{transform:translateY(-2px)}
+.hk-q:hover{box-shadow:var(--hk-hover)}.hk-q .hk-circ{width:42px;height:42px;border:0;flex:none;background:#fff;color:#1d1d1f}
 :root[data-style="sky"][data-sky="night"] .hk-ask{background:rgba(255,255,255,.94)}
 :root[data-style="sky"][data-sky="night"] .hk-q .hk-circ{color:#1d1d1f}
 
@@ -140,7 +145,7 @@ body.screen-open .app{visibility:hidden}
 /* rows inside a card rise with the card: no second motion on each row */
 .hk-av:active{animation:hkpulse .4s}
 @keyframes hkpulse{50%{transform:scale(.88)}}
-.hk-tab:not(.on):hover{color:#000}
+.hk-tab:not(.on):hover{opacity:.75}
 .app[data-tab="home"]>.hk-float{display:none}
 /* the language list scrolls inside itself; its rows stay square so the corners never show a gap */
 :root[data-style="sky"] .langs{border-radius:22px;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain}
@@ -157,16 +162,15 @@ body.screen-open .app{visibility:hidden}
 .hk-sb{justify-content:flex-start}
 .hk-wide.dark{color:#fff!important}
 :root[data-style="sky"][data-sky="night"] .hk-card .hk-wide.dark{background:#fff;color:#111!important}
-.hk-prof{--hk-card:rgba(240,246,252,.82)}.hk-prof .hk-logo{font:600 44px/1 var(--sans);letter-spacing:-.03em}
-:root[data-style="sky"][data-sky="night"] .hk-prof{--hk-card:rgba(30,46,82,.8)}
+.hk-prof .hk-logo{font:600 44px/1 var(--sans);letter-spacing:-.03em}
+:root[data-style="sky"][data-sky="night"]{--hk-card:#17264A;--hk-tile:#22345E;--hk-hover:inset 0 0 0 999px rgba(255,255,255,.07);--hk-press:inset 0 0 0 999px rgba(255,255,255,.14)}
+:root[data-style="sky"][data-sky="night"] .hk-wide.dark:hover{background:#e6e6eb}
 
 /* home: airy, the sky shows through */
 .hk-hello{display:flex;flex-direction:column;gap:12px;padding:22px 8px 6px;color:#fff}
 .hk-hello h1{margin:0;font:500 clamp(40px,12vw,54px)/1.02 var(--serif);letter-spacing:-.04em;color:#fff;text-shadow:0 2px 26px rgba(20,50,100,.3)}
 .hk-hello p{color:rgba(255,255,255,.94);font-size:17px;text-shadow:0 1px 14px rgba(20,50,100,.3);margin:0}
 .hk-hello .hk-ask{margin-top:8px;box-shadow:0 8px 26px rgba(30,60,110,.16)}
-.hk-pane{--hk-card:rgba(240,246,252,.78)}
-:root[data-style="sky"][data-sky="night"] .hk-pane{--hk-card:rgba(30,46,82,.7)}
 .hk-strip{display:flex;flex-direction:column;gap:12px}
 .hk-strip .hk-h2{margin:0 8px;font-size:17px}
 .hk-rail{display:flex;gap:14px;overflow-x:auto;padding:4px 8px 8px;margin:0 -14px;padding-left:22px;scroll-snap-type:x proximity;scrollbar-width:none;overscroll-behavior-x:contain}
@@ -174,7 +178,7 @@ body.screen-open .app{visibility:hidden}
 .hk-rq{flex:none;width:78px;display:flex;flex-direction:column;align-items:center;gap:8px;border:0;background:none;padding:0;cursor:pointer;scroll-snap-align:start;color:#fff;font:600 12.5px/1.2 var(--sans);text-align:center;text-shadow:0 1px 10px rgba(20,50,100,.4);animation:none;transition:transform .2s var(--hk-ease)}
 .hk-rq:active{transform:scale(.9)}
 .hk-rq .hk-circ{width:64px;height:64px;border:0;background:rgba(255,255,255,.94);color:#1d1d1f;box-shadow:0 6px 18px rgba(30,60,110,.18);transition:transform .25s var(--hk-ease)}
-.hk-rq:hover .hk-circ{transform:translateY(-3px)}
+.hk-rq:hover .hk-circ{background:#f2f3f6}
 @keyframes hkpop2{from{opacity:0;transform:translateX(26px) scale(.8)}to{opacity:1;transform:none}}
 .hk-skel{height:46px;border-radius:16px;margin:8px 0;background:linear-gradient(100deg,rgba(255,255,255,.35) 30%,rgba(255,255,255,.8) 50%,rgba(255,255,255,.35) 70%) 0/220% 100%;animation:hkshim 1.2s linear infinite}
 @keyframes hkshim{to{background-position:-220% 0}}
@@ -182,7 +186,6 @@ body.screen-open .app{visibility:hidden}
 /* sky: painted clouds, grain, slow drift */
 :root[data-style="sky"] body::before{background:radial-gradient(58% 17% at 22% 16%,rgba(255,255,255,.5),transparent 72%),radial-gradient(52% 14% at 82% 30%,rgba(255,255,255,.4),transparent 72%),radial-gradient(68% 16% at 28% 55%,rgba(255,255,255,.36),transparent 74%),radial-gradient(56% 15% at 86% 78%,rgba(255,255,255,.34),transparent 72%),radial-gradient(46% 12% at 14% 90%,rgba(255,255,255,.3),transparent 72%)!important;animation:hkdrift 38s ease-in-out infinite alternate;will-change:transform}
 :root[data-style="sky"][data-sky="night"] body::before{opacity:.28}
-@keyframes hkdrift{from{transform:translate3d(-4%,0,0)}to{transform:translate3d(4%,-2%,0)}}
 :root[data-style="sky"] body::after{display:none!important;content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.16;mix-blend-mode:soft-light;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
 
 /* chat composer: small and floating at rest, wide when you type */
@@ -288,3 +291,17 @@ input:focus,input:focus-visible,textarea:focus,textarea:focus-visible,select:foc
 .grp-box.invite{padding:16px 18px}
 .invite-link{margin:10px 0 12px;font-size:14px;word-break:break-all;color:var(--ink)}
 
+/* ---- one interaction system for the sky app: the last word on hover, press and speed ---- */
+/* cards and rows: hover adds one grey tint, press adds a little more; nothing lifts or changes colour */
+:root[data-style="sky"] :is(.tool-card,.gtile,.hub-cc,.fd-o,.svc-card):hover{transform:none;box-shadow:var(--hk-hover),var(--shadow-sm);border-color:var(--glass-line)}
+:root[data-style="sky"] :is(.tool-card,.gtile,.hub-cc,.fd-o,.svc-card):active{box-shadow:var(--hk-press),var(--shadow-sm)}
+:root[data-style="sky"] :is(.hk-tile,.hk-svc,.hk-row,.hk-q,.hk-wide.light):hover{box-shadow:var(--hk-hover)}
+:root[data-style="sky"] :is(.hk-tile,.hk-svc,.hk-row,.hk-q,.hk-wide.light):active{box-shadow:var(--hk-press)}
+/* solid buttons: black goes one grey lighter on hover; white buttons take the same tint as the cards */
+:root[data-style="sky"] :is(.btn.pri,.btn.xl,.btn.ink,.hk-wide.dark,.hk-av):hover{background:#2c2c2e;opacity:1;filter:none;transform:none;box-shadow:none}
+:root[data-style="sky"] :is(.btn.pri,.btn.xl,.btn.ink,.hk-wide.dark,.hk-av):active{background:#000}
+:root[data-style="sky"] :is(.btn,.chip):not(.pri):not(.xl):not(.ink):not(.ghost):not(.danger):hover{background:#f1f3f7;transform:none}
+:root[data-style="sky"] .hk-round:hover{background:#fff}
+:root[data-style="sky"][data-sky="night"] :is(.btn.pri,.btn.xl,.btn.ink,.hk-wide.dark):hover{background:#e6e6eb;color:#111}
+/* every change moves at the same speed */
+:root[data-style="sky"] :is(.tool-card,.gtile,.hub-cc,.fd-o,.svc-card,.hk-tile,.hk-svc,.hk-row,.hk-q,.hk-wide,.hk-round,.hk-av,.hk-tab,.hk-ask,.btn,.chip){transition:background-color var(--hk-fast) ease,box-shadow var(--hk-fast) ease,color var(--hk-fast) ease,border-color var(--hk-fast) ease,opacity var(--hk-fast) ease,transform var(--hk-fast) var(--hk-ease)}

@@ -448,7 +448,7 @@ details.tips>summary .ti svg{stroke:var(--bg);width:20px;height:20px}
 /* the sky: one plain gradient, blue at the top to orange at the bottom. No glow. The default is the dusk (sunset) look. */
 :root[data-style="sky"] body{background:linear-gradient(180deg,var(--sk-a) 0%,var(--sk-b) 52%,var(--sk-c) 100%) fixed}
 :root[data-style="sky"][data-sky="sunset"]{--sk-a:#3f5f9a;--sk-b:#b7a0a6;--sk-c:#f0b98a}
-:root[data-style="sky"][data-sky="night"]{--sk-a:#0b1530;--sk-b:#1c3560;--sk-c:#46628d;--bg:#0e1932;--bg2:#17284a;--glass:rgba(14,26,52,.6);--glass-line:rgba(255,255,255,.14)}
+:root[data-style="sky"][data-sky="night"]{--sk-a:#0b1530;--sk-b:#1c3560;--sk-c:#46628d;--bg:#0e1932;--bg2:#17284a;--glass:#16244A;--glass-line:rgba(255,255,255,.08)}
 :root[data-style="sky"][data-sky="night"] .top .brand img{border-radius:50%;box-shadow:0 0 0 1.5px rgba(255,255,255,.55)}
 :root[data-style="sky"] .sb-label{color:var(--mut);opacity:1;text-shadow:none}
 :root[data-style="sky"] .sidebar{background:rgba(238,243,250,.96)}
@@ -487,7 +487,7 @@ details.tips>summary .ti svg{stroke:var(--bg);width:20px;height:20px}
 :root[data-style="sky"] .dd-pop{background:rgba(238,243,250,.97);--ink:#1d1d1f;--mut:#5b6472;--line:rgba(60,80,120,.2);--bg:transparent;--bg2:rgba(255,255,255,.7)}
 :root[data-style="sky"][data-sky="night"] .dd-pop{background:rgba(12,22,46,.98);--ink:#f4f6fb;--mut:#aab6cc;--line:rgba(255,255,255,.18);--bg2:rgba(255,255,255,.08)}
 /* The dusk sky: always the light palette, even if the device or viewer is in dark mode. Buttons and icons are black and white. */
-:root[data-style="sky"]:not([data-sky="night"]){--bg:#FBFBFD;--bg2:#F1F4F9;--ink:#1d1d1f;--mut:#5b6472;--line:rgba(60,80,120,.18);--tint:#EEF1F6;--tint2:#E3E8F0;--glass:rgba(255,255,255,.72);--glass-line:rgba(255,255,255,.5);--ac:#1d1d1f;--ac-ink:#ffffff;--ac-soft:#eef1f6;--ac-line:#d5dbe6;color-scheme:light}
+:root[data-style="sky"]:not([data-sky="night"]){--bg:#FBFBFD;--bg2:#F1F4F9;--ink:#1d1d1f;--mut:#5b6472;--line:rgba(60,80,120,.18);--tint:#EEF1F6;--tint2:#E3E8F0;--glass:#F3F5F9;--glass-line:rgba(20,32,60,.07);--ac:#1d1d1f;--ac-ink:#ffffff;--ac-soft:#eef1f6;--ac-line:#d5dbe6;color-scheme:light}
 
 /* ===== Hark-style navigation: no side rail. A floating glass menu card, and a pill nav in the top bar on wide screens ===== */
 :root[data-style="sky"] .sidebar{position:fixed;z-index:60;top:max(10px,env(safe-area-inset-top));left:10px;right:10px;bottom:auto;width:auto;max-width:560px;margin-inline:auto;max-height:calc(100dvh - 20px);border:1px solid var(--glass-line);border-radius:32px;box-shadow:0 24px 80px rgba(10,20,50,.35);transform:translateY(-14px) scale(.98);opacity:0;visibility:hidden;pointer-events:none;transition:transform .32s var(--pol,ease),opacity .22s,visibility .3s;overflow:hidden}
@@ -566,5 +566,5 @@ details.tips>summary .ti svg{stroke:var(--bg);width:20px;height:20px}
 :root[data-style="sky"][data-sky="night"] .sb-scroll>.sb-item,:root[data-style="sky"][data-sky="night"] .sb-foot .sb-item{background:transparent}
 /* cards: Hark's big soft panels */
 :root[data-style="sky"] :is(.tool-card,.gtile,.svc-card,.hub-cc,.g-card,.g-head,.faq,.dt-sec,.card-i,.pack,.w-hero,.langs,.set-grp,.sheet,.dialog,.modal-card,.empty){border-radius:var(--r-card)!important}
-:root[data-style="sky"]:not([data-sky="night"]) :is(.pack,.w-hero,.card-i,.dt-sec,.lk2-comp,.rm-new,.faq,.dt-meter,.langs,.empty,.set-grp,.g-card,.g-head,.tool-card,.hub-cc,.svc-card,.gtile){background:rgba(236,243,250,.82)!important;border:0!important}
+:root[data-style="sky"]:not([data-sky="night"]) :is(.pack,.w-hero,.card-i,.dt-sec,.lk2-comp,.rm-new,.faq,.dt-meter,.langs,.empty,.set-grp,.g-card,.g-head,.tool-card,.hub-cc,.svc-card,.gtile){background:var(--glass)!important;border:0!important}
 :root[data-style="sky"][data-sky="night"] .sb-scroll>.sb-item .sb-ic,:root[data-style="sky"][data-sky="night"] .sb-foot .sb-item .sb-ic{background:none;color:#aab6cc}
