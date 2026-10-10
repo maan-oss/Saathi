@@ -804,7 +804,8 @@
     const back = btn('wl-back', ''); back.setAttribute('aria-label', T('Back')); back.append(ico('back', 22));
     const prog = el('div', 'wl-prog'); prog.setAttribute('role', 'progressbar'); prog.setAttribute('aria-valuemin', '1'); prog.setAttribute('aria-valuemax', String(OB_TOTAL));
     for (let i = 0; i < OB_TOTAL; i++) prog.append(el('i'));
-    const top = el('header', 'wl-top'); top.append(back, prog);
+    const brand = el('img', 'wl-brand'); brand.src = '/logo.svg'; brand.alt = ''; brand.setAttribute('aria-hidden', 'true');
+    const top = el('header', 'wl-top'); top.append(brand, back, prog);
     const stage = el('main', 'wl-stage');
     const hint = el('p', 'wl-hint'); hint.setAttribute('aria-live', 'polite');
     const next = btn('wl-next', '');
@@ -836,14 +837,11 @@
     const views = [
       () => { // 1: welcome and language
         const page = el('section', 'wl-page wl-welcome');
-        const mark = el('div', 'wl-mark'); const logo = el('img'); logo.src = '/logo.svg'; logo.alt = ''; mark.append(logo);
         const h = el('h1', '', T('Welcome to Saathi')); h.tabIndex = -1;
-        const p = el('p', 'wl-sub', T('Your helper for government paperwork, step by step. First, pick the language you want to read in.'));
-        const pills = el('div', 'wl-pills');
-        for (const t of [T('Free to start'), T('No sign-up'), T('Never asks for your OTP')]) pills.append(el('span', '', t));
+        const p = el('p', 'wl-sub', T('Pick the language you read in.'));
         langHolder = el('div', 'wl-langs');
         langPicker(langHolder, { current: lang.code, onPick: pickLang });
-        page.append(mark, h, p, pills, langHolder);
+        page.append(h, p, langHolder);
         return page;
       },
       () => { // 2: about you (all four needed)
@@ -938,6 +936,7 @@
       stage.replaceChildren(view); stage.scrollTop = 0;
       [...prog.children].forEach((b, i) => { b.className = i < step ? 'done' : i === step ? 'on' : ''; });
       back.classList.toggle('off', step === 0);
+      brand.hidden = step !== 0; back.hidden = step === 0;
       label(); sync();
       const h = view.querySelector('h1'); if (h) h.focus({ preventScroll: true });
     }

@@ -6,7 +6,7 @@
 .hk-top{display:flex!important;align-items:center;gap:10px;justify-content:space-between;max-width:640px;width:100%;margin:0 auto;padding:max(12px,env(safe-area-inset-top)) 14px 8px!important;background:transparent!important;border:0!important;position:relative;z-index:3}
 .hk-round,.hk-av{flex:none;width:46px;height:46px;border-radius:50%!important;display:grid;place-items:center;padding:0;border:0;cursor:pointer;transition:transform .18s var(--hk-ease),background .2s}
 .hk-round{background:rgba(255,255,255,.7)}
-.hk-av{background:#1f9e8c}
+.hk-av{background:#f5a35c;color:#1d1d1f}
 :root[data-style="sky"] .top.hk-top .hk-round,:root[data-style="sky"] .top.hk-top .hk-round *{color:var(--hk-ink);stroke:var(--hk-ink)}
 :root[data-style="sky"] .top.hk-top .hk-av,:root[data-style="sky"] .top.hk-top .hk-av *{color:#fff;stroke:#fff}
 .hk-round:hover{background:rgba(255,255,255,.8)}
