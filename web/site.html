@@ -35,11 +35,11 @@
 
 <main id="main">
 
-  <!-- HERO: one message, one action -->
+  <!-- HERO: one promise, one action, and an example conversation -->
   <section class="hero" aria-labelledby="hT">
     <div class="hero-copy">
       <p class="eyebrow">English and Hindi</p>
-      <h1 id="hT">Government forms, <em>step by step.</em></h1>
+      <h1 id="hT"><span>Government</span> <span>forms,</span> <em>step by step.</em></h1>
       <p class="lede">Saathi tells you which documents to keep ready, what it costs and which official page to use. You do the final step yourself.</p>
       <div class="cta">
         <a class="pill light" href="/app" data-app>Open Saathi</a>
@@ -48,28 +48,41 @@
       <p class="fine">Free to start. No sign-up. Never asks for your OTP.</p>
     </div>
 
-    <!-- A picture of the app, so the page shows what it does. Decorative: the text beside it says the same. -->
+    <!-- A picture of the app. Decorative: the text beside it says the same. -->
     <div class="hero-art" aria-hidden="true">
       <div class="phone">
         <div class="scr">
-          <p class="scr-top">Example checklist</p>
-          <h3 class="scr-h">New PAN card</h3>
-          <p class="scr-sub">Keep these ready before you start.</p>
-          <ul class="scr-list">
-            <li><span class="tk">✓</span>Aadhaar card</li>
-            <li><span class="tk">✓</span>Passport-size photo</li>
-            <li><span class="tk">✓</span>Mobile number</li>
-          </ul>
-          <div class="scr-box"><span>Official page</span><b class="no-link">incometax.gov.in</b></div>
-          <div class="scr-btn">Finish on the official site</div>
+          <div class="chat-top"><span class="av">s</span><b>Saathi</b><em>English</em></div>
+          <p class="bub me">I need a new PAN card</p>
+          <div class="bub them">
+            <p class="bub-h">New PAN card</p>
+            <p>Keep these ready before you start.</p>
+            <ul class="scr-list">
+              <li><span class="tk">✓</span>Aadhaar card</li>
+              <li><span class="tk">✓</span>Passport-size photo</li>
+              <li><span class="tk">✓</span>Mobile number</li>
+            </ul>
+            <div class="scr-box"><span>Official page</span><b class="no-link">incometax.gov.in</b></div>
+            <div class="scr-btn">Finish on the official site</div>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- HOW: three plain steps -->
+  <!-- PROMISES: three short facts, always visible -->
+  <ul class="trust" aria-label="What Saathi promises">
+    <li><b>Official sites only</b><span>Every final step is on a government website.</span></li>
+    <li><b>Never asks for an OTP</b><span>Not for an OTP, PIN, password or card number.</span></li>
+    <li><b>English and Hindi</b><span>Ask in the language you write in.</span></li>
+  </ul>
+
+  <!-- HOW: three steps -->
   <section class="sec" id="how" aria-labelledby="howT">
-    <h2 id="howT">Three steps.</h2>
+    <div class="head">
+      <h2 id="howT">Three steps.</h2>
+      <p class="sub">Saathi prepares the checklist and the link. You do the official form.</p>
+    </div>
     <ol class="steps">
       <li class="step">
         <span class="num">1</span>
@@ -91,25 +104,45 @@
 
   <!-- SERVICES: each one opens the app on that service -->
   <section class="sec" id="services" aria-labelledby="svT">
-    <h2 id="svT">What Saathi helps with.</h2>
+    <div class="head">
+      <h2 id="svT">What Saathi helps with.</h2>
+      <p class="sub">Each one opens the app on that service, with the checklist and the official link.</p>
+    </div>
     <ul class="svc">
-      <li><a href="/app?service=pan" data-app><b>New PAN card</b><span>Apply, or fix a wrong name or date</span></a></li>
-      <li><a href="/app?service=aadhaar" data-app><b>Update Aadhaar</b><span>Address and details, and the proofs to keep ready</span></a></li>
-      <li><a href="/app?service=dl" data-app><b>Driving licence</b><span>Learner licence and renewal</span></a></li>
-      <li><a href="/app?service=passport" data-app><b>Passport</b><span>Fresh application or renewal</span></a></li>
-      <li><a href="/app?service=voter" data-app><b>Voter ID</b><span>Correct your details</span></a></li>
-      <li><a href="/app?service=gst" data-app><b>GST registration</b><span>Register from your phone</span></a></li>
+      <li><a href="/app?service=pan" data-app><b>New PAN card</b><span>Apply, or fix a wrong name or date</span><small>Official site: incometax.gov.in</small></a></li>
+      <li><a href="/app?service=aadhaar" data-app><b>Update Aadhaar</b><span>Address and details, and the proofs to keep ready</span><small>Official site: uidai.gov.in</small></a></li>
+      <li><a href="/app?service=dl" data-app><b>Driving licence</b><span>Learner licence and renewal</span><small>Official site: sarathi.parivahan.gov.in</small></a></li>
+      <li><a href="/app?service=passport" data-app><b>Passport</b><span>Fresh application or renewal</span><small>Official site: passportindia.gov.in</small></a></li>
+      <li><a href="/app?service=voter" data-app><b>Voter ID</b><span>Correct your details</span><small>Official site: voters.eci.gov.in</small></a></li>
+      <li><a href="/app?service=gst" data-app><b>GST registration</b><span>Register from your phone</span><small>Official site: gst.gov.in</small></a></li>
     </ul>
   </section>
 
-  <!-- SAFETY: the short list of promises -->
+  <!-- SAFETY: what Saathi does, and what it never does -->
   <section class="sec" id="safe" aria-labelledby="sfT">
-    <h2 id="sfT">Built to keep you safe.</h2>
-    <ul class="points">
-      <li><b>Encrypted locker.</b> ID numbers and expiry dates stay hidden until you unlock them.</li>
-      <li><b>Scam check.</b> Paste a link or message and see if it is a real government address.</li>
-      <li><b>No OTP, ever.</b> Saathi never asks for an OTP, PIN or card number.</li>
-    </ul>
+    <div class="head">
+      <h2 id="sfT">Built to keep you safe.</h2>
+      <p class="sub">Saathi is an independent helper. These are the rules it works by.</p>
+    </div>
+    <div class="dn">
+      <div class="card dn-c">
+        <h3>Saathi does</h3>
+        <ul class="ticks">
+          <li>Shows the documents, the fee and the official page before you start.</li>
+          <li>Keeps your locker encrypted. ID numbers and expiry dates stay hidden until you unlock them.</li>
+          <li>Checks a link or message for signs of a scam.</li>
+          <li>Explains each step in English or Hindi.</li>
+        </ul>
+      </div>
+      <div class="card dn-c">
+        <h3>Saathi never</h3>
+        <ul class="ticks no">
+          <li>Asks for an OTP, PIN, password or card number.</li>
+          <li>Logs in to a government site for you, or fills in a captcha.</li>
+          <li>Pays a government fee on your behalf.</li>
+        </ul>
+      </div>
+    </div>
   </section>
 
   <!-- PRICES: real prices from the server; hidden if the server has none -->
@@ -118,6 +151,7 @@
       <div class="split-l">
         <h2 id="prT">Pay only for what you use.</h2>
         <p class="sub" id="priceLede"></p>
+        <p class="sub">Your balance is in Wallet in the app. Each action takes a small amount from it.</p>
       </div>
       <div class="split-r">
         <div class="rc" id="receipt" role="list" aria-label="Price of each action"><div id="rcRows"></div></div>
@@ -155,6 +189,7 @@
       <details><summary>What happens to my details?</summary><div><p>Nothing is saved unless you choose to save it. Saved details and locker entries are encrypted and erased when you type “forget”. Read the full notice on the <a href="/privacy">privacy page</a>.</p></div></details>
       <details><summary>How much does it cost?</summary><div><p>New people get a small welcome credit and some free messages each day. After that, each action has a small price, shown above. There is no subscription.</p></div></details>
       <details><summary>What if I change my phone?</summary><div><p>In the app, open Settings and save your backup code. Paste it on the new device to get your balance and details back.</p></div></details>
+      <details><summary>How do I reach a person?</summary><div><p>Email <a href="mailto:gethelp.saathi@gmail.com">gethelp.saathi@gmail.com</a>. Never put an OTP, PIN or card number in an email.</p></div></details>
     </div>
   </section>
 
@@ -169,9 +204,14 @@
 </main>
 
 <footer class="foot">
-  <p class="wm-row"><span class="wm">saathi</span></p>
-  <p class="disc">Saathi is an independent helper and is not affiliated with or endorsed by any government body. Always confirm rules and fees on the official website.</p>
-  <nav class="flinks" aria-label="Footer"><a href="/app" data-app>Open the app</a><a href="#faq">Questions</a><a href="/privacy">Privacy</a></nav>
+  <div class="foot-l">
+    <p class="wm-row"><span class="wm">saathi</span></p>
+    <p class="disc">Saathi is an independent helper and is not affiliated with or endorsed by any government body. Always confirm rules and fees on the official website.</p>
+  </div>
+  <div class="foot-r">
+    <nav class="flinks" aria-label="Footer"><a href="/app" data-app>Open the app</a><a href="#faq">Questions</a><a href="/privacy">Privacy</a></nav>
+    <p class="help">Help: <a href="mailto:gethelp.saathi@gmail.com">gethelp.saathi@gmail.com</a></p>
+  </div>
 </footer>
 
 <script src="/site.js" defer></script>

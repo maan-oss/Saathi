@@ -15,7 +15,8 @@
   --safe:#067647; --on-safe:#ffffff; --danger:#b42318; --private:#1d4ed8;
   --scr:#f3f7fc; --scr-card:#ffffff;
   --shadow:0 1px 2px rgba(20,30,60,.05),0 12px 32px rgba(30,60,110,.08);
-  --wrap:min(1120px,calc(100% - 32px)); /* one content width for the header, hero, sections and footer, so every edge lines up */
+  /* one content width for the header, hero, sections and footer, so every edge lines up */
+  --wrap:min(1120px,calc(100% - 32px));
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){
@@ -58,7 +59,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .nav-in{width:var(--wrap);margin:0 auto;display:flex;align-items:center;gap:20px}
 .brand{display:flex;align-items:center;text-decoration:none;margin-right:auto}
 .wm{font:700 26px/1 var(--display);letter-spacing:-.035em}
-.navlinks{display:none;gap:24px;font-size:15px;color:var(--ink-mut)}
+.navlinks{display:none;gap:28px;font-size:15px;color:var(--ink-mut)}
 .navlinks a{text-decoration:none}
 .navlinks a:hover{color:var(--ink)}
 @media (min-width:900px){.navlinks{display:flex}}
@@ -74,88 +75,117 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .wide{display:flex;width:100%;align-items:center;justify-content:center;min-height:56px;padding:0 22px;border:0;border-radius:999px;background:var(--solid);color:var(--on-solid);font:600 16px/1 var(--display);cursor:pointer;transition:opacity .2s}
 .wide:disabled{opacity:.42;cursor:default}
 
-/* ---- hero: the message on the left, a picture of the app on the right ---- */
-.hero{width:var(--wrap);margin:0 auto;padding:124px 0 72px;display:grid;gap:48px;align-items:center;justify-items:center;text-align:center}
+/* ---- hero: the promise on the left, an example conversation on the right ---- */
+.hero{width:var(--wrap);margin:0 auto;padding:116px 0 48px;display:grid;gap:56px;align-items:center;justify-items:center;text-align:center}
 .hero>*{animation:rise .6s cubic-bezier(.22,.9,.28,1) both}
 .hero-art{animation-delay:.12s}
 .hero-copy{display:flex;flex-direction:column;align-items:center;max-width:620px}
 .eyebrow{display:inline-flex;align-items:center;gap:9px;padding:8px 14px;border-radius:999px;background:var(--glass);border:1px solid var(--glass-line);box-shadow:var(--shadow);font:600 13px/1 var(--sans);color:var(--ink-mut)}
 .eyebrow::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--safe)}
-h1{margin-top:22px;font:600 clamp(42px,6.2vw,76px)/1 var(--display);letter-spacing:-.04em;text-wrap:balance;max-width:14ch}
-h1 em{font-style:normal;font-weight:300;letter-spacing:-.03em;color:var(--accent)}
-.lede{margin-top:22px;font-size:clamp(18px,2vw,20px);line-height:1.5;max-width:40ch;color:var(--ink-mut);text-wrap:balance}
+h1{margin-top:24px;font:600 clamp(46px,6vw,84px)/.98 var(--display);letter-spacing:-.045em;text-wrap:balance}
+h1 span{display:block}
+h1 em{display:block;font-style:normal;font-weight:300;letter-spacing:-.035em;color:var(--accent)}
+.lede{margin-top:24px;font-size:clamp(18px,2vw,20px);line-height:1.5;max-width:40ch;color:var(--ink-mut);text-wrap:balance}
 .cta{display:flex;flex-direction:column;gap:10px;margin-top:32px;width:100%;max-width:360px}
 .cta .pill{width:100%}
 @media (min-width:560px){.cta{flex-direction:row;flex-wrap:wrap;justify-content:center;max-width:none;width:auto}.cta .pill{width:auto}}
 .fine{margin-top:18px;font-size:14px;color:var(--ink-mut)}
 @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
-/* the example checklist: a white phone with the app's cards inside */
-.hero-art{position:relative;isolation:isolate;width:100%;max-width:340px;display:flex;justify-content:center}
+/* the example conversation: a white phone with a chat inside */
+.hero-art{position:relative;isolation:isolate;width:100%;max-width:360px;display:flex;justify-content:center}
 .hero-art::before{content:"";position:absolute;inset:-6% -4% -4%;z-index:-1;border-radius:50%;background:radial-gradient(closest-side,var(--sky-glow),transparent)}
-.phone{width:100%;max-width:300px;padding:12px;border-radius:44px;background:var(--glass);border:1px solid var(--glass-line);box-shadow:0 30px 60px rgba(30,60,110,.16),0 2px 6px rgba(20,30,60,.06);transform:rotate(-2deg)}
-.scr{display:grid;gap:14px;padding:22px 18px 20px;border-radius:34px;background:var(--scr);text-align:left}
-.scr-top{font:600 11.5px/1 var(--sans);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-mut)}
-.scr-h{font:600 25px/1.12 var(--display);letter-spacing:-.02em}
-.scr-sub{margin-top:-6px;font-size:14px;color:var(--ink-mut)}
-.scr-list{display:grid;gap:8px}
-.scr-list li{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:18px;background:var(--scr-card);box-shadow:0 1px 2px rgba(20,30,60,.05);font-size:15px;font-weight:500}
-.tk{flex:none;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--safe);color:var(--on-safe);font:700 13px/1 var(--sans)}
-.scr-box{display:grid;gap:4px;padding:14px;border-radius:18px;background:var(--scr-card);font-size:13px;color:var(--ink-mut)}
+.phone{width:100%;max-width:320px;padding:12px;border-radius:44px;background:var(--glass);border:1px solid var(--glass-line);box-shadow:0 30px 60px rgba(30,60,110,.16),0 2px 6px rgba(20,30,60,.06);transform:rotate(-2deg)}
+.scr{display:grid;gap:12px;padding:14px 14px 18px;border-radius:34px;background:var(--scr);text-align:left}
+.chat-top{display:flex;align-items:center;gap:10px;padding:4px 4px 12px;border-bottom:1px solid var(--glass-line);font:600 15px/1 var(--display)}
+.chat-top em{margin-left:auto;font:600 11px/1 var(--sans);font-style:normal;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-mut)}
+.av{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--solid);color:var(--on-solid);font:700 14px/1 var(--display)}
+.bub{max-width:86%;padding:12px 14px;border-radius:18px;font-size:14.5px;line-height:1.45}
+.bub.me{justify-self:end;background:var(--solid);color:var(--on-solid);border-bottom-right-radius:6px}
+.bub.them{justify-self:start;width:100%;display:grid;gap:10px;background:var(--scr-card);box-shadow:0 1px 2px rgba(20,30,60,.05);border-bottom-left-radius:6px;color:var(--ink-mut)}
+.bub-h{font:600 18px/1.2 var(--display);letter-spacing:-.01em;color:var(--ink)}
+.tk{flex:none;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--safe);color:var(--on-safe);font:700 12px/1 var(--sans)}
+.scr-list{display:grid;gap:7px}
+.scr-list li{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--scr);font-size:14.5px;font-weight:500;color:var(--ink)}
+.scr-box{display:grid;gap:3px;padding:12px 14px;border-radius:14px;background:var(--scr);font-size:13px;color:var(--ink-mut)}
 .scr-box b{font:600 15px/1.2 var(--sans);color:var(--ink)}
-.scr-btn{display:flex;align-items:center;justify-content:center;min-height:50px;padding:0 16px;border-radius:999px;background:var(--solid);color:var(--on-solid);font:600 15px/1.2 var(--display);text-align:center}
+.scr-btn{display:flex;align-items:center;justify-content:center;min-height:48px;padding:0 10px;border-radius:999px;background:var(--solid);color:var(--on-solid);font:600 14px/1.2 var(--display);text-align:center;white-space:nowrap}
 
 @media (min-width:900px){
-  .hero{grid-template-columns:minmax(0,1fr) minmax(0,.86fr);gap:56px;justify-items:start;text-align:left;padding:150px 0 104px}
+  .hero{grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:64px;justify-items:start;text-align:left;padding:156px 0 88px}
   .hero-copy{align-items:flex-start}
   .hero-copy .cta{justify-content:flex-start}
   .hero-art{justify-content:flex-end}
 }
 
-/* ---- sections: headings on the sky, content on white cards ---- */
-.sec{width:var(--wrap);margin:0 auto;padding:88px 0}
-@media (min-width:760px){.sec{padding:112px 0}}
+/* ---- promises: three facts in one row ---- */
+.trust{width:var(--wrap);margin:0 auto 0;display:grid;border-radius:26px;background:var(--glass);border:1px solid var(--glass-line);box-shadow:var(--shadow);overflow:hidden}
+.trust li{display:flex;flex-direction:column;gap:4px;padding:22px 24px}
+.trust li+li{border-top:1px solid var(--glass-line)}
+.trust b{font:600 17px/1.25 var(--display);letter-spacing:-.01em}
+.trust span{font-size:15px;color:var(--ink-mut)}
+@media (min-width:900px){
+  .trust{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .trust li{padding:26px 28px}
+  .trust li+li{border-top:0;border-left:1px solid var(--glass-line)}
+}
 
-/* two columns on a PC: a heading (or a note) on the left, the thing it is about on the right */
+/* ---- sections ---- */
+.sec{width:var(--wrap);margin:0 auto;padding:96px 0}
+@media (min-width:760px){.sec{padding:124px 0}}
+h2{font:600 clamp(32px,4.4vw,52px)/1.02 var(--display);letter-spacing:-.035em;text-wrap:balance}
+.sub{margin-top:14px;max-width:46ch;font-size:17px;color:var(--ink-mut)}
+.note{font-size:15px}
+.head{display:grid;gap:14px;margin-bottom:44px}
+.head .sub{margin-top:0}
+@media (min-width:900px){
+  .head{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);align-items:end;gap:64px;margin-bottom:52px}
+}
+.hint{margin-top:14px;font-size:14px;color:var(--ink-mut);text-align:center}
+.card{margin-top:28px;padding:26px;border-radius:28px;background:var(--glass);border:1px solid var(--glass-line);box-shadow:var(--shadow)}
+@media (min-width:760px){.card{padding:40px}}
+
+/* two columns on a PC: a heading on the left, the thing it is about on the right */
 .split{display:grid;gap:36px;align-items:start}
 .split-r .rc,.split-r .field-i{margin-top:0}
 @media (min-width:900px){
   .split{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:88px}
 }
-h2{font:600 clamp(30px,4.6vw,46px)/1.06 var(--display);letter-spacing:-.03em;text-wrap:balance}
-.sub{margin-top:14px;max-width:56ch;font-size:17px;color:var(--ink-mut)}
-.tiny{margin-top:14px;font-size:14px;color:var(--ink-mut)}
-.hint{margin-top:14px;font-size:14px;color:var(--ink-mut);text-align:center}
-.card{margin-top:28px;padding:26px;border-radius:28px;background:var(--glass);border:1px solid var(--glass-line);box-shadow:var(--shadow)}
-@media (min-width:760px){.card{padding:40px}}
 
-/* ---- three steps ---- */
-.steps{display:grid;gap:14px;margin-top:32px}
-@media (min-width:760px){.steps{grid-template-columns:repeat(3,1fr);gap:16px}}
-.step{padding:26px;border-radius:26px;background:var(--glass);border:1px solid var(--glass-line);box-shadow:var(--shadow)}
-.num{display:inline-grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--solid);color:var(--on-solid);font:700 16px/1 var(--display)}
-.step h3{margin-top:18px;font:600 21px/1.25 var(--display);letter-spacing:-.01em}
-.step p{margin-top:8px;color:var(--ink-mut);font-size:16px}
+/* ---- three steps: a line that joins the numbers ---- */
+.steps{display:grid;gap:36px}
+.step{position:relative;display:grid;align-content:start}
+.num{display:inline-grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--solid);color:var(--on-solid);font:700 16px/1 var(--display);position:relative;z-index:1}
+.step h3{margin-top:22px;font:600 22px/1.2 var(--display);letter-spacing:-.02em}
+.step p{margin-top:10px;max-width:34ch;color:var(--ink-mut);font-size:16px}
+@media (min-width:760px){
+  .steps{grid-template-columns:repeat(3,minmax(0,1fr));gap:40px}
+  .step:not(:last-child)::after{content:"";position:absolute;top:19px;left:60px;right:-40px;height:2px;background:var(--glass-line)}
+}
 
-/* ---- services: each one opens the app on that service ---- */
-.svc{display:grid;gap:10px;margin-top:32px}
-@media (min-width:640px){.svc{grid-template-columns:1fr 1fr}}
-@media (min-width:900px){.svc{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}}
+/* ---- services: each card opens the app on that service and names the official site ---- */
+.svc{display:grid;gap:12px}
 .svc>li{display:flex}
-.svc>li>a{flex:1}
-.svc a{display:flex;flex-direction:column;gap:4px;padding:20px 22px;border-radius:24px;background:var(--glass);border:1px solid var(--glass-line);box-shadow:var(--shadow);text-decoration:none;transition:transform .2s,box-shadow .2s}
+@media (min-width:640px){.svc{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:900px){.svc{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}}
+.svc a{flex:1;display:flex;flex-direction:column;gap:6px;padding:24px;border-radius:24px;background:var(--glass);border:1px solid var(--glass-line);box-shadow:var(--shadow);text-decoration:none;transition:transform .2s,box-shadow .2s}
 .svc a:hover{transform:translateY(-2px);box-shadow:0 2px 4px rgba(20,30,60,.06),0 18px 40px rgba(30,60,110,.12)}
-.svc b{font:600 18px/1.25 var(--display)}
+.svc b{font:600 19px/1.25 var(--display)}
 .svc span{font-size:15px;color:var(--ink-mut)}
+.svc small{margin-top:auto;padding-top:14px;font-size:13px;color:var(--ink-mut);border-top:1px solid var(--glass-line)}
 
-/* ---- safety ---- */
-.points{display:grid;gap:12px;margin-top:28px}
-.points li{padding:18px 22px;border-radius:24px;background:var(--glass);border:1px solid var(--glass-line);box-shadow:var(--shadow);color:var(--ink-mut)}
-.points b{color:var(--ink);font-weight:600}
-@media (min-width:760px){.points{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}}
+/* ---- safety: does / never ---- */
+.dn{display:grid;gap:16px}
+@media (min-width:900px){.dn{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}}
+.dn-c{margin-top:0;padding:32px}
+@media (min-width:760px){.dn-c{padding:36px}}
+.dn-c h3{font:600 24px/1.2 var(--display);letter-spacing:-.02em}
+.ticks{display:grid;gap:16px;margin-top:22px}
+.ticks li{position:relative;padding-left:36px;font-size:16px;line-height:1.5;color:var(--ink-mut)}
+.ticks li::before{content:"✓";position:absolute;left:0;top:0;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--safe);color:var(--on-safe);font:700 13px/1 var(--sans)}
+.ticks.no li::before{content:"✕";background:var(--chip);color:var(--danger)}
 
-/* ---- prices ---- */
-/* each action is its own light-blue pill, always light, in either theme; the pack is the light-orange one */
+/* ---- prices: each action is its own light-blue row, always light, in either theme; the pack is the light-orange one ---- */
 .rc{display:grid;gap:12px;margin-top:28px}
 .rrow{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:64px;padding:12px 24px;border-radius:999px;background:#d6e8fa;color:#10294a;border:0;box-shadow:0 1px 2px rgba(20,30,60,.08)}
 .rrow.pk{background:#ffe0bd;color:#4a2300}
@@ -164,7 +194,8 @@ h2{font:600 clamp(30px,4.6vw,46px)/1.06 var(--display);letter-spacing:-.03em;tex
 .rv{flex:none;font:700 17px/1 var(--display);font-variant-numeric:tabular-nums;white-space:nowrap}
 
 /* ---- scam check ---- */
-.field-i{display:block;width:100%;min-height:104px;margin-top:22px;padding:16px 18px;border-radius:22px;border:1px solid var(--glass-line);background:var(--scr);color:var(--ink);font:400 16px/1.5 var(--sans);resize:vertical}
+#check .card{margin-top:0}
+.field-i{display:block;width:100%;min-height:112px;margin-top:22px;padding:16px 18px;border-radius:22px;border:1px solid var(--glass-line);background:var(--scr);color:var(--ink);font:400 16px/1.5 var(--sans);resize:vertical}
 .field-i:focus{outline:none;border-color:var(--accent)}
 .field-i::placeholder{color:var(--ink-mut)}
 .try{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
@@ -182,9 +213,9 @@ h2{font:600 clamp(30px,4.6vw,46px)/1.06 var(--display);letter-spacing:-.03em;tex
 .verdict[data-l="private"] .vt{color:var(--private)}
 
 /* ---- questions ---- */
-.faq{margin-top:28px;border-top:1px solid var(--glass-line)}
+.faq{margin-top:32px;border-top:1px solid var(--glass-line)}
 .faq details{border-bottom:1px solid var(--glass-line)}
-.faq summary{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:20px 0;list-style:none;cursor:pointer;font:600 clamp(18px,2.2vw,21px)/1.3 var(--display);letter-spacing:-.01em}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:22px 0;list-style:none;cursor:pointer;font:600 clamp(18px,2.2vw,21px)/1.3 var(--display);letter-spacing:-.01em}
 .faq summary::-webkit-details-marker{display:none}
 .faq summary::after{content:"+";flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--chip);font:400 22px/1 var(--sans);transition:transform .3s}
 .faq details[open] summary::after{transform:rotate(45deg)}
@@ -192,19 +223,24 @@ h2{font:600 clamp(30px,4.6vw,46px)/1.06 var(--display);letter-spacing:-.03em;tex
 .faq a{color:var(--accent)}
 
 /* ---- closing call: a white card with a sky wash, so the page ends where it began ---- */
-.final{width:var(--wrap);margin:0 auto 88px;padding:72px 24px;border-radius:36px;text-align:center;background:linear-gradient(180deg,var(--glass) 0,var(--scr) 100%);border:1px solid var(--glass-line);box-shadow:var(--shadow)}
+.final{width:var(--wrap);margin:0 auto 88px;padding:76px 24px;border-radius:36px;text-align:center;background:linear-gradient(180deg,var(--glass) 0,var(--scr) 100%);border:1px solid var(--glass-line);box-shadow:var(--shadow)}
 .final h2{margin:0 auto;max-width:18ch}
 .final p{margin-top:16px;font-size:17px;color:var(--ink-mut)}
 .final .cta{margin-top:28px;justify-content:center}
-.final .pill.ghost{background:var(--chip);border-color:transparent;box-shadow:none}
 
 /* ---- footer ---- */
-.foot{width:var(--wrap);margin:0 auto;display:grid;gap:14px;padding:32px 0 56px;border-top:1px solid var(--glass-line);color:var(--ink-mut);font-size:15px}
+.foot{width:var(--wrap);margin:0 auto;display:grid;gap:28px;padding:40px 0 56px;border-top:1px solid var(--glass-line);color:var(--ink-mut);font-size:15px}
 .foot .wm{color:var(--ink)}
-.disc{max-width:70ch}
+.disc{margin-top:12px;max-width:60ch}
+.foot-r{display:grid;gap:14px;align-content:start}
 .flinks{display:flex;flex-wrap:wrap;gap:10px 24px}
-.flinks a{color:var(--ink);text-decoration:none}
-.flinks a:hover{text-decoration:underline}
+.flinks a,.help a{color:var(--ink);text-decoration:none}
+.flinks a:hover,.help a:hover{text-decoration:underline}
+.help a{color:var(--accent)}
+@media (min-width:900px){
+  .foot{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:48px}
+  .foot-r{justify-items:end;text-align:right}
+}
 
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
