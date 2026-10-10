@@ -175,7 +175,7 @@ test('web: landing page at / , app at /app, and the config feeds the pricing cha
   const w = await boot();
   const home = await w.call('/', { sid: null });
   assert.equal(home.status, 200);
-  assert.match(home.text, /<span>Government<\/span>\s*<span>forms,<\/span>/);
+  assert.match(home.text, /<h1 id="hT">Government<br>forms,<br>step by step\.<\/h1>/);
   assert.match(home.text, /gethelp\.saathi@gmail\.com/);
   assert.doesNotMatch(home.text, /data-wa|wa\.me/, 'WhatsApp stays out of visitor copy until Meta approves');
   assert.match(home.text, /not affiliated with or endorsed by any government/);
