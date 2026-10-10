@@ -204,7 +204,9 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
   function serveStatic(req, res, url) {
     // Photos for the landing page: only plain file names from web/photos, nothing else.
     const photo = /^\/photos\/([a-z0-9-]+\.jpg)$/.exec(url.pathname);
-    const ent = photo ? [`photos/${photo[1]}`, 'image/jpeg'] : STATIC[url.pathname];
+    // Animation libraries for the landing page, copied into web/vendor (no CDN; the CSP is 'self' only).
+    const vendor = /^\/vendor\/([A-Za-z]+(?:\.min)?\.js)$/.exec(url.pathname);
+    const ent = photo ? [`photos/${photo[1]}`, 'image/jpeg'] : vendor ? [`vendor/${vendor[1]}`, 'text/javascript; charset=utf-8'] : STATIC[url.pathname];
     if (!ent) return false;
     const [file, type] = ent;
     let buf = fileCache.get(file);

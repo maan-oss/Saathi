@@ -222,7 +222,7 @@ const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost');
 
   // The web app (page, files and /app/api/*). Everything else below is WhatsApp, payments and the operator's pages.
-  if (url.pathname === '/' || url.pathname === '/app' || url.pathname.startsWith('/app/') || url.pathname.startsWith('/fonts/') || url.pathname.startsWith('/photos/') || /^\/(app\.js|screens\.js|tools\.js|guides\.js|hark\.js|hark\.css|guides\.css|polish\.css|welcome\.css|screens\.css|site\.css|site\.js|sky\.js|og\.png|robots\.txt|style\.css|manifest\.webmanifest|sw\.js|logo\.svg|favicon\.ico|icon\.svg|icon-192\.png|icon-512\.png|apple-touch-icon\.png)$/.test(url.pathname)) {
+  if (url.pathname === '/' || url.pathname === '/app' || url.pathname.startsWith('/app/') || url.pathname.startsWith('/fonts/') || url.pathname.startsWith('/photos/') || url.pathname.startsWith('/vendor/') || /^\/(app\.js|screens\.js|tools\.js|guides\.js|hark\.js|hark\.css|guides\.css|polish\.css|welcome\.css|screens\.css|site\.css|site\.js|sky\.js|og\.png|robots\.txt|style\.css|manifest\.webmanifest|sw\.js|logo\.svg|favicon\.ico|icon\.svg|icon-192\.png|icon-512\.png|apple-touch-icon\.png)$/.test(url.pathname)) {
     return void web.handle(req, res, url).then((done) => {
       if (!done && !res.writableEnded) {
         res.statusCode = 404;
