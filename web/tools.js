@@ -513,7 +513,7 @@
   };
 
   S.reminders = async () => {
-    const col = frame(T('Reminders'), T('Add a date you cannot afford to miss. It shows here, and on WhatsApp if you connect it.'));
+    const col = frame(T('Reminders'), T('Add a date you cannot afford to miss. It shows here.'));
     col.classList.add('wide-col');
     const holder = el('div', 'rm-wrap'); col.append(holder);
     let st = { items: [], wa: false, max: 12 }; let docs = [];
@@ -547,7 +547,7 @@
       const go = btn('btn pri xl', T('Add reminder'), null); go.type = 'submit';
       const dl = field(T('Date'), due);
       form.append(el('span', 'fld-l', T('Quick start')), chips, field(T('Name'), label), dl, hint, field(T('Note'), nt), yr,
-        el('p', 'rm-explain', T('Saathi counts down to this date. If your WhatsApp is linked you get a message 30 days before, 7 days before and on the day.')), er, go);
+        el('p', 'rm-explain', T('Saathi counts down to this date and shows it here.')), er, go);
       form.onsubmit = (e) => { e.preventDefault(); busyBtn(go, async () => {
         er.hide();
         const r = await tcall('reminders.add', { label: label.value, due: due.value, note: nt.value, repeat: yr.input.checked ? 'yearly' : '' });
@@ -626,7 +626,6 @@
       holder.append(nb);
       if (st.wa) holder.append(note(T('Reminders also arrive on your WhatsApp: 30 days before, 7 days before and on the day.'), 'wa'));
       else if (C.cfg?.link && C.cfg?.whatsapp) { const n = note(T('Get these on WhatsApp too. Connect your phone in Devices and sync.'), 'wa'); n.classList.add('tap'); n.onclick = () => openScreen('devices'); holder.append(n); }
-      else holder.append(note(T('Reminders show here. Link WhatsApp to get them on your phone.'), 'wa'));
     };
     const [a, b] = await Promise.all([tcall('reminders.list'), tcall('locker.list')]);
     if (a.ok) st = a.data; if (b.ok) docs = b.data.docs;
@@ -893,7 +892,7 @@
 
       // security
       const ul = el('ul', 'incl');
-      for (const t of [T('A code works once and expires in 5 minutes'), T('You confirm on the new device before anything is linked'), T('WhatsApp needs a Yes reply from that same phone'), T('Remove any device at any time and it loses access at once'), T('Nobody can link a device without a code that only you can see')]) { const li = el('li'); li.append(ico('check', 16), el('span', '', t)); ul.append(li); }
+      for (const t of [T('A code works once and expires in 5 minutes'), T('You confirm on the new device before anything is linked'), T('Remove any device at any time and it loses access at once'), T('Nobody can link a device without a code that only you can see')]) { const li = el('li'); li.append(ico('check', 16), el('span', '', t)); ul.append(li); }
       holder.append(group(T('How linking stays safe'), ul));
       const me = dev.list.find((d) => d.current);
       if (dev.list.length > 1) {

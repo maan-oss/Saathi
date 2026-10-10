@@ -15,6 +15,7 @@
   --safe:#067647; --on-safe:#ffffff; --danger:#b42318; --private:#1d4ed8;
   --scr:#f3f7fc; --scr-card:#ffffff;
   --shadow:0 1px 2px rgba(20,30,60,.05),0 12px 32px rgba(30,60,110,.08);
+  --wrap:min(1120px,calc(100% - 32px)); /* one content width for the header, hero, sections and footer, so every edge lines up */
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){
@@ -52,8 +53,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .ext-link{color:var(--accent);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
 
 /* ---- header: sits on the sky, white once you scroll ---- */
-.nav{position:fixed;inset:0 0 auto 0;z-index:20;display:flex;align-items:center;gap:20px;padding:max(14px,env(safe-area-inset-top)) 16px 12px;color:var(--ink);transition:background .3s,padding .3s,box-shadow .3s}
+.nav{position:fixed;inset:0 0 auto 0;z-index:20;padding:max(14px,env(safe-area-inset-top)) 0 12px;color:var(--ink);transition:background .3s,padding .3s,box-shadow .3s}
 .nav.scrolled{background:var(--nav-bg);padding-bottom:10px;box-shadow:0 1px 0 var(--glass-line)}
+.nav-in{width:var(--wrap);margin:0 auto;display:flex;align-items:center;gap:20px}
 .brand{display:flex;align-items:center;text-decoration:none;margin-right:auto}
 .wm{font:700 26px/1 var(--display);letter-spacing:-.035em}
 .navlinks{display:none;gap:24px;font-size:15px;color:var(--ink-mut)}
@@ -73,7 +75,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .wide:disabled{opacity:.42;cursor:default}
 
 /* ---- hero: the message on the left, a picture of the app on the right ---- */
-.hero{max-width:1080px;margin:0 auto;padding:124px 16px 72px;display:grid;gap:48px;align-items:center;justify-items:center;text-align:center}
+.hero{width:var(--wrap);margin:0 auto;padding:124px 0 72px;display:grid;gap:48px;align-items:center;justify-items:center;text-align:center}
 .hero>*{animation:rise .6s cubic-bezier(.22,.9,.28,1) both}
 .hero-art{animation-delay:.12s}
 .hero-copy{display:flex;flex-direction:column;align-items:center;max-width:620px}
@@ -90,7 +92,7 @@ h1 em{font-style:normal;font-weight:300;letter-spacing:-.03em;color:var(--accent
 
 /* the example checklist: a white phone with the app's cards inside */
 .hero-art{position:relative;isolation:isolate;width:100%;max-width:340px;display:flex;justify-content:center}
-.hero-art::before{content:"";position:absolute;inset:-6% -14% -4%;z-index:-1;border-radius:50%;background:radial-gradient(closest-side,var(--sky-glow),transparent)}
+.hero-art::before{content:"";position:absolute;inset:-6% -4% -4%;z-index:-1;border-radius:50%;background:radial-gradient(closest-side,var(--sky-glow),transparent)}
 .phone{width:100%;max-width:300px;padding:12px;border-radius:44px;background:var(--glass);border:1px solid var(--glass-line);box-shadow:0 30px 60px rgba(30,60,110,.16),0 2px 6px rgba(20,30,60,.06);transform:rotate(-2deg)}
 .scr{display:grid;gap:14px;padding:22px 18px 20px;border-radius:34px;background:var(--scr);text-align:left}
 .scr-top{font:600 11.5px/1 var(--sans);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-mut)}
@@ -104,15 +106,22 @@ h1 em{font-style:normal;font-weight:300;letter-spacing:-.03em;color:var(--accent
 .scr-btn{display:flex;align-items:center;justify-content:center;min-height:50px;padding:0 16px;border-radius:999px;background:var(--solid);color:var(--on-solid);font:600 15px/1.2 var(--display);text-align:center}
 
 @media (min-width:900px){
-  .hero{grid-template-columns:minmax(0,1fr) minmax(0,.86fr);gap:56px;justify-items:start;text-align:left;padding:150px 32px 104px}
+  .hero{grid-template-columns:minmax(0,1fr) minmax(0,.86fr);gap:56px;justify-items:start;text-align:left;padding:150px 0 104px}
   .hero-copy{align-items:flex-start}
   .hero-copy .cta{justify-content:flex-start}
   .hero-art{justify-content:flex-end}
 }
 
 /* ---- sections: headings on the sky, content on white cards ---- */
-.sec{max-width:920px;margin:0 auto;padding:88px 16px}
-@media (min-width:760px){.sec{padding:112px 24px}}
+.sec{width:var(--wrap);margin:0 auto;padding:88px 0}
+@media (min-width:760px){.sec{padding:112px 0}}
+
+/* two columns on a PC: a heading (or a note) on the left, the thing it is about on the right */
+.split{display:grid;gap:36px;align-items:start}
+.split-r .rc,.split-r .field-i{margin-top:0}
+@media (min-width:900px){
+  .split{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:88px}
+}
 h2{font:600 clamp(30px,4.6vw,46px)/1.06 var(--display);letter-spacing:-.03em;text-wrap:balance}
 .sub{margin-top:14px;max-width:56ch;font-size:17px;color:var(--ink-mut)}
 .tiny{margin-top:14px;font-size:14px;color:var(--ink-mut)}
@@ -131,6 +140,9 @@ h2{font:600 clamp(30px,4.6vw,46px)/1.06 var(--display);letter-spacing:-.03em;tex
 /* ---- services: each one opens the app on that service ---- */
 .svc{display:grid;gap:10px;margin-top:32px}
 @media (min-width:640px){.svc{grid-template-columns:1fr 1fr}}
+@media (min-width:900px){.svc{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}}
+.svc>li{display:flex}
+.svc>li>a{flex:1}
 .svc a{display:flex;flex-direction:column;gap:4px;padding:20px 22px;border-radius:24px;background:var(--glass);border:1px solid var(--glass-line);box-shadow:var(--shadow);text-decoration:none;transition:transform .2s,box-shadow .2s}
 .svc a:hover{transform:translateY(-2px);box-shadow:0 2px 4px rgba(20,30,60,.06),0 18px 40px rgba(30,60,110,.12)}
 .svc b{font:600 18px/1.25 var(--display)}
@@ -140,6 +152,7 @@ h2{font:600 clamp(30px,4.6vw,46px)/1.06 var(--display);letter-spacing:-.03em;tex
 .points{display:grid;gap:12px;margin-top:28px}
 .points li{padding:18px 22px;border-radius:24px;background:var(--glass);border:1px solid var(--glass-line);box-shadow:var(--shadow);color:var(--ink-mut)}
 .points b{color:var(--ink);font-weight:600}
+@media (min-width:760px){.points{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}}
 
 /* ---- prices ---- */
 /* each action is its own light-blue pill, always light, in either theme; the pack is the light-orange one */
@@ -179,14 +192,14 @@ h2{font:600 clamp(30px,4.6vw,46px)/1.06 var(--display);letter-spacing:-.03em;tex
 .faq a{color:var(--accent)}
 
 /* ---- closing call: a white card with a sky wash, so the page ends where it began ---- */
-.final{width:calc(100% - 32px);max-width:880px;margin:0 auto 88px;padding:72px 24px;border-radius:36px;text-align:center;background:linear-gradient(180deg,var(--glass) 0,var(--scr) 100%);border:1px solid var(--glass-line);box-shadow:var(--shadow)}
+.final{width:var(--wrap);margin:0 auto 88px;padding:72px 24px;border-radius:36px;text-align:center;background:linear-gradient(180deg,var(--glass) 0,var(--scr) 100%);border:1px solid var(--glass-line);box-shadow:var(--shadow)}
 .final h2{margin:0 auto;max-width:18ch}
 .final p{margin-top:16px;font-size:17px;color:var(--ink-mut)}
 .final .cta{margin-top:28px;justify-content:center}
 .final .pill.ghost{background:var(--chip);border-color:transparent;box-shadow:none}
 
 /* ---- footer ---- */
-.foot{max-width:920px;margin:0 auto;display:grid;gap:14px;padding:32px 16px 56px;border-top:1px solid var(--glass-line);color:var(--ink-mut);font-size:15px}
+.foot{width:var(--wrap);margin:0 auto;display:grid;gap:14px;padding:32px 0 56px;border-top:1px solid var(--glass-line);color:var(--ink-mut);font-size:15px}
 .foot .wm{color:var(--ink)}
 .disc{max-width:70ch}
 .flinks{display:flex;flex-wrap:wrap;gap:10px 24px}

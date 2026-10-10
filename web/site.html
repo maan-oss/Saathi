@@ -21,14 +21,16 @@
 <a class="skip" href="#main">Skip to content</a>
 
 <header class="nav" id="nav">
-  <a class="brand" href="/" aria-label="Saathi home"><span class="wm">saathi</span></a>
-  <nav class="navlinks" aria-label="Sections">
-    <a href="#how">How it works</a>
-    <a href="#services">Services</a>
-    <a href="#price">Prices</a>
-    <a href="#faq">Questions</a>
-  </nav>
-  <a class="pill light sm" href="/app" data-app>Open Saathi</a>
+  <div class="nav-in">
+    <a class="brand" href="/" aria-label="Saathi home"><span class="wm">saathi</span></a>
+    <nav class="navlinks" aria-label="Sections">
+      <a href="#how">How it works</a>
+      <a href="#services">Services</a>
+      <a href="#price">Prices</a>
+      <a href="#faq">Questions</a>
+    </nav>
+    <a class="pill light sm" href="/app" data-app>Open Saathi</a>
+  </div>
 </header>
 
 <main id="main">
@@ -42,7 +44,6 @@
       <div class="cta">
         <a class="pill light" href="/app" data-app>Open Saathi</a>
         <a class="pill ghost" href="#how">See how it works</a>
-        <a class="pill ghost" href="#" data-wa target="_blank" rel="noopener noreferrer" hidden>Start on WhatsApp</a>
       </div>
       <p class="fine">Free to start. No sign-up. Never asks for your OTP.</p>
     </div>
@@ -113,25 +114,35 @@
 
   <!-- PRICES: real prices from the server; hidden if the server has none -->
   <section class="sec" id="price" aria-labelledby="prT" hidden>
-    <h2 id="prT">Pay only for what you use.</h2>
-    <p class="sub" id="priceLede"></p>
-    <div class="rc" id="receipt" role="list" aria-label="Price of each action"><div id="rcRows"></div></div>
+    <div class="split">
+      <div class="split-l">
+        <h2 id="prT">Pay only for what you use.</h2>
+        <p class="sub" id="priceLede"></p>
+      </div>
+      <div class="split-r">
+        <div class="rc" id="receipt" role="list" aria-label="Price of each action"><div id="rcRows"></div></div>
+      </div>
+    </div>
   </section>
 
   <!-- SCAM CHECK -->
   <section class="sec" id="check" aria-labelledby="chT">
-    <div class="card">
-      <h2 id="chT">Strange message? Check it first.</h2>
-      <p class="sub">Paste a link, SMS or offer. Nothing you paste is saved, and no link is opened.</p>
-      <label for="chkIn" class="sr">Paste a link, SMS or offer</label>
-      <textarea id="chkIn" class="field-i" rows="3" maxlength="800" placeholder="Paste a link or the whole message" spellcheck="false"></textarea>
-      <div class="try">
-        <button type="button" class="chip" data-ex="Your PAN is blocked. Update now: pan-card-apply.xyz/kyc">Blocked PAN text</button>
-        <button type="button" class="chip" data-ex="https://www.incometax.gov.in">Income tax site</button>
+    <div class="card split">
+      <div class="split-l">
+        <h2 id="chT">Strange message? Check it first.</h2>
+        <p class="sub">Paste a link, SMS or offer. Nothing you paste is saved, and no link is opened.</p>
       </div>
-      <button class="wide" id="chkGo" type="button">Check it</button>
-      <p class="hint" id="chkHint">Never paste an OTP or card number.</p>
-      <div class="verdict" id="chkOut" hidden aria-live="polite"></div>
+      <div class="split-r">
+        <label for="chkIn" class="sr">Paste a link, SMS or offer</label>
+        <textarea id="chkIn" class="field-i" rows="4" maxlength="800" placeholder="Paste a link or the whole message" spellcheck="false"></textarea>
+        <div class="try">
+          <button type="button" class="chip" data-ex="Your PAN is blocked. Update now: pan-card-apply.xyz/kyc">Blocked PAN text</button>
+          <button type="button" class="chip" data-ex="https://www.incometax.gov.in">Income tax site</button>
+        </div>
+        <button class="wide" id="chkGo" type="button">Check it</button>
+        <p class="hint" id="chkHint">Never paste an OTP or card number.</p>
+        <div class="verdict" id="chkOut" hidden aria-live="polite"></div>
+      </div>
     </div>
   </section>
 
@@ -153,7 +164,6 @@
     <p>Ask in your language. Saathi answers in the one you pick.</p>
     <div class="cta">
       <a class="pill light" href="/app" data-app>Open Saathi</a>
-      <a class="pill ghost" href="#" data-wa target="_blank" rel="noopener noreferrer" hidden>Start on WhatsApp</a>
     </div>
   </section>
 </main>

@@ -50,11 +50,8 @@
     for (const b of $$('.try button')) b.addEventListener('click', () => { chkIn.value = b.dataset.ex; runCheck(); });
   }
 
-  // ---- From the server: real prices, and the WhatsApp link (sections stay hidden if the server has none) ----
+  // ---- From the server: real prices (the price section stays hidden if the server has none) ----
   fetch('/app/api/config').then((r) => (r.ok ? r.json() : Promise.reject())).then((c) => {
-    if (c.whatsapp && /^https:\/\/wa\.me\//.test(c.whatsapp)) {
-      for (const a of $$('[data-wa]')) { a.href = c.whatsapp; a.hidden = false; }
-    }
     const p = c.prices, sec = $('#price');
     if (!p || !sec) return;
     const items = [['A message', p.msgPaise], ['An AI answer', p.aiPaise], ['A document check', p.scanPaise], ['A copy sheet', p.sheetPaise], ['A voice note', p.voicePaise], ['A reminder', p.remindPaise]]
