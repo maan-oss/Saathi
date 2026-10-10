@@ -132,3 +132,24 @@ test('retention: a balance account is left alone before 180 days idle', () => {
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('retention: a linked-device pointer lives as long as its main account, and is removed with it', () => {
+  const { s, dir } = fixture({
+    main: { age: 200, lang: 'en', state: 'menu', wallet: { paise: 500, history: [] }, devices: [{ id: 'dev1', label: 'Phone', added: 1 }] },
+    dev1: { age: 200, linkTo: 'main', state: 'menu' },
+    orphan: { age: 1, linkTo: 'gone', state: 'menu' },
+    empty: { age: 2, lang: 'en', state: 'menu' },
+    emptyDev: { age: 2, linkTo: 'empty', state: 'menu' },
+  });
+  try {
+    s.sweep(IDLE, KEEP, NOW);
+    assert.ok(s.getUser('main'), 'the main account with money stays');
+    assert.ok(s.getUser('dev1'), 'its pointer stays, even though the pointer itself has been idle for 200 days');
+    assert.equal(s.getUser('orphan'), null, 'a pointer whose main account is gone is removed');
+    assert.equal(s.getUser('empty'), null, 'an empty account is still deleted after a day');
+    s.sweep(IDLE, KEEP, NOW + HOUR);
+    assert.equal(s.getUser('emptyDev'), null, 'the pointer goes once its main account has gone');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

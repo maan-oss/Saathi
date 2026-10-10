@@ -163,7 +163,15 @@ export class Store {
         }
         continue;
       }
-      const hasValue = Boolean(u.vault) || (u.packs || []).some((p) => p.until > now) || (u.reminders || []).length > 0 || Boolean(u.linkTo) || (u.devices || []).length > 0 || Boolean(u.locker) || Boolean(u.extras);
+      // A linked-device pointer belongs to its main account. It is kept while that account exists, and removed with it.
+      if (u.linkTo) {
+        if (!this.users[u.linkTo]) {
+          delete this.users[id];
+          n++;
+        }
+        continue;
+      }
+      const hasValue = Boolean(u.vault) || (u.packs || []).some((p) => p.until > now) || (u.reminders || []).length > 0 || (u.devices || []).length > 0 || Boolean(u.locker) || Boolean(u.extras);
       if (idle > (hasValue ? keepMs : idleMs)) {
         delete this.users[id];
         n++;
