@@ -5,21 +5,22 @@ gates below.
 
 ## Gates: all four must be closed before the switch
 
-1. **Backups.** The Supabase organization (Moventra) is on the **free plan**. Free projects have no daily backups and no
-   point-in-time recovery. `src/supastore.js` assumes Supabase keeps the backups, so today nothing would. Pick one:
-   - upgrade the organization to a paid plan (daily backups), or
-   - run a scheduled export of the database to somewhere outside Supabase, and test one restore.
-   Do not switch over until one of these is live and a restore has been tried.
-2. **Region.** The Supabase project is in `ap-south-1` (Mumbai). `render.yaml` does not set a region, so the Render
-   service is in whatever region was picked when it was created. Check it in Render. A region cannot be changed on an
-   existing service: moving to a closer one (Singapore is the nearest Render region to Mumbai) means a new service and a
-   new disk, then the same copy as below.
-3. **Secret key.** Create the secret key in Supabase (Project Settings, API Keys). Put it in Render as
+1. **Backups: accepted without.** The Supabase organization (Moventra) is on the free plan, which has no daily backups
+   and no point-in-time recovery. The owner has decided this is acceptable (2026-10-10). Keep the dated file copies
+   from the switch for at least 14 days, as step 9 says.
+2. **Region: not confirmed.** The Supabase project is in `ap-south-1` (Mumbai). `render.yaml` does not set a region, and
+   this session cannot see the Render service. Its public address is `https://saathi-u4o7.onrender.com`, and `/health`
+   returns `ok`, but the response does not show the region. Check it in Render (service, Settings, Region). A region
+   cannot be changed on an existing service: moving to Singapore, the nearest Render region to Mumbai, means a new
+   service and a new disk, then the same copy as below.
+3. **Secret key: not yet created.** Create the secret key in Supabase (Project Settings, API Keys). Put it in Render as
    `SUPABASE_SECRET_KEY`. Never paste it into chat, a file, or the repo.
-4. **A real API test.** The schema was checked on a local Postgres 16, and the SQL functions were checked on the live
-   project. The app's Supabase client (PostgREST requests) has **not** been run against a real Supabase API yet. Run the
-   app against a staging project or a Supabase branch first, and send one WhatsApp message, one web visit, one payment
-   test, and one reminder through it.
+4. **A real API test: not done.** The schema was checked on a local Postgres 16, and the functions were checked on the
+   live project. The public API was checked live: anon is refused on every table and on the functions (401, `42501`).
+   The write path has not been run through the real REST API, because there is no staging project yet. The project
+   limit on the free plan is full (two active projects: `saathi` and `oskra`), and creating a branch was cancelled.
+   Once a staging project exists, run `scripts/smoke-supabase.js` against it with its secret key. It refuses the
+   production project and checks every store method through the REST API.
 
 ## The switch (app stopped)
 
