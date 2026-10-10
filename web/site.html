@@ -20,6 +20,8 @@
 <body class="landing">
 <a class="skip" href="#main">Skip to content</a>
 
+<div class="top-note"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.2v4M8 4.6v.2"/></svg><span>An independent helper for government forms. Not a government website.</span></div>
+
 <header class="nav" id="nav">
   <div class="wrap nav-in">
     <a class="brand" href="/" aria-label="Saathi home"><img src="/logo.svg" width="28" height="28" alt=""><span>saathi</span></a>
@@ -35,46 +37,26 @@
 
 <main id="main">
 
-  <!-- HERO: one clear question box, example questions under it, and a real photo -->
+  <!-- HERO: centred, one big question bar on a real photo, examples under it -->
   <section class="hero" aria-labelledby="hT">
-    <div class="wrap hero-in">
-      <div class="hero-copy">
-        <h1 id="hT">Government<br>forms,<br>step by step.</h1>
-        <p class="lede">Saathi tells you which documents to keep ready, what it costs and which official page to use. You do the final step yourself.</p>
+    <div class="hero-in">
+      <h1 id="hT">Government forms, step by step.</h1>
+      <p class="lede">Whatever form you need, start here. Saathi tells you what to keep ready, what it costs and which official page to use.</p>
 
-        <a class="ask" href="/app" data-app>
+      <div class="stage">
+        <img src="/photos/phone.jpg" width="1200" height="800" alt="A person holding a smartphone" fetchpriority="high">
+        <a class="ask" href="/app" data-app aria-label="Describe what you need">
           <span class="ask-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v10H9l-5 4z"/></svg></span>
-          <span class="ask-in">Describe what you need</span>
-          <span class="ask-go">Ask</span>
+          <span class="ask-in">Try ‘<span id="askTry">New PAN card</span>’</span>
+          <span class="ask-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
         </a>
-        <p class="ask-try">Try:</p>
-        <ul class="ask-ex">
-          <li><a href="/app?service=pan" data-app>New PAN card</a></li>
-          <li><a href="/app?service=aadhaar" data-app>Fix my Aadhaar address</a></li>
-          <li><a href="/app?service=passport" data-app>Renew my passport</a></li>
-        </ul>
       </div>
 
-      <figure class="hero-photo">
-        <img src="/photos/phone.jpg" width="1200" height="800" alt="A person holding a smartphone" fetchpriority="high">
-        <div class="hero-card" aria-hidden="true">
-          <div class="phone">
-            <div class="chat-top"><span class="av">s</span><b>Saathi</b><em>English</em></div>
-            <p class="bub me">I need a new PAN card</p>
-            <div class="bub them">
-              <p class="bub-h">New PAN card</p>
-              <p>Keep these ready before you start.</p>
-              <ul class="scr-list">
-                <li><span class="tk"></span>Aadhaar card</li>
-                <li><span class="tk"></span>Passport-size photo</li>
-                <li><span class="tk"></span>Mobile number</li>
-              </ul>
-              <div class="scr-box"><span>Official page</span><b class="no-link">incometax.gov.in</b></div>
-              <div class="scr-btn">Finish on the official site</div>
-            </div>
-          </div>
-        </div>
-      </figure>
+      <ul class="ask-ex" aria-label="Example questions">
+        <li><a href="/app?service=pan" data-app>New PAN card</a></li>
+        <li><a href="/app?service=aadhaar" data-app>Fix my Aadhaar address</a></li>
+        <li><a href="/app?service=passport" data-app>Renew my passport</a></li>
+      </ul>
     </div>
   </section>
 
@@ -90,6 +72,42 @@
         <li><a href="https://voters.eci.gov.in" target="_blank" rel="noopener">voters.eci.gov.in</a></li>
         <li><a href="https://www.gst.gov.in" target="_blank" rel="noopener">gst.gov.in</a></li>
       </ul>
+    </div>
+  </section>
+
+  <!-- STATEMENT: one plain line and one link -->
+  <section class="statement" aria-labelledby="stmT">
+    <div class="wrap statement-in">
+      <h2 id="stmT">Clear answers, from official sources.</h2>
+      <p>Saathi explains each step from the government’s own pages. It never does the final step, logs in or pays for you.</p>
+      <a class="link-arrow" href="#how">See how it works</a>
+    </div>
+  </section>
+
+  <!-- PREVIEW: what a conversation looks like, on the sunset -->
+  <section class="preview" aria-labelledby="pvT">
+    <div class="wrap">
+      <div class="sec-head center">
+        <h2 id="pvT">A checklist first. Then the link.</h2>
+        <p>This is how a conversation goes.</p>
+      </div>
+      <div class="preview-sky">
+        <div class="phone">
+          <div class="chat-top"><span class="av">s</span><b>Saathi</b><em>English</em></div>
+          <p class="bub me">I need a new PAN card</p>
+          <div class="bub them">
+            <p class="bub-h">New PAN card</p>
+            <p>Keep these ready before you start.</p>
+            <ul class="scr-list">
+              <li><span class="tk"></span>Aadhaar card</li>
+              <li><span class="tk"></span>Passport-size photo</li>
+              <li><span class="tk"></span>Mobile number</li>
+            </ul>
+            <div class="scr-box"><span>Official page</span><b>incometax.gov.in</b></div>
+            <div class="scr-btn">Finish on the official site</div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -212,7 +230,7 @@
     </div>
   </section>
 
-  <!-- LANGUAGE: photo right, text left -->
+  <!-- LANGUAGE: text left, photo right -->
   <section class="sec" aria-labelledby="lgT">
     <div class="wrap feature">
       <div>

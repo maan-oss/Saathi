@@ -14,6 +14,14 @@
     onScroll();
   }
 
+  // ---- Hero question bar: the example inside the bar changes every few seconds. The page reads the same without it. ----
+  const askTry = $('#askTry');
+  if (askTry && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const examples = ['New PAN card', 'Update Aadhaar', 'Renew passport', 'Driving licence'];
+    let n = 0;
+    setInterval(() => { n = (n + 1) % examples.length; askTry.textContent = examples[n]; }, 3200);
+  }
+
   // ---- Scam check (same rules as the bot; nothing is saved, no link is opened) ----
   const chkIn = $('#chkIn'), chkGo = $('#chkGo'), chkOut = $('#chkOut'), chkHint = $('#chkHint');
   // Turns *word* into <b>word</b>. Never uses innerHTML.
