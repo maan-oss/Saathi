@@ -538,7 +538,7 @@ textarea.field-i{min-height:84px;resize:vertical;line-height:1.5}
 .pay-ring path{fill:none;stroke:var(--on-green,#fff);stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:60;stroke-dashoffset:60;animation:payDraw .45s .22s ease-out forwards}
 .pay-win{align-items:center;text-align:center;gap:12px}
 .pay-win h3{margin:0}
-.pay-bal{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;box-sizing:border-box;padding:20px 16px;border-radius:20px;border:1px solid var(--line);background:var(--bg2)}
+.pay-bal{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;box-sizing:border-box;padding:20px 16px;border-radius:20px;border:1px solid var(--line);background:var(--bg2)}
 .pay-lbl{margin:0;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
 .pay-num{font:600 46px/1.05 var(--serif,Georgia,serif);font-variant-numeric:tabular-nums;letter-spacing:-.01em;color:var(--ink)}
 .pay-num.tick{animation:payRoll .16s ease-out}
@@ -547,7 +547,7 @@ textarea.field-i{min-height:84px;resize:vertical;line-height:1.5}
 .pay-chip.on{animation:payChip 1.7s ease-out forwards}
 @keyframes payPop{from{transform:scale(.5);opacity:0}to{transform:none;opacity:1}}
 @keyframes payDraw{to{stroke-dashoffset:0}}
-@keyframes payRoll{from{transform:translateY(-38%);opacity:.35}to{transform:none;opacity:1}}
+@keyframes payRoll{from{transform:translateY(-10%);opacity:.45}to{transform:none;opacity:1}}
 @keyframes payGlow{0%{text-shadow:0 0 0 transparent}35%{text-shadow:0 0 22px color-mix(in srgb,var(--green,#0F8A5F) 70%,transparent)}100%{text-shadow:0 0 0 transparent}}
 @keyframes payChip{0%{opacity:0;transform:translateY(8px) scale(.9)}15%{opacity:1;transform:none}70%{opacity:1;transform:translateY(-6px)}100%{opacity:0;transform:translateY(-18px)}}
 @media (prefers-reduced-motion:reduce){.pay-ring,.pay-ring path,.pay-num.tick,.pay-num.done,.pay-chip.on{animation:none!important}.pay-ring path{stroke-dashoffset:0}}

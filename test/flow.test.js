@@ -521,3 +521,29 @@ test('a bare service name gets its card and three buttons on the web, with no AI
     assert.deepEqual(card.buttons.map((b) => b.id), ['go_pan', 'docs', 'fee']);
   } finally { done(); }
 });
+
+test('a sentence that names a service and asks to apply gets the service card, with no AI call', async () => {
+  const { run, say, calls, done } = setup();
+  try {
+    await say('hi');
+    await say('1');
+    const replies = (await run({ type: 'text', text: 'I want to apply for a PAN card' }, 'u1', { channel: 'web', ai: true })).replies;
+    assert.equal(calls.answer, 0, 'an apply request is our own card, not a model call');
+    const card = replies.find((r) => r.kind === 'buttons' && /New PAN card/.test(r.body));
+    assert.ok(card, 'the PAN card is in the replies: ' + JSON.stringify(replies.map((r) => r.kind || r).slice(0, 4)));
+  } finally { done(); }
+});
+
+test('with the AI off, a named service still gets its card; a question with no service gets the busy line', async () => {
+  const { run, say, calls, done } = setup({}, { enabled: false });
+  try {
+    await say('hi');
+    await say('1');
+    const named = (await run({ type: 'text', text: 'how long does a passport renewal take in my state?' }, 'u1', { channel: 'web', ai: true })).replies;
+    assert.equal(calls.answer, 0);
+    assert.ok(named.find((r) => r.kind === 'buttons' && /passport/i.test(r.body)), 'the passport card is in the replies: ' + JSON.stringify(named.map((r) => r.kind || r).slice(0, 4)));
+    const vague = (await run({ type: 'text', text: 'what is the weather like in my village today' }, 'u1', { channel: 'web', ai: true })).replies;
+    assert.equal(calls.answer, 0);
+    assert.ok(vague.some((r) => typeof r === 'string' && /AI answers are used up|resting/i.test(r)), 'the busy line stays for questions with no service: ' + JSON.stringify(vague.map((r) => r.kind || r).slice(0, 3)));
+  } finally { done(); }
+});

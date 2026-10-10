@@ -483,6 +483,7 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
     const FEE_Q = /\b(fees?|cost|costs|price|charges?|kitna|kitne|kharcha|rate)\b|फीस|शुल्क|कितना|कितने|खर्च/i;
     const DOCS_Q = /\b(documents?|docs|papers|required|kaagaz|kagaz|dastavez)\b|दस्तावेज|कागज़|कागज/i;
     const GREET = /^\s*(hi+|hello+|hey+|hii+|namaste|namaskar|नमस्ते|नमस्कार|हैलो|हाय|good (morning|afternoon|evening))[\s!.?]*$/i;
+    const APPLY_Q = /\b(apply|applying|get|make|start|register|download|book|want|need|help)\b/i;
 
     const ALLINFO_Q = /\b(all|every ?thing|full|complete|whole|sab ?kuch|saari|sari)\b.{0,30}\b(info|information|details?|jankari|needed|required|need)\b|\b(info|information|details?)\b.{0,20}\b(needed|required|need)\b.{0,20}\b(all|everything)\b|what (all )?(do|will) i need|सारी जानकारी|पूरी जानकारी|सब कुछ/i;
     const SENS = new Set(['dob', 'father_name', 'mother_name', 'address', 'pincode', 'mobile', 'email']);
@@ -547,7 +548,8 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
           const wantFee = FEE_Q.test(q);
           const wantDocs = DOCS_Q.test(q);
           const specific = /link|penalt|late|tatk?al|pvc|learn|duplic|correct|reprint|renew|minor|child|police|pcc|lost|nri|foreign|international|retest|test|compos|return|inoperat|refund|updat|chang|address|mobile|name|dob|birth|state|hindi/i.test(q);
-          if (sv && !inSteps && !wantFee && !wantDocs && !specific && q.split(/\s+/).length <= 3) {
+          // "I want to apply for a PAN card" is the same request as "PAN card": the service's own card, no AI call.
+          if (sv && !inSteps && !wantFee && !wantDocs && !specific && (q.split(/\s+/).length <= 3 || APPLY_Q.test(q))) {
             // Just a service name ("PAN card", "passport"): our own card with the next steps, so it never depends on the AI.
             const b = baseService(sv.id) || sv;
             u.svc = b.id;
@@ -573,7 +575,13 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
       let raw0 = hit && hit.exp > Date.now() ? hit.text : null;
       let c = null;
       if (!raw0) {
-        if (!llm.enabled || !(await guard.llmAllowed(userId))) return say(inSteps ? 'step_help_busy' : 'qa_busy');
+        if (!llm.enabled || !(await guard.llmAllowed(userId))) {
+          // The AI is off or spent for today. A service named in this message still gets its own card, so the guide keeps working.
+          const named = !inSteps ? detectService(question) : null;
+          const b = named && (baseService(named.id) || named);
+          if (b) { u.svc = b.id; replies.push(serviceCard(b)); return; }
+          return say(inSteps ? 'step_help_busy' : 'qa_busy');
+        }
         c = gate('ai');
         if (!c) return;
       }

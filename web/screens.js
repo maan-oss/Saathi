@@ -500,6 +500,8 @@
         for (const [k, t] of [['msg', T('Unlimited guide messages')], ['doc', T('Unlimited form sheets')], ['camera', T('{n} document checks', { n: pk.scans })], ['spark', T('{n} AI answers', { n: pk.ai })]]) { const li = el('li'); const c = el('span', 'inc-ic'); c.append(ico(k, 16)); li.append(c, el('span', '', t)); ul.append(li); }
         const enough = (w?.paise || 0) >= pk.paise; const need = Math.max(MIN_TOPUP, Math.ceil((pk.paise - (w?.paise || 0)) / 100) * 100);
         const buy = btn('btn ' + (PACK_TAG[pk.id] ? 'pri' : 'ink') + ' xl', enough ? T('Get it for {amt} from your wallet', { amt: rupee(pk.paise) }) : T('Pay {amt} and get it', { amt: rupee(need) }), () => buyPack(pk, buy));
+        // Until payments are live, a pack that needs a top-up cannot be bought: say so instead of opening a payment that will fail.
+        if (!C.cfg?.pay && !enough) { buy.disabled = true; buy.textContent = T('Payments go live soon'); }
         card.append(top, price, ul, buy); holder.append(card);
       }
       holder.append(note(T('Packs are paid from your wallet. If you are short, you pay only the difference on Stripe and the pack starts by itself.'), 'wallet'));

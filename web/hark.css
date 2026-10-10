@@ -429,3 +429,12 @@ input:focus,input:focus-visible,textarea:focus,textarea:focus-visible,select:foc
 :root[data-style="sky"] .g-tab[aria-selected="true"]{background:#FFFFFF!important;color:#1d1d1f!important}
 :root[data-style="sky"][data-sky="night"] .g-tab[aria-selected="true"]{background:rgba(255,255,255,.2)!important;color:#fff!important}
 :root .gh-sl{flex-basis:100%}
+
+/* ===== round 2 polish: invite card spacing, readable section labels on the sky, payment count-up ===== */
+/* the first line of the invite card was pushed down by a paragraph margin on top of the box padding */
+:root .grp-box.invite>p:first-child{margin:0 0 4px}
+/* section labels sit on the peach part of the sky too: a firmer shadow keeps them readable on both */
+:root[data-style="sky"] .grp-t,:root[data-style="sky"] .sb-label{opacity:1;text-shadow:0 1px 2px rgba(20,40,80,.35),0 0 14px rgba(20,40,80,.28)}
+/* pack list: the included-feature icons were a near-white disc on a near-white card; give them a visible tint */
+:root .inc-ic{background:color-mix(in srgb,var(--ink) 8%,transparent);color:var(--ink)}
+:root .inc-ic svg{stroke-width:2}
