@@ -305,6 +305,18 @@ button,input,textarea{font:inherit;color:inherit}
 .final-sky h2{max-width:14ch;font-size:clamp(2.6rem,6.2vw,5.8rem);font-weight:700;line-height:.95;letter-spacing:-.045em;color:var(--ink);text-wrap:balance}
 .final-sky p{max-width:36ch;margin-top:20px;font-size:clamp(1.05rem,1.6vw,1.25rem);color:#27313f}
 .final-sky .btn{margin-top:34px}
+/* ---- terms and refund pages: one reading column ---- */
+.legal{max-width:720px;padding-block:clamp(48px,8vh,88px) clamp(64px,10vh,110px)}
+.legal h1{font:700 clamp(2.2rem,5vw,3.2rem)/1.05 var(--display);letter-spacing:-.035em;margin:0}
+.legal-date{margin-top:12px;color:var(--mut);font-size:15px}
+.legal h2{font:700 clamp(1.25rem,2.4vw,1.5rem)/1.2 var(--display);letter-spacing:-.02em;margin:40px 0 12px}
+.legal p,.legal li{color:#2c3442;font-size:16px;line-height:1.7}
+.legal p{margin:0 0 14px}
+.legal ul{margin:0 0 14px;padding-left:22px}
+.legal li{margin-bottom:8px}
+.legal a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.legal a:hover{color:var(--sun-hi)}
+
 /* The panel is full width at every size; on wide screens its words line up with the page grid. */
 @media (min-width:900px){.final-sky{padding-inline:max(40px,calc((100% - 1240px) / 2 + 40px))}}
 

@@ -6,13 +6,13 @@ Drafts only. Nothing here is posted, sent or bought. Every price and limit below
 
 These need you or an approval. Nothing below works around them.
 
-1. **Business details for Stripe and the site.** Stripe live mode and consumer law expect the operator's legal name, ABN, address and a contact. The site has none yet.
-2. **Terms of service and a refund policy.** Neither page exists. Stripe asks for both. Have them reviewed before you publish.
+1. **Business details.** Operator on the site: Maan Ghori, 47 Prominence Street, Pallara QLD, Australia. Contact gethelp.saathi@gmail.com. **Still missing: ABN** (needed if you trade as a business). Add the same details in Stripe's business settings (you do this in Stripe, not in the app).
+2. **Terms and refund policy.** Live at `/terms` and `/refund`, written from what the app actually does. Have a consumer-law reviewer read them. Two choices are mine and can be changed: the 14-day window for packs, and "reply within 2 business days" (an aim, not a promise).
 3. **WhatsApp number approved by Meta.** The site hides WhatsApp until it is approved. Until then every link goes to `https://getsaathi.in/app`.
 4. **A real live payment test.** One ₹50 top-up, then refund it if you want. I could not run this (the checkout step was blocked).
 5. **Render disk confirmed.** In Render, `saathi-data` must be mounted at `/data`. The admin setup page shows "Data on its own disk".
 6. **Analytics decision.** Nothing is installed, so you can't see where sign-ups come from. See section 6.
-7. **Production deploy.** The new commits are on `lean-stripe-setup`, not `main`.
+7. **Production deploy.** Done: `main` carries the current code and is live on getsaathi.in.
 
 ## 2. Positioning
 
@@ -40,7 +40,9 @@ These need you or an approval. Nothing below works around them.
 1. **Search (organic).** One page per service: PAN, driving licence, passport, Aadhaar update, voter ID, GST. Each shows the checklist, the fee and the official link. *Not built yet. This is the biggest gap.*
 2. **WhatsApp**, after Meta approval. Share the link. Send nothing in bulk without the person's opt-in.
 3. **Social posts** (drafts below), 3 a week.
-4. **Paid ads: hold.** Google Ads will not run ads for government-document services unless the advertiser is certified or authorised by government, and certification needs Google's advertiser verification. Saathi is neither, so do not run Google Ads on PAN, passport, driving-licence or similar keywords. Meta's standards do not show a clear block on this, but no spend until you decide.
+4. **Paid ads: Google is closed; Meta is untested.**
+   - **Google:** Ads for government-document services need a government provider or an authorised non-government provider. An authorised provider must be linked from an official government website that names it as authorised. Commercial contracts, licences and registry entries do not count. India is excluded only for "regional identification numbers" (for example ration cards), not for PAN, passport, driving licence, Aadhaar, voter ID or GST. Saathi is not authorised, so Google Ads for these services cannot run. Source: https://support.google.com/adspolicy/answer/13156083?hl=en
+   - **Meta:** the India rules Meta has published cover investment products and real-money gaming, not government-document help. I found nothing that blocks this category, but Meta reviews every ad, so only a small test shows the answer. No spend until you approve a budget.
 
 ## 4. Social drafts (not posted)
 

@@ -18,6 +18,14 @@
       "destination": "https://saathi-u4o7.onrender.com/privacy"
     },
     {
+      "source": "/terms",
+      "destination": "/terms.html"
+    },
+    {
+      "source": "/refund",
+      "destination": "/refund.html"
+    },
+    {
       "source": "/app",
       "destination": "https://saathi-u4o7.onrender.com/app"
     },
