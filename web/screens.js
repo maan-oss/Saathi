@@ -841,7 +841,7 @@
         const p = el('p', 'wl-sub', T('Pick the language you read in.'));
         langHolder = el('div', 'wl-langs');
         langPicker(langHolder, { current: lang.code, onPick: pickLang });
-        page.append(h, p, langHolder);
+        page.append(el('p', 'wl-eye', T('Step {n} of {total}', { n: 1, total: OB_TOTAL })), h, p, langHolder);
         return page;
       },
       () => { // 2: about you (all four needed)
@@ -924,7 +924,7 @@
         const first = about.name.trim().split(/\s+/)[0] || '';
         const h = el('h1', '', first ? T('You are all set, {name}.', { name: first }) : T('You are all set.')); h.tabIndex = -1;
         const p = el('p', 'wl-sub', T('Ask in your own words, or pick a service from Home. Your details are saved encrypted.'));
-        page.append(el('p', 'wl-eye', T('Step {n} of {total}', { n: 5, total: OB_TOTAL })), tickHost.firstElementChild, h, p);
+        page.append(el('p', 'wl-eye', T('Step {n} of {total}', { n: 5, total: OB_TOTAL })), h, p, tickHost.firstElementChild);
         return page;
       },
     ];

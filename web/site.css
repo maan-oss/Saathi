@@ -8,7 +8,6 @@
   --sky-top:#3f5f9a;
   --sky-mid:#b7a0a6;
   --sky-low:#f0b98a;
-  --sky-glow:rgba(255,190,130,.6);
   /* the app's light surfaces and ink */
   --paper:#ffffff;
   --page:#fbfbfd;
@@ -16,7 +15,7 @@
   --mut:#5b6472;
   --line:rgba(60,80,120,.16);
   --glass:rgba(255,255,255,.8);
-  /* orange: the sunset tone for buttons, peach for soft fills */
+  /* orange is the sky and the soft fills only. Buttons, badges and avatars are black and white. */
   --sun:#f5a35c;
   --sun-hi:#f08d4a;
   --sun-soft:#fff0e2;
@@ -27,7 +26,7 @@
   --sans:"Instrument Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --wrap:min(1120px,calc(100% - 32px));
   --shadow:0 1px 2px rgba(20,30,60,.05),0 22px 44px -22px rgba(20,30,60,.3);
-  --sunset:radial-gradient(70% 42% at 50% 100%,var(--sky-glow),rgba(255,190,130,0) 72%),linear-gradient(180deg,var(--sky-top) 0%,var(--sky-mid) 56%,var(--sky-low) 100%);
+  --sunset:linear-gradient(180deg,var(--sky-top) 0%,var(--sky-mid) 56%,var(--sky-low) 100%);
 }
 
 *,*::before,*::after{box-sizing:border-box}
@@ -47,8 +46,8 @@ section[id]{scroll-margin-top:84px}
 /* ---- buttons ---- */
 .btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 26px;border-radius:var(--r-pill,999px);border:1.5px solid transparent;font:600 16px/1 var(--display);color:var(--ink);text-decoration:none;cursor:pointer;transition:background-color .2s,border-color .2s}
 .btn-sm{min-height:42px;padding:0 18px;font-size:15px}
-.btn-solid{background:var(--sun)}
-.btn-solid:hover{background:var(--sun-hi)}
+.btn-solid{background:var(--ink);color:#fff}
+.btn-solid:hover{background:#000}
 .btn-line{background:var(--glass);border-color:rgba(255,255,255,.9);box-shadow:var(--shadow)}
 .btn-line:hover{background:#fff}
 .btn-block{width:100%}
@@ -82,7 +81,7 @@ h1{font-weight:700;font-size:clamp(42px,11vw,76px);line-height:1.02;letter-spaci
 .chat-top{display:flex;align-items:center;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--line);font-size:15px}
 .chat-top b{font:600 15px/1 var(--display)}
 .chat-top em{margin-left:auto;font-style:normal;font-size:12px;color:var(--mut)}
-.av{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--sun);color:var(--ink);font:700 14px/1 var(--display)}
+.av{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;font:700 14px/1 var(--display)}
 .bub{font-size:14px;line-height:1.4}
 .bub.me{width:fit-content;max-width:82%;margin:14px 0 12px auto;background:var(--ink);color:#fff;padding:10px 14px;border-radius:18px 18px 4px 18px}
 .bub.them{background:#fff;border:1px solid var(--line);border-radius:18px 18px 18px 4px;padding:14px}
@@ -90,11 +89,11 @@ h1{font-weight:700;font-size:clamp(42px,11vw,76px);line-height:1.02;letter-spaci
 .bub.them>p:not(.bub-h){color:var(--mut)}
 .scr-list{list-style:none;margin:12px 0;padding:0;display:grid;gap:6px}
 .scr-list li{display:flex;align-items:center;gap:10px;background:var(--sun-soft);border-radius:12px;padding:9px 10px;font-size:14px}
-.tk{position:relative;flex:none;width:20px;height:20px;border-radius:50%;background:var(--sun)}
+.tk{position:relative;flex:none;width:20px;height:20px;border-radius:50%;background:var(--ink)}
 .tk::after{content:"";position:absolute;left:7px;top:4px;width:4px;height:8px;border:solid var(--ink);border-width:0 2px 2px 0;transform:rotate(45deg)}
 .scr-box{display:grid;gap:2px;margin-top:8px;border:1px solid var(--line);border-radius:12px;padding:9px 12px;font-size:12px;color:var(--mut)}
 .scr-box b{font:600 14px/1.3 var(--sans);color:var(--ink)}
-.scr-btn{margin-top:12px;background:var(--sun);color:var(--ink);text-align:center;border-radius:999px;padding:11px 10px;font:600 14px/1.2 var(--display);white-space:nowrap}
+.scr-btn{margin-top:12px;background:var(--ink);color:#fff;text-align:center;border-radius:999px;padding:11px 10px;font:600 14px/1.2 var(--display);white-space:nowrap}
 
 /* ---- promises ---- */
 .promises{list-style:none;margin-block:0;padding:0;display:grid;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
@@ -113,7 +112,7 @@ h1{font-weight:700;font-size:clamp(42px,11vw,76px);line-height:1.02;letter-spaci
 /* how */
 .steps{list-style:none;margin:0;padding:0;display:grid;gap:44px}
 .step{position:relative;padding-top:36px;border-top:2px solid var(--line)}
-.num{position:absolute;top:-22px;left:0;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--sun);color:var(--ink);font:700 18px/1 var(--display)}
+.num{position:absolute;top:-22px;left:0;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--ink);color:#fff;font:700 18px/1 var(--display)}
 .step h3{font-size:23px;line-height:1.2;letter-spacing:-.01em}
 .step p{margin-top:10px;max-width:34ch;color:var(--mut)}
 
@@ -136,8 +135,8 @@ h1{font-weight:700;font-size:clamp(42px,11vw,76px);line-height:1.02;letter-spaci
 .dn-panel h3{font-size:27px;letter-spacing:-.02em}
 .ticks{list-style:none;margin:22px 0 0;padding:0;display:grid;gap:16px}
 .ticks li{position:relative;padding-left:36px;font-size:16px;line-height:1.5}
-.ticks li::before{content:"";position:absolute;left:0;top:1px;width:24px;height:24px;border-radius:50%;background:var(--sun)}
-.ticks li::after{content:"";position:absolute;left:9px;top:6px;width:6px;height:11px;border:solid var(--ink);border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
+.ticks li::before{content:"";position:absolute;left:0;top:1px;width:24px;height:24px;border-radius:50%;background:var(--ink)}
+.ticks li::after{content:"";position:absolute;left:9px;top:6px;width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
 .ticks.no li::before{background:var(--ink)}
 .ticks.no li::after{left:7px;top:13px;width:10px;height:10px;border:0;transform:rotate(45deg);background:linear-gradient(#fff,#fff) center/10px 2px no-repeat,linear-gradient(#fff,#fff) center/2px 10px no-repeat}
 

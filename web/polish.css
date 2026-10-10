@@ -445,12 +445,10 @@ details.tips>summary .ti svg{stroke:var(--bg);width:20px;height:20px}
 :root[data-style="sky"][data-sky="night"] .gr-bg{stroke:rgba(255,255,255,.25)}
 :root[data-style="sky"][data-sky="night"] .gr-fg{stroke:#fff}
 :root[data-style="sky"][data-sky="night"] .gr-pct{color:#fff}
-/* richer, Hark-like skies: soft glow at the horizon over a smooth gradient */
-:root[data-style="sky"] body{background:radial-gradient(120% 55% at 50% 108%,var(--sk-glow,transparent),transparent 70%),linear-gradient(180deg,var(--sk-a) 0%,var(--sk-b) 52%,var(--sk-c) 100%) fixed}
-:root[data-style="sky"][data-sky="day"]{--sk-a:#4f86c9;--sk-b:#9cc7ee;--sk-c:#dfe8ef;--sk-glow:rgba(255,255,255,.55)}
-:root[data-style="sky"][data-sky="dawn"]{--sk-a:#6c92cf;--sk-b:#b9b3c8;--sk-c:#f6cdb0;--sk-glow:rgba(255,214,170,.6)}
-:root[data-style="sky"][data-sky="sunset"]{--sk-a:#3f5f9a;--sk-b:#b7a0a6;--sk-c:#f0b98a;--sk-glow:rgba(255,190,130,.6)}
-:root[data-style="sky"][data-sky="night"]{--sk-a:#0b1530;--sk-b:#1c3560;--sk-c:#46628d;--sk-glow:rgba(214,170,130,.32);--bg:#0e1932;--bg2:#17284a;--glass:rgba(14,26,52,.6);--glass-line:rgba(255,255,255,.14)}
+/* the sky: one plain gradient, blue at the top to orange at the bottom. No glow. The default is the dusk (sunset) look. */
+:root[data-style="sky"] body{background:linear-gradient(180deg,var(--sk-a) 0%,var(--sk-b) 52%,var(--sk-c) 100%) fixed}
+:root[data-style="sky"][data-sky="sunset"]{--sk-a:#3f5f9a;--sk-b:#b7a0a6;--sk-c:#f0b98a}
+:root[data-style="sky"][data-sky="night"]{--sk-a:#0b1530;--sk-b:#1c3560;--sk-c:#46628d;--bg:#0e1932;--bg2:#17284a;--glass:rgba(14,26,52,.6);--glass-line:rgba(255,255,255,.14)}
 :root[data-style="sky"][data-sky="night"] .top .brand img{border-radius:50%;box-shadow:0 0 0 1.5px rgba(255,255,255,.55)}
 :root[data-style="sky"] .sb-label{color:var(--mut);opacity:1;text-shadow:none}
 :root[data-style="sky"] .sidebar{background:rgba(238,243,250,.96)}
@@ -488,8 +486,8 @@ details.tips>summary .ti svg{stroke:var(--bg);width:20px;height:20px}
 :root[data-style="sky"] .dd-btn{background:var(--glass);border-color:var(--glass-line);}
 :root[data-style="sky"] .dd-pop{background:rgba(238,243,250,.97);--ink:#1d1d1f;--mut:#5b6472;--line:rgba(60,80,120,.2);--bg:transparent;--bg2:rgba(255,255,255,.7)}
 :root[data-style="sky"][data-sky="night"] .dd-pop{background:rgba(12,22,46,.98);--ink:#f4f6fb;--mut:#aab6cc;--line:rgba(255,255,255,.18);--bg2:rgba(255,255,255,.08)}
-/* Sky by day: always the light palette, even if the device or viewer is in dark mode */
-:root[data-style="sky"]:not([data-sky="night"]){--bg:#FBFBFD;--bg2:#F1F4F9;--ink:#1d1d1f;--mut:#5b6472;--line:rgba(60,80,120,.18);--tint:#EEF1F6;--tint2:#E3E8F0;--glass:rgba(255,255,255,.72);--glass-line:rgba(255,255,255,.5);color-scheme:light}
+/* The dusk sky: always the light palette, even if the device or viewer is in dark mode. Buttons and icons are black and white. */
+:root[data-style="sky"]:not([data-sky="night"]){--bg:#FBFBFD;--bg2:#F1F4F9;--ink:#1d1d1f;--mut:#5b6472;--line:rgba(60,80,120,.18);--tint:#EEF1F6;--tint2:#E3E8F0;--glass:rgba(255,255,255,.72);--glass-line:rgba(255,255,255,.5);--ac:#1d1d1f;--ac-ink:#ffffff;--ac-soft:#eef1f6;--ac-line:#d5dbe6;color-scheme:light}
 
 /* ===== Hark-style navigation: no side rail. A floating glass menu card, and a pill nav in the top bar on wide screens ===== */
 :root[data-style="sky"] .sidebar{position:fixed;z-index:60;top:max(10px,env(safe-area-inset-top));left:10px;right:10px;bottom:auto;width:auto;max-width:560px;margin-inline:auto;max-height:calc(100dvh - 20px);border:1px solid var(--glass-line);border-radius:32px;box-shadow:0 24px 80px rgba(10,20,50,.35);transform:translateY(-14px) scale(.98);opacity:0;visibility:hidden;pointer-events:none;transition:transform .32s var(--pol,ease),opacity .22s,visibility .3s;overflow:hidden}

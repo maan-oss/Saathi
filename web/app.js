@@ -43,15 +43,12 @@
   const applyTheme = (t) => { if (t === 'light' || t === 'dark') root.dataset.theme = t; else delete root.dataset.theme; if (typeof skyPhase === 'function') skyPhase(); };
   const applyScale = (n) => root.style.setProperty('--scale', String(n));
   const applyStyle = () => { root.dataset.style = 'sky'; skyPhase(); };
-  // Sky style: the backdrop follows the viewer's own clock (dawn, day, sunset, night), like the Hark app.
+  // Sky style: one default look, the dusk sky (blue to orange), in every theme and at every hour.
+  // Only an explicit Dark choice in Settings gives the night sky. The phone's own dark mode does not change it.
   function skyPhase() {
     if (root.dataset.style !== 'sky') return;
-    const h = new Date().getHours();
-    const dark = root.dataset.theme === 'dark' || (root.dataset.theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
-    const lightPick = root.dataset.theme === 'light';
-    root.dataset.sky = dark || (!lightPick && (h >= 20 || h < 5)) ? 'night' : h < 8 ? 'dawn' : h < 17 ? 'day' : 'sunset';
+    root.dataset.sky = root.dataset.theme === 'dark' ? 'night' : 'sunset';
   }
-  setInterval(skyPhase, 600000);
   applyTheme(store.get('saathi.theme'));
   applyStyle(store.get('saathi.style'));
   applyScale(Number(store.get('saathi.scale')) || 1);
