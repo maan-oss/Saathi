@@ -273,7 +273,7 @@ test('a language that fails the checks is not switched on, and the person stays 
     await say('hi');
     const more = await tap('3'); // More languages
     assert.equal(more.at(-1).kind, 'list');
-    assert.equal(more.at(-1).rows.length, 9);
+    assert.equal(more.at(-1).rows.length, i18n.SHIPPED_LANGS.length); // only languages that work without AI are listed
     const r = (await tap('2')).map(plain).join('\n'); // Telugu
     assert.match(r, /couldn't set up Telugu/);
     assert.equal(store.getUser('u1').lang, 'en');

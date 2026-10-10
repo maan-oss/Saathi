@@ -649,7 +649,7 @@
     [N('Does Saathi ask for my OTP or password?'), N('Never. If a message asks you for an OTP, PIN or password, it is not from Saathi. Enter those only on the official site.')],
     [N('What does it cost?'), N('You get free guide messages and free AI answers every day, and new people get a small welcome credit. After that each paid feature has a small price you can see in Wallet. A pack covers a whole paperwork job for a few days.')],
     [N('Is my data safe?'), N('Saved details and the locker are encrypted on our server and only kept if you choose. Your chats are saved on this device only, and you can delete them any time. You can delete everything in Settings.')],
-    [N('Which languages work?'), N('The whole app works in all the official Indian languages. Saathi answers in the language you write in, so you can switch between English and Hindi mid-chat. Some languages are translated by AI, so check important details.')],
+    [N('Which languages work?'), N('The app works in English, Hindi and eight more Indian languages: Tamil, Telugu, Bengali, Marathi, Gujarati, Kannada, Malayalam and Punjabi. Saathi answers in the language you write in, so you can switch between English and Hindi mid-chat. Some languages are translated by AI, so check important details.')],
     [N('My payment did not show up'), N('It can take a minute. Open Wallet and use “I have paid, check now”. If the money left your account and the wallet stays the same, email gethelp.saathi@gmail.com with your payment receipt.')],
     [N('How do I delete my data?'), N('Settings, then Delete all my data. It removes your saved details, locker, reminders and wallet from our server.')],
   ];

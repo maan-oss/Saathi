@@ -3,16 +3,19 @@
 // Nothing here calls the network: it only holds what has been registered.
 
 export const LANGS = [
-  { code: 'ta', native: 'தமிழ்', en: 'Tamil' },
-  { code: 'te', native: 'తెలుగు', en: 'Telugu' },
-  { code: 'bn', native: 'বাংলা', en: 'Bengali' },
-  { code: 'mr', native: 'मराठी', en: 'Marathi' },
-  { code: 'gu', native: 'ગુજરાતી', en: 'Gujarati' },
-  { code: 'kn', native: 'ಕನ್ನಡ', en: 'Kannada' },
-  { code: 'ml', native: 'മലയാളം', en: 'Malayalam' },
-  { code: 'pa', native: 'ਪੰਜਾਬੀ', en: 'Punjabi' },
+  // shipped: a full set of translations ships in src/ui/<code>.json (checked by test/languages.test.js). Only these
+  // are offered in the app and on WhatsApp lists, because they work without a live AI.
+  { code: 'ta', native: 'தமிழ்', en: 'Tamil', shipped: true },
+  { code: 'te', native: 'తెలుగు', en: 'Telugu', shipped: true },
+  { code: 'bn', native: 'বাংলা', en: 'Bengali', shipped: true },
+  { code: 'mr', native: 'मराठी', en: 'Marathi', shipped: true },
+  { code: 'gu', native: 'ગુજરાતી', en: 'Gujarati', shipped: true },
+  { code: 'kn', native: 'ಕನ್ನಡ', en: 'Kannada', shipped: true },
+  { code: 'ml', native: 'മലയാളം', en: 'Malayalam', shipped: true },
+  { code: 'pa', native: 'ਪੰਜਾਬੀ', en: 'Punjabi', shipped: true },
+  // Not shipped: they have no translations yet, so they need a live AI and are not offered in the lists. Typing the
+  // name on WhatsApp still tries the AI.
   { code: 'or', native: 'ଓଡ଼ିଆ', en: 'Odia' },
-  // The rest of the 22 scheduled languages. On WhatsApp these are reached by typing the name; the web app lists them all.
   { code: 'ur', native: 'اردو', en: 'Urdu' },
   { code: 'as', native: 'অসমীয়া', en: 'Assamese' },
   { code: 'ne', native: 'नेपाली', en: 'Nepali' },
@@ -26,7 +29,9 @@ export const LANGS = [
   { code: 'sat', native: 'ᱥᱟᱱᱛᱟᱲᱤ', en: 'Santali', beta: true },
   { code: 'mni', native: 'ꯃꯩꯇꯩꯂꯣꯟ', en: 'Manipuri', beta: true },
 ];
-export const WA_LANGS = LANGS.slice(0, 9); // WhatsApp lists hold 10 rows at most
+// The languages offered in lists: the web app's picker and the WhatsApp "more languages" list (10 rows at most).
+export const SHIPPED_LANGS = LANGS.filter((l) => l.shipped);
+export const WA_LANGS = SHIPPED_LANGS.slice(0, 9);
 export const langDef = (code) => LANGS.find((l) => l.code === code) || null;
 
 /** Match what someone typed to a language code: the code, the English name, or the native name. */

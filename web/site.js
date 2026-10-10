@@ -375,6 +375,19 @@
   };
   ST.create({ trigger: routeList, start: 'top bottom', end: 'bottom top', onUpdate: pickStop, onRefresh: pickStop });
   G.fromTo('.rail i', { scaleY: 0 }, { scaleY: 1, ease: 'none', scrollTrigger: { trigger: routeList, start: 'top 72%', end: 'bottom 72%', scrub: 0.4 } });
+  // The line ends at the last step's circle, not at the bottom of its text. Measured from the layout (not the
+  // screen position), so the reveal animations do not move it.
+  const rail = $('.rail', routeList);
+  const fitRail = () => {
+    const last = $$('.stop-n', routeList).at(-1);
+    if (!rail || !last) return;
+    let y = 0;
+    for (let n = last; n && n !== routeList; n = n.offsetParent) y += n.offsetTop;
+    rail.style.bottom = Math.max(0, routeList.offsetHeight - (y + last.offsetHeight / 2)) + 'px';
+  };
+  fitRail();
+  addEventListener('resize', fitRail);
+  document.fonts?.ready.then(fitRail);
 
   // The sunset panel drifts as you pass it.
   G.fromTo('.final-sky', { backgroundPosition: '50% 0%' }, { backgroundPosition: '50% 100%', ease: 'none', scrollTrigger: { trigger: '.final', start: 'top bottom', end: 'bottom top', scrub: true } });

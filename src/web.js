@@ -18,7 +18,7 @@ import { classifyUrl, extractUrls, analyze, sensitiveKind } from './scamcheck.js
 import { t } from './messages.js';
 import { SERVICES, LAST_VERIFIED, L10 } from './services.js';
 import { balance, activePack, inr, freeLeft, freeAiLeft, grantTrial, rates, MIN_TOPUP_PAISE } from './billing.js';
-import { LANGS, langDef } from './i18n.js';
+import { SHIPPED_LANGS, langDef } from './i18n.js';
 import { uiDict } from './uistrings.js';
 
 const WEB_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'web');
@@ -523,7 +523,7 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
       return true;
     }
     if (p === '/app/api/config' && req.method === 'GET') {
-      json(res, 200, { whatsapp: shell.whatsappNumber ? `https://wa.me/${shell.whatsappNumber}?text=Hi` : null, whatsappNumber: shell.whatsappNumber || null, voice: Boolean(shell.voice), pay: Boolean(shell.pay), link: Boolean(links), tools: Boolean(tools), privacy: '/privacy', prices: prices(), topups: config.rates?.topups || [], languages: [{ code: 'en', native: 'English', en: 'English' }, { code: 'hi', native: 'हिन्दी', en: 'Hindi' }, ...LANGS.map((l) => ({ code: l.code, native: l.native, en: l.en, beta: Boolean(l.beta) }))] });
+      json(res, 200, { whatsapp: shell.whatsappNumber ? `https://wa.me/${shell.whatsappNumber}?text=Hi` : null, whatsappNumber: shell.whatsappNumber || null, voice: Boolean(shell.voice), pay: Boolean(shell.pay), link: Boolean(links), tools: Boolean(tools), privacy: '/privacy', prices: prices(), topups: config.rates?.topups || [], languages: [{ code: 'en', native: 'English', en: 'English' }, { code: 'hi', native: 'हिन्दी', en: 'Hindi' }, ...SHIPPED_LANGS.map((l) => ({ code: l.code, native: l.native, en: l.en }))] });
       return true;
     }
     // Site logos for the sources screen. Only real icons pass: a missing one is a 404 so the page shows a letter badge instead of a generic arrow.
