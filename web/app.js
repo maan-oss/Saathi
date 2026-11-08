@@ -203,14 +203,6 @@
     const fieldVal = async (key) => { const d = await tcall('details.get', {}); const f = d.fields.find((x) => x.key === key); if (!f?.value) throw new Error('none'); return { view: f.value, copy: f.value }; };
     privFields.forEach((f, i) => lockRow(f.label, f.set, () => fieldVal(f.key), i));
     (r.ids || []).forEach((x, i) => lockRow(x.label, x.set, async () => { const d = await tcall('locker.reveal', { type: x.type }); return { view: d.number, copy: d.copy }; }, i + privFields.length));
-    {
-      const all = [...plainFields, ...privFields, ...(r.ids || [])]; const have = all.filter((x) => x.set).length;
-      const m = el('div', 'pk-prog'); const tx = el('span', '', T('{n} of {m} saved', { n: have, m: all.length }));
-      const bar = el('span', 'meter'); const fill = el('i'); fill.style.setProperty('--v', String(all.length ? have / all.length : 0)); bar.append(fill);
-      m.append(tx, bar);
-      if (have < all.length) { const ab = el('button', 'btn sm', T('Add my details')); ab.type = 'button'; ab.onclick = () => core.openScreen?.('details'); m.append(ab); }
-      card.append(m);
-    }
     const note = el('div', 'sheet-note'); note.append(iconEl(SHIELD, 16), el('span', '', T('Private values are encrypted and never sit in this chat. They hide again after 20 seconds.')));
     card.append(note);
     return card;
@@ -890,10 +882,9 @@
   // ---- an empty chat: just a greeting and the box to type in ---------------------------------------
   function welcome() {
     const box = el('div', 'hello');
-    box.append(el('h1', '', T('Hi, I’m Saathi.')), el('p', '', T('What do you need help with today?')), el('p', 'hello-trust', T('Saathi guides you. You do the final steps on the official site. Never share your OTP with anyone.')));
     thread.append(box);
     forYou(box);
-    input.focus({ preventScroll: true });
+    if (matchMedia('(pointer:fine)').matches) input.focus({ preventScroll: true }); // on a phone, the keyboard waits for a tap
   }
   // Up to three "next" cards from the person's own account (Sky style shows them; Classic hides them with CSS).
   let core_fy = null;

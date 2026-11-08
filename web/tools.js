@@ -419,7 +419,7 @@
     let data = r.data; let ready = {};
     const inputs = {};
     const liveText = (f) => { const v = inputs[f.key]?.value ?? f.value; return f.type === 'choice' ? (f.options.find((o) => o.id === v) ? optionLabel(f.options.find((o) => o.id === v)) : '') : String(v || '').trim(); };
-    const loadReady = async () => { const rr = await tcall('details.readiness'); if (rr.ok) { ready = rr.data; drawReady(); } };
+    const loadReady = async () => {}; // the 'Ready for' list was removed from this screen
     const readyBox = el('div', 'dt-ready-box');
     function drawReady() {
       readyBox.replaceChildren();
@@ -437,9 +437,6 @@
     }
     const draw = () => {
       holder.replaceChildren();
-      const meter = el('div', 'dt-meter'); const head = el('div', 'grp-h'); head.append(el('b', '', T('{filled} of {total} filled', data)), el('small', 'mut', Math.round((data.filled / data.total) * 100) + '%'));
-      meter.append(head, meterBar(data.filled / data.total)); holder.append(meter);
-      holder.append(readyBox); drawReady();
       const form = el('form', 'dt-form'); form.noValidate = true;
       const byKey = Object.fromEntries(data.fields.map((f) => [f.key, f]));
       const seen = new Set();
@@ -460,7 +457,7 @@
       for (const [title, icon, keys] of SECTIONS()) {
         const fs = keys.map((k) => byKey[k]).filter(Boolean); if (!fs.length) continue;
         const sec = el('section', 'dt-sec'); const sh = el('div', 'dt-sec-h'); const ic = el('span', 'dt-sec-ic'); ic.append(ico(icon, 16));
-        sh.append(ic, el('h2', '', title), el('small', 'mut', T('{n}/{total}', { n: fs.filter((f) => f.value).length, total: fs.length })));
+        sh.append(ic, el('h2', '', title));
         const grid = el('div', 'dt-grid'); for (const f of fs) { const w = mk(f); if (f.type === 'longtext') w.classList.add('full'); grid.append(w); }
         sec.append(sh, grid); form.append(sec);
       }

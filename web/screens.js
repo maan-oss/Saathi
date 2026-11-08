@@ -10,9 +10,9 @@
   // ---- icons -------------------------------------------------------------------------------
   const I = {
     plus: 'M12 5v14M5 12h14', chev: 'M9 6l6 6-6 6', back: 'M15 6l-6 6 6 6', close: 'M6 6l12 12M18 6L6 18', check: 'M5 12.5l4.5 4.5L19 7.5',
-    card: 'M3 6h18v12H3zM3 10h18M7 15h4', id: 'M3 5h18v14H3zM9.5 8a2.2 2.2 0 100 4.4 2.2 2.2 0 000-4.4zM5.8 17c.4-2 2-3 3.7-3s3.3 1 3.7 3M16.8 9.5h2.7M16.8 13h2.7M16.8 16.2h1.4',
-    car: 'M5 16V11l2-5h10l2 5v5M3 16h18M7.5 13.5v.01M16.5 13.5v.01M6 16v3M18 16v3', passport: 'M6 3h12v18H6zM12 8a3 3 0 100 6 3 3 0 000-6zM9 18h6',
-    vote: 'M4 14h16v6H4zM8 14L6 5h12l-2 9M9.5 9.5l1.5 1.5 3-3', gst: 'M5 4h14v16H5zM9 9h6M9 13h6M9 17h3', cert: 'M6 3h9l3 3v15H6zM9 12h6M9 16h6',
+    card: 'M3.5 6.5h17a1 1 0 011 1v9a1 1 0 01-1 1h-17a1 1 0 01-1-1v-9a1 1 0 011-1zM2.5 10.2h19M6.5 14.6h3.6M13 14.6h4.5', id: 'M3.5 5.5h17a1 1 0 011 1v11a1 1 0 01-1 1h-17a1 1 0 01-1-1v-11a1 1 0 011-1zM10.6 10a2.1 2.1 0 11-4.2 0 2.1 2.1 0 114.2 0M5.4 16.4c.5-1.8 1.8-2.7 3.2-2.7s2.7.9 3.2 2.7M15 9.5h4M15 12.5h4M15 15.5h2.6',
+    car: 'M12 3.5a8.5 8.5 0 110 17 8.5 8.5 0 110-17zM12 14a2 2 0 110-4 2 2 0 110 4zM12 14v6.5M3.9 11.1l6.4 1.9M20.1 11.1l-6.4 1.9', passport: 'M6 3h12v18H6zM12 8a3 3 0 100 6 3 3 0 000-6zM9 18h6',
+    vote: 'M4 14h16v6H4zM8 14L6 5h12l-2 9M9.5 9.5l1.5 1.5 3-3', gst: 'M5 4h14v16H5zM9 9h6M9 13h6M9 17h3', cert: 'M12 3.8a5.2 5.2 0 110 10.4 5.2 5.2 0 110-10.4zM8.8 13.4l-1.4 6.8 4.6-2 4.6 2-1.4-6.8',
     scan: 'M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3M4 12h16', doc: 'M7 3h7l4 4v14H7zM14 3v5h4M10 13h5M10 17h5',
     lock: 'M6 11h12v9.5H6zM8.5 11V8a3.5 3.5 0 017 0v3', bell: 'M6 16v-5a6 6 0 0112 0v5l2 2H4zM10 20a2 2 0 004 0', shield: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM8.5 12l2.5 2.5L15.5 10',
     wallet: 'M4 7.5h15a1 1 0 011 1V18a1 1 0 01-1 1H5a1 1 0 01-1-1zM4 7.5l11-3v3M15.5 13.5h2.5', sliders: 'M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6',
@@ -21,14 +21,14 @@
     trash: 'M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13M10 11v6M14 11v6', ext: 'M14 4h6v6M20 4l-9 9M18 14v5H5V6h5', backup: 'M7 18a5 5 0 010-10 6 6 0 0111.5 1.5A4.5 4.5 0 0118 18H7zM12 17v-6M9.5 13.5L12 11l2.5 2.5',
     restore: 'M7 18a5 5 0 010-10 6 6 0 0111.5 1.5A4.5 4.5 0 0118 18H7zM12 11v6M9.5 14.5L12 17l2.5-2.5',
     msg: 'M5 5h14a1 1 0 011 1v9a1 1 0 01-1 1h-7l-4 4v-4H5a1 1 0 01-1-1V6a1 1 0 011-1z', download: 'M12 4v11M7 11l5 5 5-5M5 20h14', plusc: 'M12 21a9 9 0 100-18 9 9 0 000 18zM12 8v8M8 12h8',
-    warn: 'M12 4l9 16H3zM12 10v4M12 17.5v.01', star: 'M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z', search: 'M11 4a7 7 0 100 14 7 7 0 000-14zM20 20l-4-4', refresh: 'M20 12a8 8 0 11-2.6-5.9M20 4v5h-5',
+    warn: 'M12 4l9 16H3zM12 10v4M12 17.5v.01', star: 'M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z', search: 'M10.5 10.5m-6.5 0a6.5 6.5 0 1 0 13 0a6.5 6.5 0 1 0-13 0M15.4 15.4L20.2 20.2', refresh: 'M20 12a8 8 0 11-2.6-5.9M20 4v5h-5',
     bolt: 'M13 3L5 14h6l-1 7 8-11h-6z',
     tkt: 'M4 8.5A1.5 1.5 0 015.5 7h13A1.5 1.5 0 0120 8.5V11a2 2 0 000 4v2.5a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 014 17.5V15a2 2 0 000-4zM14 7v2M14 11v2M14 15v2',
     stk: 'M12 3l9 4.5-9 4.5-9-4.5zM3 12l9 4.5 9-4.5M3 16.5l9 4.5 9-4.5',
     crown: 'M3.5 8l4.5 4.5L12 5l4 7.5L20.5 8 19 19H5zM5 19h14',
     doc: 'M7 3h7l4 4v14H7zM14 3v4h4M10 12h5M10 16h5',
     mic: 'M12 3a3 3 0 00-3 3v5a3 3 0 006 0V6a3 3 0 00-3-3zM6 11a6 6 0 0012 0M12 17v4',
-    rupee: 'M7 5h10M7 9h10M7 5c5 0 6 2.5 6 4s-1 4-6 4l6 6', people: 'M9 11a3 3 0 100-6 3 3 0 000 6zM3 20c0-3 2.7-5 6-5s6 2 6 5M16 11a2.5 2.5 0 100-5M17 15c2.5 0 4 1.7 4 4',
+    rupee: 'M7 5h10M7 9h10M7 5c5 0 6 2.5 6 4s-1 4-6 4l6 6', people: 'M9 11.2a3 3 0 110-6 3 3 0 110 6zM3.5 20c.4-3.2 2.7-5.2 5.5-5.2s5.1 2 5.5 5.2M15.5 6.2a2.7 2.7 0 010 5.3M17.3 14.8c1.9.7 3 2.4 3.2 5.2',
     book: 'M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3zM5 17a3 3 0 013-3h11', chatx: 'M5 5h14a1 1 0 011 1v9a1 1 0 01-1 1h-7l-4 4v-4H5a1 1 0 01-1-1V6a1 1 0 011-1zM9.5 8.5l5 4M14.5 8.5l-5 4', type: 'M5 19L12 5l7 14M8.5 14h7',
     tools: 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z', photo: 'M4 6h16v12H4zM4 15l4.5-4.5 4 4 3-3L20 16M15.5 9.5v.01', devices: 'M3 6h13v9H3zM1 18h17M18 9h4v10h-4zM20 16.5v.01',
     apps: 'M6 4h12v17H6zM9 4V3h6v1M9.5 10l1.5 1.5 3-3M9.5 16h5', eye: 'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 15a3 3 0 100-6 3 3 0 000 6z', eyeoff: 'M3 3l18 18M10.6 6.1A9.6 9.6 0 0112 6c6 0 10 6 10 6a17 17 0 01-3 3.7M6.4 6.9C3.7 8.7 2 12 2 12s4 7 10 7c1.5 0 2.9-.4 4.1-1M9.9 9.9a3 3 0 004.2 4.2',
@@ -60,7 +60,7 @@
 
   // ---- services (names are marked here so they get translated) ------------------------------------
   const STATE_LIST = ['Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'];
-  const SERVICES = [['pan', N('PAN card'), 'card'], ['aadhaar', N('Aadhaar'), 'id'], ['dl', N('Driving licence'), 'car'], ['passport', N('Passport'), 'passport'], ['voter', N('Voter ID'), 'vote'], ['gst', N('GST registration'), 'gst'], ['income', N('Income certificate'), 'rupee'], ['caste', N('Caste certificate'), 'people']];
+  const SERVICES = [['pan', N('PAN card'), 'card'], ['aadhaar', N('Aadhaar'), 'id'], ['dl', N('Driving licence'), 'car'], ['passport', N('Passport'), 'passport'], ['voter', N('Voter ID'), 'vote'], ['gst', N('GST registration'), 'gst'], ['income', N('Income certificate'), 'rupee'], ['caste', N('Caste certificate'), 'cert']];
   const TAILORED = {
     pan: N('How do I fix a wrong name on my PAN?'), aadhaar: N('How do I update my address in Aadhaar?'), dl: N('Do I start with a learner licence?'), passport: N('Is this a fresh passport or a renewal?'),
     voter: N('How do I check my name in the voter list?'), gst: N('Do I need GST registration for my work?'), income: N('Where do I apply for an income certificate?'), caste: N('Which proof is accepted for a caste certificate?'),
@@ -738,7 +738,6 @@
     ));
     col.append(group(T('Help'),
       row({ icon: 'help', title: T('Help and support'), onclick: () => openScreen('help') }),
-      row({ icon: 'help', title: T('Show the welcome again'), onclick: () => { store.del('saathi.onboarded'); location.reload(); } }),
     ));
     col.append(group(T('Data'),
       row({ icon: 'chatx', title: T('Delete all my chats'), onclick: confirmClearChats }),

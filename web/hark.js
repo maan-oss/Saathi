@@ -1,10 +1,10 @@
-// The app shell: a round + button, a Home | Chat | Guides pill, a profile avatar, a card feed and swipe between tabs.
+// The app shell: a round button (search in Chat, new chat in Guides), a Chat | Guides pill, a profile avatar, and swipe between tabs.
 (() => {
   const C = window.SaathiCore; const U = C && C.ui; if (!C || !U) return;
   const { $, el, T } = C; const { ico } = U;
-  const app = $('app'), top = document.querySelector('.top'), chat = $('chat'), screenEl = $('screen');
-  const TABS = ['home', 'chat', 'guides'];
-  let cur = 'home'; let searching = false;
+  const app = $('app'), top = document.querySelector('.top'), chat = $('chat');
+  const TABS = ['chat', 'guides'];
+  let cur = 'chat'; let searching = false;
 
   // Old header pieces stay in the page (other code looks them up) but out of sight.
   const legacy = el('div', 'hk-legacy'); legacy.hidden = true;
@@ -21,14 +21,13 @@
   av.onclick = () => U.openScreen('profile');
   top.classList.add('hk-top'); top.append(plus, seg, av);
 
-  const home = el('section', 'hk-pane hk-home'); home.id = 'hkHome';
   const guides = el('section', 'hk-pane hk-guides'); guides.id = 'hkGuides';
-  chat.before(home, guides);
+  chat.before(guides);
   function moveThumb() { const b = tbtn[cur]; if (!b || !b.offsetWidth) return; thumb.style.setProperty('--x', b.offsetLeft + 'px'); thumb.style.setProperty('--w', b.offsetWidth + 'px'); }
   function fitTabs() { let s = 15; const bs = Object.values(tbtn); bs.forEach((b) => { b.style.fontSize = s + 'px'; }); while (s > 10.5 && bs.some((b) => b.scrollWidth > b.clientWidth + .5)) { s -= .5; bs.forEach((b) => { b.style.fontSize = s + 'px'; }); } moveThumb(); }
   new ResizeObserver(fitTabs).observe(seg); document.fonts?.ready?.then(fitTabs);
   function labels() {
-    tbtn.home.textContent = T('Home'); tbtn.chat.textContent = T('Chat'); tbtn.guides.textContent = T('Guides');
+    tbtn.chat.textContent = T('Chat'); tbtn.guides.textContent = T('Guides');
     av.setAttribute('aria-label', T('Profile'));
     plusMode(); fitTabs();
   }
@@ -39,70 +38,28 @@
   plus.onclick = () => { if (searching) closeSearch(); else if (cur === 'chat') openSearch(); else C.newChat(); };
 
   let dir = 1;
-  function showTab(k, { silent } = {}) {
+  function showTab(k) {
     if (!TABS.includes(k)) return;
     if (searching) closeSearch();
     const from = cur; if (k === from && app.dataset.tab) return;
     dir = TABS.indexOf(k) >= TABS.indexOf(from) ? 1 : -1;
     cur = k; app.dataset.tab = k; document.body.dataset.tab = k;
-    TABS.forEach((t, i) => { tbtn[t].classList.toggle('on', t === k); tbtn[t].setAttribute('aria-selected', String(t === k)); });
+    TABS.forEach((t) => { tbtn[t].classList.toggle('on', t === k); tbtn[t].setAttribute('aria-selected', String(t === k)); });
     moveThumb();
     plusMode();
-    const pane = k === 'home' ? home : k === 'guides' ? guides : $('chat');
+    const pane = k === 'guides' ? guides : $('chat');
     if (k !== 'chat') pane.scrollTop = 0;
-    // The first time Home or Guides opens, its cards rise in one by one; the pane does not also slide in (one motion, not two).
-    const firstOpen = (k === 'home' && !built) || (k === 'guides' && !guides.dataset.done);
+    // The first time Guides opens, its cards rise in one by one; the pane does not also slide in (one motion, not two).
+    const firstOpen = k === 'guides' && !guides.dataset.done;
     if (!firstOpen) { pane.classList.remove('in-r', 'in-l'); void pane.offsetWidth; pane.classList.add(dir > 0 ? 'in-r' : 'in-l'); }
     const dk = document.querySelector('.dock'); if (dk && k === 'chat') { dk.classList.remove('in-r', 'in-l'); void dk.offsetWidth; dk.classList.add(dir > 0 ? 'in-r' : 'in-l'); }
-    if (k === 'home') drawHome();
     if (k === 'guides' && !guides.dataset.done) drawGuides();
     if (k === 'chat') requestAnimationFrame(() => { chat.scrollTop = chat.scrollHeight; });
   }
   C.showTab = showTab;
 
-  // ---- Home: what you can do right now ---------------------------------------------------------------
-  const card = (cls) => el('div', 'hk-card ' + (cls || ''));
-  const wide = (cls, text, go) => { const b = el('button', 'hk-wide ' + cls, text); b.type = 'button'; b.onclick = go; return b; };
-  const greet = () => { const h = new Date().getHours(); return h < 12 ? T('Good morning') : h < 17 ? T('Good afternoon') : T('Good evening'); };
-  let fyBox = null, fyList = null, built = false, lastItems = null;
-  function paintFy(items) {
-    if (!fyBox) return;
-    fyBox.hidden = !items.length; fyList.replaceChildren();
-    for (const it of items.slice(0, 4)) {
-      const b = el('button', 'hk-row'); b.type = 'button';
-      b.append(el('span', 'hk-v', it.v), el('span', 'hk-t', it.t), ico('chev', 18));
-      b.onclick = () => U.openScreen(it.go, it.args); fyList.append(b);
-    }
-  }
-  function buildHome() {
-    built = true; home.replaceChildren();
-    const hi = el('div', 'hk-hello'); hi.append(el('h1', '', greet()), el('p', '', T('What do you need help with today?')));
-    const ask = el('button', 'hk-ask'); ask.type = 'button'; ask.append(ico('msg', 20), el('span', '', T('Ask Saathi anything')), ico('mic', 20));
-    ask.onclick = () => { showTab('chat'); C.focusInput?.(); }; hi.append(ask);
-    fyBox = card(); fyList = el('div', 'hk-list'); fyBox.append(el('h2', '', T('For you')), fyList);
-    for (let i = 0; i < 2; i++) fyList.append(el('div', 'hk-skel'));
-    const q = el('section', 'hk-strip'); q.append(el('h2', 'hk-h2', T('Quick start')));
-    const rail = el('div', 'hk-rail'); rail.dataset.noswipe = '1';
-    const pick = ['pan', 'aadhaar', 'dl', 'passport', 'voter'].map((id) => { const s = U.SERVICES.find((x) => x[0] === id); return [s[2], T(s[1]), () => U.openScreen('service', { id })]; });
-    [...pick, ['scan', T('Scan'), () => U.openScreen('scan')], ['doc', T('Resize'), () => U.openScreen('photo')], ['warn', T('Check if it is a scam'), () => U.openScreen('check')]].forEach(([ic, label, go], i) => {
-      const b = el('button', 'hk-rq'); b.type = 'button'; b.style.setProperty('--d', 260 + i * 55 + 'ms'); const c = el('span', 'hk-circ'); c.append(ico(ic, 24)); b.append(c, el('span', '', label)); b.onclick = go; rail.append(b);
-    });
-    q.append(rail);
-    const s = card(); s.append(el('h2', '', T('Got a strange call or message?')), wide('light', T('Check if it is a scam'), () => U.openScreen('check')));
-    home.append(hi, q, fyBox, s);
-    if (lastItems) paintFy(lastItems);
-    home.classList.add('fresh'); [...home.children].forEach((c, i) => c.style.setProperty('--d', i * 80 + 'ms')); setTimeout(() => home.classList.remove('fresh'), 1400);
-  }
-  async function drawHome() {
-    if (!built) buildHome();
-    const d = await C.fyData?.().catch(() => null);
-    if (d) { lastItems = d.items; paintFy(d.items); }
-    else if (fyBox && !lastItems) fyBox.hidden = true; // not ready yet (first run) or no data: drop the loading rows
-  }
-  // Called when onboarding finishes, so the card fills in without a tab switch.
-  C.refreshHome = () => { if (cur === 'home') drawHome(); };
-
   // ---- Guides tab ---------------------------------------------------------------------------------
+  const card = (cls) => el('div', 'hk-card ' + (cls || ''));
   async function drawGuides() {
     guides.replaceChildren(); guides.dataset.done = '1'; guides.classList.add('fresh'); setTimeout(() => guides.classList.remove('fresh'), 1200);
     guides.append(el('h1', 'hk-h1', T('Guides')));
@@ -150,6 +107,8 @@
     U.refreshMe().then((m) => { if (m?.wallet) balText.textContent = m.wallet.balance; }).catch(() => {});
   };
   // ---- search: a panel inside the app; the round button in the corner turns into an X while it is open -------
+  const screenEl = $('screen');
+  function wide(cls, text, go) { const b = el('button', 'hk-wide ' + cls, text); b.type = 'button'; b.onclick = go; return b; }
   const sp = el('div', 'hk-sp'); const spBody = el('div', 'hk-sb'); const spBar = el('div', 'hk-sbar');
   const field = el('label', 'hk-sfield'); field.append(ico('search', 20));
   const inp = el('input'); inp.type = 'search'; inp.autocomplete = 'off'; field.append(inp); spBar.append(field);
@@ -178,9 +137,9 @@
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && searching) closeSearch(); });
 
   // ---- swipe between tabs (the page follows your finger a little, then slides) ----------------------------
-  let sx = 0, sy = 0, st = 0, ok = false, mv = false;
+  let sx = 0, sy = 0, st = 0, ok = false;
   app.addEventListener('touchstart', (e) => {
-    const t = e.touches[0]; sx = t.clientX; sy = t.clientY; st = Date.now(); mv = false;
+    const t = e.touches[0]; sx = t.clientX; sy = t.clientY; st = Date.now();
     ok = e.touches.length === 1 && !document.body.classList.contains('screen-open') && !e.target.closest('input,textarea,.pop,.dd-pop,.chips,pre,table,[data-noswipe]');
   }, { passive: true });
   app.addEventListener('touchend', (e) => {
@@ -192,10 +151,10 @@
   }, { passive: true });
   seg.addEventListener('keydown', (e) => { const i = TABS.indexOf(cur) + (e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0); if (i >= 0 && i < TABS.length && i !== TABS.indexOf(cur)) { showTab(TABS[i]); tbtn[TABS[i]].focus(); } });
 
-  document.addEventListener('saathi:relabel', () => { labels(); guides.dataset.done = ''; built = false; if (cur === 'guides') drawGuides(); if (cur === 'home') drawHome(); });
-  new MutationObserver(() => { if (!document.body.classList.contains('screen-open')) { home.scrollTop = 0; guides.scrollTop = 0; } }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  document.addEventListener('saathi:relabel', () => { labels(); guides.dataset.done = ''; if (cur === 'guides') drawGuides(); });
+  new MutationObserver(() => { if (!document.body.classList.contains('screen-open')) guides.scrollTop = 0; }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   labels();
-  showTab('home');
+  showTab('chat');
   app.dataset.hk = '1';
 })();
 
