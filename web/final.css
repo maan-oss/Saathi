@@ -41,6 +41,14 @@
 @media (max-width: 640px) {
   :root[data-style] .app[data-tab="chat"] > .dock { padding-left: 14px !important; padding-right: 14px !important; }
 }
+/* Section labels ("Tools", "Privacy and backup") were white on the sky, which turns pale near the bottom.
+   A soft dark chip keeps them readable anywhere on the screen. */
+:root[data-style] .hk-h2,
+:root[data-style] .grp-t {
+  display: inline-block; align-self: flex-start; width: auto; margin-left: 0; padding: 5px 12px; border-radius: 999px;
+  background: rgba(20, 30, 60, .5); color: #fff; text-shadow: none;
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+}
 :root[data-style] .app[data-empty] .composer { min-height: 68px; border-radius: 34px; }
 :root[data-style] .app[data-empty] .composer textarea { font-size: 18px; }
 :root[data-style] .app[data-empty] .attach-wrap .attach { width: 68px; height: 68px; min-width: 68px; }
