@@ -16,7 +16,6 @@
 .hk-round:hover{background:#fff}
 .hk-round:active,.hk-av:active{transform:scale(.92)}
 .hk-seg{position:relative;flex:1;max-width:310px;height:46px;padding:4px;border-radius:999px;display:grid;grid-template-columns:repeat(3,1fr);background:rgba(20,24,34,.22);margin:0 auto;min-width:0}
-.hk-thumb{position:absolute;top:4px;bottom:4px;left:0;width:var(--w,33%);border-radius:999px;background:#111;transform:translateX(var(--x,0px));transition:transform .45s var(--hk-ease),width .45s var(--hk-ease);will-change:transform;box-shadow:0 2px 8px rgba(0,0,0,.2)}
 .hk-tab{position:relative;z-index:1;min-width:0;overflow:hidden;white-space:nowrap;text-align:center;background:none;border:0;border-radius:999px!important;font:600 clamp(13px,3.7vw,15px)/1 var(--sans);cursor:pointer;padding:0 4px;transition:color .25s,transform .15s}
 :root[data-style="sky"] .top.hk-top .hk-tab{color:#fff}
 :root[data-style="sky"] .top.hk-top .hk-tab.on{color:#fff}
@@ -92,10 +91,9 @@
 .hk-sbar{display:flex;gap:10px;align-items:center;padding:8px 14px max(16px,env(safe-area-inset-bottom));max-width:640px;width:100%;margin:0 auto}
 .hk-sfield{flex:1;display:flex;align-items:center;gap:10px;height:52px;padding:0 20px;border-radius:999px;background:rgba(255,255,255,.9);color:var(--hk-mut)}
 .hk-sfield input{flex:1;min-width:0;border:0;outline:0;background:none;font:400 17px var(--sans);color:var(--hk-ink)}
-@media (prefers-reduced-motion:reduce){.hk-pane>*,.hk-float,.hk-sw,.msg{animation:none!important}.hk-thumb{transition:none}}
+@media (prefers-reduced-motion:reduce){.hk-pane>*,.hk-float,.hk-sw,.msg{animation:none!important}}
 :root[data-style="sky"][data-sky="night"] .top.hk-top .hk-tab{color:rgba(255,255,255,.78)}
 :root[data-style="sky"][data-sky="night"] .top.hk-top .hk-seg{background:rgba(255,255,255,.16)}
-:root[data-style="sky"][data-sky="night"] .top.hk-top .hk-thumb{background:#fff}
 :root[data-style="sky"][data-sky="night"] .top.hk-top .hk-tab.on{color:#111}
 :root[data-style="sky"][data-sky="night"] .top.hk-top .hk-round{background:rgba(255,255,255,.18)}
 :root[data-style="sky"][data-sky="night"] .top.hk-top .hk-round,:root[data-style="sky"][data-sky="night"] .top.hk-top .hk-round *{color:#fff;stroke:#fff}
@@ -192,7 +190,7 @@ body.screen-open .app{visibility:hidden}
 :root[data-style] .app[data-tab="chat"]>.dock{padding:6px 34px max(28px,env(safe-area-inset-bottom));transition:padding .4s var(--hk-ease)}
 :root[data-style] .app[data-tab="chat"]:has(textarea:focus)>.dock{padding:6px 12px max(10px,env(safe-area-inset-bottom))}
 .app[data-tab="chat"] .composer{transition:box-shadow .35s var(--hk-ease),transform .35s var(--hk-ease),background .3s}
-.app[data-tab="chat"] .composer:not(:focus-within){transform:scale(.985)}
+.app[data-tab="chat"] .composer:not(:focus-within){transform:none}
 .composer textarea{order:1}.attach-wrap{order:2}#micBtn{order:3}.composer .send{order:4}
 .attach-wrap .pop{left:auto!important;right:0!important}
 .composer .send:not(:disabled){animation:hkpop .35s var(--hk-ease) both}
@@ -204,7 +202,6 @@ body.screen-open .app{visibility:hidden}
 html,body{overflow-x:hidden;overscroll-behavior-x:none}
 .app{overflow-x:hidden;touch-action:pan-y}
 .hk-pane{overflow-x:hidden}.hk-rail{touch-action:pan-x pan-y}
-.hk-thumb{transition:transform .5s var(--hk-spring),width .5s var(--hk-spring)}
 /* corner button: plus / magnifier / X morph */
 .hk-round{position:relative}
 .hk-round .hk-i{position:absolute;inset:0;display:grid;place-items:center;opacity:0;transform:rotate(-90deg) scale(.3);transition:opacity .25s,transform .45s var(--hk-spring);pointer-events:none}

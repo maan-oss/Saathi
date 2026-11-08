@@ -14,7 +14,6 @@
   const plus = el('button', 'hk-round'); plus.type = 'button';
   for (const k of ['plus', 'search', 'x']) { const s = el('span', 'hk-i ' + k); s.append(ico(k === 'x' ? 'close' : k, 22)); plus.append(s); }
   const seg = el('div', 'hk-seg'); seg.setAttribute('role', 'tablist');
-  const thumb = el('span', 'hk-thumb'); seg.append(thumb);
   const tbtn = {};
   for (const k of TABS) { const b = el('button', 'hk-tab'); b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.k = k; b.onclick = () => showTab(k); seg.append(b); tbtn[k] = b; }
   const av = el('button', 'hk-av'); av.type = 'button'; av.append(ico('user', 20));
@@ -23,8 +22,7 @@
 
   const guides = el('section', 'hk-pane hk-guides'); guides.id = 'hkGuides';
   chat.before(guides);
-  function moveThumb() { const b = tbtn[cur]; if (!b || !b.offsetWidth) return; thumb.style.setProperty('--x', b.offsetLeft + 'px'); thumb.style.setProperty('--w', b.offsetWidth + 'px'); }
-  function fitTabs() { let s = 15; const bs = Object.values(tbtn); bs.forEach((b) => { b.style.fontSize = s + 'px'; }); while (s > 10.5 && bs.some((b) => b.scrollWidth > b.clientWidth + .5)) { s -= .5; bs.forEach((b) => { b.style.fontSize = s + 'px'; }); } moveThumb(); }
+  function fitTabs() { let s = 15; const bs = Object.values(tbtn); bs.forEach((b) => { b.style.fontSize = s + 'px'; }); while (s > 10.5 && bs.some((b) => b.scrollWidth > b.clientWidth + .5)) { s -= .5; bs.forEach((b) => { b.style.fontSize = s + 'px'; }); } }
   new ResizeObserver(fitTabs).observe(seg); document.fonts?.ready?.then(fitTabs);
   function labels() {
     tbtn.chat.textContent = T('Chat'); tbtn.guides.textContent = T('Guides');
@@ -45,7 +43,6 @@
     dir = TABS.indexOf(k) >= TABS.indexOf(from) ? 1 : -1;
     cur = k; app.dataset.tab = k; document.body.dataset.tab = k;
     TABS.forEach((t) => { tbtn[t].classList.toggle('on', t === k); tbtn[t].setAttribute('aria-selected', String(t === k)); });
-    moveThumb();
     plusMode();
     const pane = k === 'guides' ? guides : $('chat');
     if (k !== 'chat') pane.scrollTop = 0;
@@ -86,7 +83,6 @@
 
   // ---- Profile and search pages ---------------------------------------------------------------------
   const SC = U.SCREENS;
-  const floatSearch = () => { const b = el('button', 'hk-search-pill'); b.type = 'button'; b.append(ico('search', 20), el('span', '', T('Search'))); b.onclick = () => { U.closeAll(); openSearch(); }; return b; };
   SC.profile = () => {
     // Everything is drawn at once from what we already know, so nothing waits on the network. The balance is
     // refreshed in place afterwards. The rows rise in order from the top; the title and the bottom button come in with them.
@@ -103,7 +99,7 @@
       g(...(C.cfg?.link ? [U.row({ icon: 'devices', title: T('Devices and sync'), onclick: () => U.openScreen('devices') })] : []), U.row({ icon: 'help', title: T('Help and support'), onclick: () => U.openScreen('help') }), U.row({ icon: 'backup', title: T('Backup and restore'), onclick: () => U.openScreen('backup') })),
       el('p', 'mut small center about', T('Saathi 1.0 · Independent, not a government website')),
       el('div', 'hk-spacer'));
-    const fb = el('div', 'hk-fadebar'); screenEl.append(fb, floatSearch());
+    const fb = el('div', 'hk-fadebar'); screenEl.append(fb);
     U.refreshMe().then((m) => { if (m?.wallet) balText.textContent = m.wallet.balance; }).catch(() => {});
   };
   // ---- search: a panel inside the app; the round button in the corner turns into an X while it is open -------
@@ -111,7 +107,12 @@
   function wide(cls, text, go) { const b = el('button', 'hk-wide ' + cls, text); b.type = 'button'; b.onclick = go; return b; }
   const sp = el('div', 'hk-sp'); const spBody = el('div', 'hk-sb'); const spBar = el('div', 'hk-sbar');
   const field = el('label', 'hk-sfield'); field.append(ico('search', 20));
-  const inp = el('input'); inp.type = 'search'; inp.autocomplete = 'off'; field.append(inp); spBar.append(field);
+  const inp = el('input'); inp.type = 'search'; inp.autocomplete = 'off'; field.append(inp);
+  // Our own clear cross: it fades and grows in while there is text. The browser's native one is hidden in CSS.
+  const clr = el('button', 'hk-sclear'); clr.type = 'button'; clr.setAttribute('aria-label', T('Close')); clr.append(ico('close', 16));
+  field.append(clr); spBar.append(field);
+  const syncClear = () => field.classList.toggle('has', inp.value.length > 0);
+  clr.onclick = () => { inp.value = ''; syncClear(); runSearch(); inp.focus({ preventScroll: true }); };
   sp.append(spBody, spBar); app.append(sp);
   const hint = el('p', 'hk-hint');
   function runSearch() {
@@ -131,9 +132,9 @@
     if (!out.length) { hint.textContent = T('Nothing found'); return spBody.append(hint); }
     const box = card('hk-flush'); box.append(...out.slice(0, 20)); spBody.append(box);
   }
-  function openSearch() { if (searching) return; searching = true; inp.placeholder = T('Search'); inp.value = ''; runSearch(); spBody.scrollTop = 0; app.dataset.search = '1'; plusMode(); setTimeout(() => { if (searching) inp.focus({ preventScroll: true }); }, 220); }
+  function openSearch() { if (searching) return; searching = true; inp.placeholder = T('Search'); inp.value = ''; syncClear(); runSearch(); spBody.scrollTop = 0; app.dataset.search = '1'; plusMode(); setTimeout(() => { if (searching) inp.focus({ preventScroll: true }); }, 220); }
   function closeSearch() { if (!searching) return; searching = false; delete app.dataset.search; inp.blur(); plusMode(); }
-  inp.addEventListener('input', runSearch);
+  inp.addEventListener('input', () => { runSearch(); syncClear(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && searching) closeSearch(); });
 
   // ---- swipe between tabs (the page follows your finger a little, then slides) ----------------------------

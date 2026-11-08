@@ -248,10 +248,23 @@
       sheet.hidden = false;
       document.body.classList.add('dp-open');
       render();
+      place();
       requestAnimationFrame(() => sheet.classList.add('on'));
       const target = sheet.querySelector('.dp-day.sel') || sheet.querySelector('.dp-day.today:not(:disabled)') || sheet.querySelector('.dp-day:not(:disabled)');
       target?.focus({ preventScroll: true });
     }
+
+    // On a computer the calendar opens beside its field, like a menu, and stays on screen. A phone keeps the sheet from the bottom.
+    function place() {
+      const card = sheet.querySelector('.dp-card');
+      if (!field || !matchMedia('(min-width:640px)').matches) { card.style.left = ''; card.style.top = ''; return; }
+      const r = field.getBoundingClientRect(), cw = card.offsetWidth, ch = card.offsetHeight, m = 12;
+      const left = Math.min(Math.max(m, r.left), innerWidth - cw - m);
+      let top = r.bottom + 8;
+      if (top + ch > innerHeight - m) top = Math.max(m, r.top - ch - 8);
+      card.style.left = left + 'px'; card.style.top = top + 'px';
+    }
+    addEventListener('resize', () => { if (sheet && !sheet.hidden) place(); });
 
     function close() {
       if (!sheet || sheet.hidden) return;
