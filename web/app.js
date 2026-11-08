@@ -65,8 +65,8 @@
     for (let tries = 0; ; tries++) {
       res = await fetch(path, { ...opts, headers });
       // The host's router sometimes answers 502 before the app sees the request (a cold start). Nothing ran,
-      // so a short wait and a second try is safe. Give up after two tries.
-      if (res.status === 502 && res.headers.get('x-render-routing') && tries < 2) { await new Promise((r) => setTimeout(r, 900 * (tries + 1))); continue; }
+      // so a short wait and another try is safe. Give up after three retries (about six seconds in all).
+      if (res.status === 502 && res.headers.get('x-render-routing') && tries < 3) { await new Promise((r) => setTimeout(r, 1000 * (tries + 1))); continue; }
       break;
     }
     let j = null;
