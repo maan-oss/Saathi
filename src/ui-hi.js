@@ -894,4 +894,9 @@ export const HI = {
   "Saved once. Copy any time.": "एक बार सेव हुआ। कभी भी कॉपी करें।",
   "Dates you cannot afford to miss.": "वो तारीखें जो आप नहीं भूल सकते।",
   "How can I help you?": "मैं आपकी कैसे मदद कर सकता हूँ?",
+  "The app shows your language. Saathi replies in the language you write in.": "ऐप आपकी भाषा में दिखता है। आप जिस भाषा में लिखेंगे, साथी उसी भाषा में जवाब देगा।",
+  "This device switches to the other account. Anything saved only here is replaced.": "यह डिवाइस दूसरे खाते पर चला जाएगा। सिर्फ़ यहाँ सेव की गई चीज़ें बदल जाएँगी।",
+  "Your locker, details, reminders and wallet follow you to any device.": "आपका लॉकर, विवरण, रिमाइंडर और वॉलेट किसी भी डिवाइस पर आपके साथ रहेगा।",
+  "Locker, details, reminders and wallet always sync. Chats sync only if you turn them on.": "लॉकर, विवरण, रिमाइंडर और वॉलेट हमेशा सिंक होते हैं। चैट सिंक तभी होती हैं जब आप चालू करें।",
+  "Get reminders on WhatsApp. WhatsApp confirms the number is yours. Reply Yes to confirm.": "WhatsApp पर रिमाइंडर पाएँ। WhatsApp पक्का करेगा कि नंबर आपका है; पुष्टि के लिए Yes लिखें।",
 };

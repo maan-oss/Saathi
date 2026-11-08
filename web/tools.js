@@ -879,7 +879,7 @@
   const codeText = (c) => c;
   S.devices = async ({ code: joinCode } = {}) => {
     const section = (title, ...kids) => { const s = el('section', 'dv-sec'); s.append(el('h2', 'grp-t', title), ...kids); return s; };
-    const col = frame(T('Devices and sync'), T('Use the same Saathi on your phone and computer. Your locker, details, reminders, applications and wallet follow you.'));
+    const col = frame(T('Devices and sync'), T('Your locker, details, reminders and wallet follow you to any device.'));
     if (!C.cfg?.link) { col.append(empty('devices', T('Not available here'), T('Linking devices needs the live Saathi server.'))); return; }
     const holder = el('div', 'dv-wrap'); col.append(holder);
     let dev = { list: [], wa: false, waNumber: null };
@@ -918,7 +918,7 @@
       const go = btn('btn pri', T('Link this device'), () => {
         er.hide(); if (inp.value.replace(/[^A-Za-z0-9]/g, '').length < 8) return er.show(errText('bad_code'));
         showDialog({
-          title: T('Link this device?'), body: T('This device will use the account of the other device. Anything saved only here (wallet balance, locker, details) will be replaced by that account’s data.'),
+          title: T('Link this device?'), body: T('This device switches to the other account. Anything saved only here is replaced.'),
           actions: [btn('btn', T('Cancel'), closeDialog), btn('btn pri', T('Link'), async () => {
             closeDialog(); const r = await lcall('join', { code: inp.value, confirm: true });
             if (!r.ok) return er.show(errText(r.error));
@@ -942,7 +942,7 @@
           const a = el('a', 'btn pri xl', T('Open WhatsApp')); a.href = 'https://wa.me/' + (waCode.number || dev.waNumber || '') + '?text=' + encodeURIComponent(msg); a.target = '_blank'; a.rel = 'noopener noreferrer';
           wa.append(a, btn('btn', T('I sent it, check now'), async function () { await busyBtn(this, async () => { const r = await lcall('devices'); if (r.ok) { dev = r.data; if (dev.wa) { waCode = null; toast(T('WhatsApp connected')); } else toast(T('Not yet. Send the message, tap Yes, then try again.')); draw(); } }); }));
         } else {
-          wa.append(el('p', 'mut', T('Get reminders on your phone and use the same account there. WhatsApp itself proves the number is yours, and you confirm with a Yes.')), btn('btn pri xl', T('Connect WhatsApp'), async function () { await busyBtn(this, async () => { const r = await lcall('phone'); if (!r.ok) return toast(errText(r.error)); waCode = r.data; draw(); }); }));
+          wa.append(el('p', 'mut', T('Get reminders on WhatsApp. WhatsApp confirms the number is yours. Reply Yes to confirm.')), btn('btn pri xl', T('Connect WhatsApp'), async function () { await busyBtn(this, async () => { const r = await lcall('phone'); if (!r.ok) return toast(errText(r.error)); waCode = r.data; draw(); }); }));
         }
         holder.append(section(T('WhatsApp'), wa));
       }
@@ -951,7 +951,7 @@
       const syncOn = Boolean(lastExtras.prefs?.syncChats);
       const sy = el('div', 'grp-box');
       const sw = seg([['1', T('On')], ['0', T('Off')]], syncOn ? '1' : '0', async (v) => { await saveExtras({ prefs: { syncChats: v === '1' } }); if (v === '1') C.syncNow?.(); else await tcall('chats.put', { blob: '' }); toast(v === '1' ? T('Chats will sync') : T('Chats stay on this device')); });
-      sy.append(row({ icon: 'sync', title: T('Sync my chats too'), sub: T('Locker, details, reminders, applications and wallet always sync. Chats only sync if you turn this on. They are stored encrypted.'), right: sw }));
+      sy.append(row({ icon: 'sync', title: T('Sync my chats too'), sub: T('Locker, details, reminders and wallet always sync. Chats sync only if you turn them on.'), right: sw }));
       holder.append(section(T('Sync'), sy));
 
       // security

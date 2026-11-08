@@ -631,7 +631,7 @@
     return true;
   }
   SCREENS.language = async () => {
-    const col = frame(T('Language'), T('Everything in the app shows in the language you pick. Saathi answers in the language you write to it, so you can chat in Hindi even if the app is in English.'));
+    const col = frame(T('Language'), T('The app shows your language. Saathi replies in the language you write in.'));
     const m = await refreshMe();
     langPicker(col, { current: C.uiLang() || m.account?.lang || 'en', onPick: (l) => { if (l.code !== C.uiLang()) applyLanguage(l); } });
   };
