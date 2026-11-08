@@ -210,16 +210,29 @@
   const stack = [];
   const SCREENS = {};
   // A screen has a back button, a small title that appears once you scroll, and a big title at the top of the page.
+  let colObs = null;
+  const skeleton = () => { const s = el('div', 'sk-wrap'); s.setAttribute('aria-hidden', 'true'); s.append(el('i'), el('i'), el('i')); return s; };
   function frame(title, sub) {
     screen.replaceChildren();
     const head = el('header', 'sc-head');
-    const back = el('button', 'icon-btn sc-back'); back.type = 'button'; back.setAttribute('aria-label', T('Back')); back.append(ico(stack.length > 1 ? 'back' : 'close', 22));
+    const nested = stack.length > 1;
+    const back = el('button', 'icon-btn sc-back'); back.type = 'button'; back.setAttribute('aria-label', T(nested ? 'Back' : 'Close')); back.append(ico(nested ? 'back' : 'close', 22));
     back.onclick = goBack;
     const h = el('div', 'sc-small', title);
-    head.append(back, h);
+    if (nested) head.append(back, h); else { back.classList.add('sc-x-r'); head.append(h, back); }
     const body = el('div', 'sc-body'); const col = el('div', 'sc-col'); body.append(col);
     const big = el('div', 'sc-big'); big.append(el('h1', '', title)); if (sub) big.append(el('p', '', sub));
     col.append(big);
+    // Anything that lands on the page later, such as data that arrives after a moment, rises in the same way.
+    colObs?.disconnect();
+    colObs = new MutationObserver((muts) => {
+      let i = 0;
+      for (const m of muts) for (const n of m.addedNodes) {
+        if (!(n instanceof Element) || n.classList.contains('sk-wrap') || n.classList.contains('sc-big') || n.classList.contains('rise')) continue;
+        n.classList.add('rise'); n.style.setProperty('--d', Math.min(i++, 12) * 40 + 'ms');
+      }
+    });
+    colObs.observe(col, { childList: true, subtree: true });
     body.addEventListener('scroll', () => head.classList.toggle('scrolled', body.scrollTop > 48), { passive: true });
     screen.append(head, body);
     return col;
@@ -237,14 +250,18 @@
     if (!cur) return;
     markActive(cur.name === 'service' ? 'svc_' + cur.params.id : ['topup', 'packs', 'activity'].includes(cur.name) ? 'wallet' : ['backup', 'language'].includes(cur.name) ? 'settings' : cur.name);
     screen.scrollTop = 0;
-    SCREENS[cur.name](cur.params);
+    const ret = SCREENS[cur.name](cur.params);
+    if (ret && typeof ret.then === 'function') {
+      const col = screen.querySelector('.sc-col');
+      if (col) { const sk = skeleton(); col.append(sk); const done = () => sk.remove(); ret.then(done, done); }
+    }
     screen.classList.remove('swap'); void screen.offsetWidth; screen.classList.add('swap');
   }
   function goBack() { stack.pop(); if (stack.length) render(); else hideScreen(); }
-  function hideScreen() { screen.classList.remove('on'); document.body.classList.remove('screen-open'); markActive(null); setTimeout(() => { if (!stack.length) { screen.hidden = true; screen.replaceChildren(); } }, 400); }
+  function hideScreen() { screen.classList.remove('on'); document.body.classList.remove('screen-open'); markActive(null); setTimeout(() => { if (!stack.length) { screen.hidden = true; screen.replaceChildren(); } }, 480); }
   function closeAll() { if (!stack.length) return; stack.length = 0; hideScreen(); }
   window.addEventListener('popstate', () => { if (stack.length) { stack.length = 0; hideScreen(); } });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (dialogOpen) closeDialog(); else if (stack.length) goBack(); else closeSidebar(); } });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (dialogOpen) dismissDialog(); else if (stack.length) goBack(); else closeSidebar(); } });
 
   // ---- building blocks -------------------------------------------------------------------------
   function group(title, ...rows) { const g = el('section', 'grp'); if (title) g.append(el('h2', 'grp-t', title)); const box = el('div', 'grp-box'); box.append(...rows.filter(Boolean)); g.append(box); return g; }
@@ -743,9 +760,8 @@
   const langName = (code) => langList().find((l) => l.code === code)?.native || 'English';
   let deferredInstall = null;
   window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredInstall = e; });
-  SCREENS.settings = async () => {
+  SCREENS.settings = () => {
     const col = frame(T('Settings'));
-    const m = await refreshMe();
     const theme = seg([['system', T('Auto')], ['light', T('Light')], ['dark', T('Dark')]], store.get('saathi.theme') || 'system', (v) => { store.set('saathi.theme', v); C.applyTheme(v); });
     const size = seg([['1', T('Normal')], ['1.18', T('Large')], ['1.36', T('Huge')]], String(Number(store.get('saathi.scale')) || 1), (v) => { store.set('saathi.scale', v); C.applyScale(Number(v)); });
     col.append(group(T('Preferences'),
@@ -753,31 +769,17 @@
       row({ icon: 'moon', title: T('Appearance'), right: theme }),
       row({ icon: 'type', title: T('Text size'), right: size }),
     ));
-    col.append(group(T('Money'),
-      row({ icon: 'wallet', title: T('Wallet'), value: m.wallet?.balance, onclick: () => openScreen('wallet') }),
-      row({ icon: 'pack', title: T('Packs'), value: m.wallet?.pack ? T('Active') : '', onclick: () => openScreen('packs') }),
-      row({ icon: 'clock', title: T('Transaction history'), onclick: () => openScreen('activity') }),
-    ));
-    col.append(group(T('Your things'),
-      row({ icon: 'msg', title: T('Chats'), value: String(C.chats.list.filter((c) => c.items.length).length || ''), onclick: () => openScreen('chats') }),
-      row({ icon: 'lock', title: T('My locker'), value: m.account?.hasLocker ? T('In use') : T('Empty'), onclick: () => openScreen('locker') }),
-      row({ icon: 'bell', title: T('Reminders'), value: String((m.account?.reminders || []).length || ''), onclick: () => openScreen('reminders') }),
-      row({ icon: 'user', title: T('My details'), value: m.account?.hasProfile ? T('Saved') : T('None'), onclick: () => openScreen('details') }),
-      row({ icon: 'apps', title: T('Applications'), onclick: () => openScreen('apps') }),
-      ...(C.cfg?.link ? [row({ icon: 'devices', title: T('Devices and sync'), onclick: () => openScreen('devices') })] : []),
-    ));
     const inst = [];
     if (!(matchMedia('(display-mode: standalone)').matches || navigator.standalone)) {
       if (/iphone|ipad/i.test(navigator.userAgent)) inst.push(row({ icon: 'download', title: T('Add to Home Screen'), sub: T('Tap Share, then Add to Home Screen') }));
       else inst.push(row({ icon: 'download', title: T('Install Saathi'), sub: T('Open it like an app'), onclick: async () => { if (!deferredInstall) return toast(T('Use your browser menu, then Install app.')); deferredInstall.prompt(); await deferredInstall.userChoice.catch(() => {}); deferredInstall = null; } }));
     }
     col.append(group(T('Privacy and backup'),
-      row({ icon: 'backup', title: T('Backup and restore'), sub: T('Move your wallet to a new phone'), onclick: () => openScreen('backup') }),
+      row({ icon: 'backup', title: T('Backup and restore'), onclick: () => openScreen('backup') }),
       row({ icon: 'shield', title: T('Privacy notice'), onclick: () => openScreen('privacy') }),
-      ...inst,
-    ));
-    col.append(group(T('Help'),
       row({ icon: 'help', title: T('Help and support'), onclick: () => openScreen('help') }),
+      ...(C.cfg?.link ? [row({ icon: 'devices', title: T('Devices and sync'), onclick: () => openScreen('devices') })] : []),
+      ...inst,
     ));
     col.append(group(T('Data'),
       row({ icon: 'chatx', title: T('Delete all my chats'), onclick: confirmClearChats }),
@@ -785,34 +787,46 @@
     ));
     col.append(el('p', 'mut small center about', T('Saathi 1.0 · Independent, not a government website')));
   };
-  const grouped = (h) => h.match(/.{1,6}/g).join(' · ');
   SCREENS.backup = () => {
-    const col = frame(T('Backup and restore'), T('Your balance and saved details belong to this device. Keep this code somewhere safe to restore them on a new phone or after clearing your browser.'));
-    const hero = el('div', 'bk-hero'); const c1 = el('span', 'bk-ic'); c1.append(ico('backup', 26)); hero.append(c1, el('b', '', T('Your recovery code')));
-    const code = el('div', 'code', grouped(C.sid));
-    col.append(hero, code, btn('btn', T('Copy code'), function () { C.copyText(C.sid, this); }));
+    const col = frame(T('Backup and restore'), T('Keep this code safe. It restores your balance and details on a new phone.'));
+    const section = (title, icon, ...kids) => { const g = el('section', 'grp'); const h = el('div', 'bk-hero sm'); const c = el('span', 'bk-ic'); c.append(ico(icon, 22)); h.append(c, el('b', '', title)); const box = el('div', 'grp-box bk-box'); box.append(...kids); g.append(h, box); return g; };
+    const KEEP = T('Copied. Keep it somewhere safe.');
+    const codes = el('div', 'bk-codes');
+    (C.sid || '').match(/.{1,6}/g)?.forEach((part, i) => {
+      const b = el('button', 'bk-part', part); b.type = 'button'; b.title = T('Tap to copy this part');
+      b.setAttribute('aria-label', T('Copy part {n}', { n: i + 1 }));
+      b.onclick = () => C.copyText(part, b, KEEP);
+      codes.append(b);
+    });
+    const all = btn('btn pri', T('Copy all'), function () { C.copyText(C.sid, this, KEEP); });
+    const foot = el('div', 'bk-foot'); foot.append(el('small', '', T('Tap a part to copy only that part.')), all);
+    col.append(section(T('Your recovery code'), 'backup', codes, foot));
     col.append(note(T('Anyone with this code can use your balance. Never share it.'), 'lock'));
-    const inp = el('input', 'field-i'); inp.placeholder = T('Paste a code to restore'); inp.autocomplete = 'off'; inp.spellcheck = false; inp.setAttribute('aria-label', T('Recovery code'));
+    const inp = el('input', 'field-i'); inp.placeholder = T('Paste your code here'); inp.autocomplete = 'off'; inp.spellcheck = false; inp.setAttribute('aria-label', T('Recovery code'));
     const go = btn('btn pri', T('Restore'), () => {
       const c = inp.value.toLowerCase().replace(/[^a-f0-9]/g, '');
       if (!/^[a-f0-9]{32,64}$/.test(c)) return toast(T('That code does not look right.'));
       store.set('saathi.sid', c); C.resetAfterDelete(); location.reload();
     });
-    const g = el('section', 'grp'); const h2 = el('div', 'bk-hero sm'); const c2 = el('span', 'bk-ic'); c2.append(ico('restore', 22)); h2.append(c2, el('b', '', T('Restore from a code')));
-    const r = el('div', 'restore'); r.append(inp, go); g.append(h2, r); col.append(g);
+    const r = el('div', 'restore'); r.append(inp, go);
+    col.append(section(T('Restore from a code'), 'restore', r));
   };
 
   // ---- dialog -------------------------------------------------------------------------------------
   const dw = $('dialogWrap'); let dialogOpen = false;
-  function showDialog({ title, body, busy, actions, content }) {
-    dw.replaceChildren();
+  let dialogBusy = false; let dismissFn = null;
+  function showDialog({ title, body, busy, actions, content, onDismiss }) {
+    dw.replaceChildren(); dialogBusy = Boolean(busy); dismissFn = onDismiss || null;
     const d = el('div', 'dialog'); d.setAttribute('role', 'alertdialog'); d.setAttribute('aria-modal', 'true');
     if (busy) { const s = el('div', 'spin'); s.append(el('i')); d.append(s); }
     d.append(el('h3', '', title)); if (body) d.append(el('p', 'mut', body)); if (content) d.append(content);
     if (actions) { const a = el('div', 'd-acts'); for (const x of actions) a.append(x); d.append(a); }
     dw.append(d); dw.hidden = false; requestAnimationFrame(() => dw.classList.add('on')); dialogOpen = true;
   }
-  function closeDialog() { dw.classList.remove('on'); dialogOpen = false; setTimeout(() => { if (!dialogOpen) dw.hidden = true; }, 200); }
+  function closeDialog() { dw.classList.remove('on'); dialogOpen = false; setTimeout(() => { if (!dialogOpen) dw.hidden = true; }, 260); }
+  // Tapping outside (or Escape) counts as Cancel. A busy dialog cannot be dismissed while it works.
+  function dismissDialog() { if (!dialogOpen || dialogBusy) return; const f = dismissFn; closeDialog(); f?.(); }
+  dw.addEventListener('click', (e) => { if (e.target === dw) dismissDialog(); });
   function confirmDelete() {
     showDialog({
       title: T('Delete all your data?'), body: T('This removes your saved details, locker, reminders and wallet balance from our server, and your chats from this device. It cannot be undone.'),

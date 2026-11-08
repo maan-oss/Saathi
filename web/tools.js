@@ -185,7 +185,7 @@
   const STAGES = [N('Checking the photo is sharp'), N('Reading the text'), N('Finding names and dates'), N('Almost done')];
 
   S.scan = () => {
-    const col = frame(T('Scan a document'), T('Take a photo or upload a PDF. Saathi checks it and pulls out the details.'));
+    const col = frame(T('Scan a document'));
     const stage = el('div', 'scan-stage');
     for (const c of ['tl', 'tr', 'bl', 'br']) stage.append(el('i', 'scan-c ' + c));
     const view = el('div', 'scan-view'); stage.append(view);
@@ -199,9 +199,8 @@
     const bFile = btn('btn xl', '', () => file.click()); bFile.append(ico('doc', 20), el('span', '', T('Choose photo or PDF')));
     acts.append(bCam, bFile);
     const p = C.prices;
-    const cost = el('p', 'mut small center', p ? T('Free with a pack. Otherwise {price} per scan, only if it reads.', { price: rupee(p.scanPaise) }) : '');
+    const cost = el('p', 'mut small center', p ? T('Free with a pack. Otherwise {price} a scan.', { price: rupee(p.scanPaise) }) : '');
     col.append(stage, out, acts, cost, file, cam);
-    col.append(note(T('An AI reads the photo. It is used once and never saved. Your ID numbers go to your locker only if you choose.'), 'lock'));
 
     let url = null; let timer = null; let running = false;
     const idle = () => {
@@ -217,14 +216,15 @@
       if (isPdf) { const c = el('div', 'scan-idle'); const ic = el('span', 'scan-idle-ic'); ic.append(ico('doc', 34)); c.append(ic, el('b', '', T('PDF document'))); view.append(c); }
       else { url = URL.createObjectURL(blob); const im = el('img'); im.src = url; im.alt = ''; view.append(im); }
       stage.className = 'scan-stage scanning'; acts.hidden = true; cost.hidden = true; out.replaceChildren();
-      let i = 0; setStage(0); timer = setInterval(() => setStage(++i), 1700);
+      let i = 0; setStage(0); timer = setInterval(() => setStage(++i), 950);
     }
     const finishStage = (ok) => { clearInterval(timer); stage.classList.remove('scanning'); stage.classList.add(ok ? 'done' : 'failed'); hudTx.textContent = ok ? T('Done') : T('Could not read it'); hudFill.style.setProperty('--w', '100%'); };
     async function askConsent() {
       if (store.get('saathi.scanOk') === '1') return true;
       return new Promise((resolve) => showDialog({
-        title: T('Let Saathi read this?'), body: T('An AI reads your photo to find the details. It is used once and not saved. Do not scan anything you would not want a third party to see.'),
-        actions: [btn('btn', T('Cancel'), () => { closeDialog(); resolve(false); }), btn('btn pri', T('Yes, read it'), () => { store.set('saathi.scanOk', '1'); closeDialog(); resolve(true); })],
+        title: T('Before Saathi reads it'), body: T('An AI reads this once to find the details. It is not saved.'),
+        actions: [btn('btn', T('Cancel'), () => { closeDialog(); resolve(false); }), btn('btn pri', T('Read it'), () => { store.set('saathi.scanOk', '1'); closeDialog(); resolve(true); })],
+        onDismiss: () => resolve(false),
       }));
     }
     async function go(f) {
@@ -238,7 +238,7 @@
       const t0 = Date.now();
       const up = await api('/app/api/upload', { method: 'POST', headers: { 'content-type': blob.type || f.type }, body: blob }).catch(() => ({ ok: false, j: {} }));
       let r = up.ok ? await tcall('scan', { mediaId: up.j.mediaId, consent: true }) : { ok: false, error: up.status === 413 ? 'too_big' : 'network', extra: {} };
-      const wait = 2400 - (Date.now() - t0); if (wait > 0) await new Promise((x) => setTimeout(x, wait));
+      const wait = 1200 - (Date.now() - t0); if (wait > 0) await new Promise((x) => setTimeout(x, wait));
       running = false;
       if (!r.ok) {
         finishStage(false);
@@ -458,7 +458,7 @@
   }
 
   S.details = async () => {
-    const col = frame(T('My details'), T('What forms keep asking for. Saved once, ready to copy any time.'));
+    const col = frame(T('My details'), T('Saved once. Copy any time.'));
     col.classList.add('wide-col');
     const people = el('div', 'dt-people');
     const holder = el('div', 'dt-wrap'); col.append(people, holder);
@@ -556,7 +556,7 @@
   };
 
   S.reminders = async () => {
-    const col = frame(T('Reminders'), T('Add a date you cannot afford to miss. It shows here.'));
+    const col = frame(T('Reminders'), T('Dates you cannot afford to miss.'));
     col.classList.add('wide-col');
     const holder = el('div', 'rm-wrap'); col.append(holder);
     let st = { items: [], wa: false, max: 12 }; let docs = [];

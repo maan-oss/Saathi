@@ -22,6 +22,7 @@
 <link rel="stylesheet" href="/hark.css">
 <link rel="stylesheet" href="/welcome.css">
 <link rel="stylesheet" href="/premium.css">
+<link rel="stylesheet" href="/final.css">
 </head>
 <body data-wa="__WA_NUMBER__">
 <div class="shell">
@@ -47,16 +48,16 @@
 
   <footer class="dock">
     <div class="composer-wrap">
-      <form class="composer" id="form" autocomplete="off">
-        <div class="attach-wrap">
-          <button class="icon-btn round" id="attachBtn" type="button" aria-label="Attach a photo or PDF" data-ta="Attach a photo or PDF" aria-haspopup="true" aria-expanded="false">
-            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 12L19 12M12 5L12 19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <div class="pop" id="attachPop" hidden role="menu">
-            <button type="button" role="menuitem" id="pickCamera" data-t="Take a photo">Take a photo</button>
-            <button type="button" role="menuitem" id="pickFile" data-t="Choose photo or PDF">Choose photo or PDF</button>
-          </div>
+      <div class="attach-wrap">
+        <button class="icon-btn round attach" id="attachBtn" type="button" aria-label="Attach a photo or PDF" data-ta="Attach a photo or PDF" aria-haspopup="true" aria-expanded="false">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 12L19 12M12 5L12 19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="pop" id="attachPop" hidden role="menu">
+          <button type="button" role="menuitem" id="pickCamera" data-t="Take a photo">Take a photo</button>
+          <button type="button" role="menuitem" id="pickFile" data-t="Choose photo or PDF">Choose photo or PDF</button>
         </div>
+      </div>
+      <form class="composer" id="form" autocomplete="off">
         <div class="rec" id="rec" hidden>
           <button class="icon-btn round rec-x" id="recCancel" type="button" aria-label="Cancel" data-ta="Cancel"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M18 6L6 18M6 6L18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <span class="rec-dot" aria-hidden="true"></span><span id="recTime">0:00</span><span class="rec-msg" id="recMsg" data-t="Recording">Recording</span>
@@ -71,6 +72,10 @@
         </button>
       </form>
     </div>
+    <button class="quick-btn" id="quickScan" type="button" hidden>
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M20 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3M4 12h16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span data-t="Scan a document">Scan a document</span>
+    </button>
     <input type="file" id="fileInput" accept="image/*,application/pdf" hidden>
     <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
   </footer>

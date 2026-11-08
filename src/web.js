@@ -45,6 +45,7 @@ const STATIC = {
   '/polish.css': ['polish.css', 'text/css; charset=utf-8'],
   '/welcome.css': ['welcome.css', 'text/css; charset=utf-8'],
   '/premium.css': ['premium.css', 'text/css; charset=utf-8'],
+  '/final.css': ['final.css', 'text/css; charset=utf-8'],
   '/premium.js': ['premium.js', 'text/javascript; charset=utf-8'],
   '/screens.css': ['screens.css', 'text/css; charset=utf-8'],
   '/style.css': ['style.css', 'text/css; charset=utf-8'],

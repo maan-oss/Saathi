@@ -91,13 +91,11 @@
     const bal = card('hk-prof'); bal.append(el('p', '', T('Wallet balance')), balText);
     bal.append(wide('dark', T('Top up'), () => U.openScreen('topup')));
     const g = (...r) => U.group(null, ...r);
-    const lang = C.uiLang();
+    // Profile holds the person's own things and money. Preferences, backup, privacy and help live in Settings.
     col.append(bal,
-      g(U.row({ icon: 'user', title: T('My details'), onclick: () => U.openScreen('details') }), U.row({ icon: 'bell', title: T('Reminders'), onclick: () => U.openScreen('reminders') }), U.row({ icon: 'lock', title: T('My locker'), onclick: () => U.openScreen('locker') }), U.row({ icon: 'apps', title: T('Applications'), onclick: () => U.openScreen('apps') })),
-      g(U.row({ icon: 'wallet', title: T('Wallet'), value: C.wallet?.balance, onclick: () => U.openScreen('wallet') }), U.row({ icon: 'pack', title: T('Packs'), onclick: () => U.openScreen('packs') }), U.row({ icon: 'clock', title: T('Transaction history'), onclick: () => U.openScreen('activity') })),
-      g(U.row({ icon: 'msg', title: T('Chats'), onclick: () => U.openScreen('chats') }), U.row({ icon: 'globe', title: T('Language'), value: lang === 'en' ? 'English' : lang, onclick: () => U.openScreen('language') }), U.row({ icon: 'sliders', title: T('Settings'), onclick: () => U.openScreen('settings') }), U.row({ icon: 'shield', title: T('Privacy notice'), onclick: () => U.openScreen('privacy') })),
-      g(...(C.cfg?.link ? [U.row({ icon: 'devices', title: T('Devices and sync'), onclick: () => U.openScreen('devices') })] : []), U.row({ icon: 'help', title: T('Help and support'), onclick: () => U.openScreen('help') }), U.row({ icon: 'backup', title: T('Backup and restore'), onclick: () => U.openScreen('backup') })),
-      el('p', 'mut small center about', T('Saathi 1.0 · Independent, not a government website')),
+      g(U.row({ icon: 'user', title: T('My details'), onclick: () => U.openScreen('details') }), U.row({ icon: 'bell', title: T('Reminders'), onclick: () => U.openScreen('reminders') }), U.row({ icon: 'lock', title: T('My locker'), onclick: () => U.openScreen('locker') }), U.row({ icon: 'apps', title: T('Applications'), onclick: () => U.openScreen('apps') }), U.row({ icon: 'msg', title: T('Chats'), onclick: () => U.openScreen('chats') })),
+      g(U.row({ icon: 'wallet', title: T('Wallet'), onclick: () => U.openScreen('wallet') }), U.row({ icon: 'pack', title: T('Packs'), onclick: () => U.openScreen('packs') }), U.row({ icon: 'clock', title: T('Transaction history'), onclick: () => U.openScreen('activity') })),
+      g(U.row({ icon: 'sliders', title: T('Settings'), onclick: () => U.openScreen('settings') })),
       el('div', 'hk-spacer'));
     const fb = el('div', 'hk-fadebar'); screenEl.append(fb);
     U.refreshMe().then((m) => { if (m?.wallet) balText.textContent = m.wallet.balance; }).catch(() => {});

@@ -388,12 +388,12 @@
     if (chosenEl) chosenEl.classList.add('chosen');
   }
 
-  function copyText(text, btn) {
+  function copyText(text, btn, msg) {
     const done = () => {
       const old = btn.dataset.label || (btn.dataset.label = btn.textContent);
       btn.textContent = T('Copied');
       btn.classList.add('ok');
-      toast(T('Copied. Paste it into the official site.'));
+      toast(msg || T('Copied. Paste it into the official site.'));
       clearTimeout(btn._t); btn._t = setTimeout(() => { btn.textContent = old; btn.classList.remove('ok'); }, 1500);
     };
     const fallback = () => {
@@ -581,6 +581,7 @@
     const hist = payload.type === 'text' ? recentTurns() : [];
     lockStale();
     document.querySelectorAll('.suggest, .hello').forEach((g) => g.remove());
+    leaveWelcome();
     if (shown !== null) {
       if (thumb) addMe(thumb, { who: 'me', text: shown });
       else addMe(shown ?? payload.text, { who: 'me', text: shown ?? payload.text });
@@ -599,7 +600,7 @@
       }
       for (const r of j.replies || []) {
         renderReply(r);
-        if (j.replies.length > 1) await new Promise((res) => setTimeout(res, 250));
+        if (j.replies.length > 1) await new Promise((res) => setTimeout(res, 120));
       }
       setWallet(j.wallet);
       if (payload.type === 'reply' && payload.id === 'delete_yes') { chats = { cur: null, list: [] }; store.del(HIST_KEY); }
@@ -787,7 +788,9 @@
   let engineChat = null;
   const engineReset = () => { freshNext = true; };
   const markEngine = (id) => { engineChat = id; };
-  const clearThread = () => { thread.replaceChildren(); document.querySelectorAll('.suggest, .hello').forEach((g) => g.remove()); };
+  // The empty chat: the box sits in the middle of the screen, with one shortcut to scanning. Sending clears it.
+  const leaveWelcome = () => { delete document.getElementById('app').dataset.empty; $('quickScan').hidden = true; };
+  const clearThread = () => { thread.replaceChildren(); document.querySelectorAll('.suggest, .hello').forEach((g) => g.remove()); leaveWelcome(); };
 
   function openChat(id, { fromSwitch = false } = {}) {
     core.showTab?.('chat');
@@ -879,58 +882,12 @@
     if (ok) setWallet(j.wallet);
   }
 
-  // ---- an empty chat: just a greeting and the box to type in ---------------------------------------
+  // ---- an empty chat: only the box, and one shortcut. No greeting and no questions.
   function welcome() {
-    const box = el('div', 'hello');
-    box.append(el('h1', '', T('What do you need help with today?')), el('p', '', T('Ask in your own words')), el('small', 'hello-trust', T('Private, and never asks for your OTP')));
-    thread.append(box);
-    forYou(box);
+    document.getElementById('app').dataset.empty = '1';
+    const q = $('quickScan'); q.hidden = false; q.onclick = () => core.openScreen?.('scan');
     if (matchMedia('(pointer:fine)').matches) input.focus({ preventScroll: true }); // on a phone, the keyboard waits for a tap
   }
-  // Up to three "next" cards from the person's own account (Sky style shows them; Classic hides them with CSS).
-  let core_fy = null;
-  async function fyData() {
-    if (!store.get('saathi.onboarded')) return null;
-    const r = await api('/app/api/t', { method: 'POST', headers: { 'content-type': 'application/json', 'x-saathi': '1' }, body: JSON.stringify({ op: 'summary', args: {} }) }).catch(() => null);
-    if (!r?.ok || !r.j?.ok) return null;
-    const sum = r.j.data || {}; const items = [];
-    for (const x of sum.reminders || []) if (x.left <= 14) items.push({ k: x.left, v: T('Check'), t: x.label + ' · ' + (x.left < 0 ? T('{n} days ago', { n: -x.left }) : x.left === 0 ? T('Today') : T('In {n} days', { n: x.left })), go: 'reminders' });
-    for (const d of sum.docs || []) if (d.left !== null && d.left <= 60) items.push({ k: d.left, v: T('Open'), t: T('A saved document expires soon'), go: 'locker' });
-    for (const a of sum.appsList || []) if ((a.status === 'applied' || a.status === 'waiting') && a.since > 14) items.push({ k: 50, v: T('Check'), t: (a.title || T('Application')) + ' · ' + T('Waiting for {n} days. Check its status.', { n: a.since }), go: 'apps' });
-    for (const [id, g] of Object.entries(sum.guides || {})) if (g?.steps?.length) items.push({ k: 80, v: T('Continue'), t: T('Continue your guide'), go: 'service', args: { id } });
-    if (sum.details && !sum.details.filled) items.push({ k: 90, v: T('Save'), t: T('Save your details once'), go: 'details' });
-    const started = new Set(Object.keys(sum.guides || {}));
-    const hour = new Date().getHours();
-    const ideas = [
-      { v: T('Check'), t: T('Got a suspicious call or message? Check if it is a scam.'), go: 'check' },
-      { v: T('Scan'), t: T('Scan a document and pull out the details'), go: 'scan' },
-      { v: T('Resize'), t: T('Make a photo or signature the size a form wants'), go: 'photo' },
-      { v: T('Add'), t: T('Set a reminder so you never miss a date'), go: 'reminders' },
-      { v: T('Start'), t: T('Apply for a PAN card, step by step'), go: 'service', args: { id: 'pan' }, svc: 'pan' },
-      { v: T('Start'), t: T('Fix your Aadhaar details, step by step'), go: 'service', args: { id: 'aadhaar' }, svc: 'aadhaar' },
-      { v: T('Start'), t: T('Get a driving licence, step by step'), go: 'service', args: { id: 'dl' }, svc: 'dl' },
-      { v: T('Start'), t: T('Apply for a passport, step by step'), go: 'service', args: { id: 'passport' }, svc: 'passport' },
-    ].filter((x) => !x.svc || !started.has(x.svc));
-    const off = (new Date().getDate() + (hour > 12 ? 2 : 0)) % ideas.length;
-    for (let i = 0; i < ideas.length; i++) items.push({ k: 200 + i, ...ideas[(i + off) % ideas.length] });
-    items.sort((a, b) => a.k - b.k);
-    return { sum, items };
-  }
-  core_fy = fyData;
-  async function forYou(after) {
-    const d = await fyData(); if (!d || !after.isConnected) return;
-    const items = d.items;
-    document.querySelectorAll('.foryou').forEach((n) => n.remove());
-    const stack = el('div', 'foryou'); stack.append(el('div', 'fy-h', T('For you')));
-    for (const it of items.slice(0, 4)) {
-      const b = el('button', 'fy-card'); b.type = 'button';
-      b.append(el('span', 'fy-v', it.v), el('span', 'fy-t', it.t));
-      b.onclick = () => core.openScreen?.(it.go, it.args);
-      stack.append(b);
-    }
-    document.getElementById('app').append(stack);
-  }
-
   const brandLink = document.querySelector('.top .brand');
   if (brandLink) { brandLink.href = '#'; brandLink.addEventListener('click', (e) => { e.preventDefault(); if (document.body.classList.contains('screen-open')) return; newChat(); }); }
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
@@ -991,7 +948,7 @@
   // What the screens (sidebar, settings, wallet, onboarding...) use.
   const core = window.SaathiCore = {
     $, el, svg, api, dropdown, toast, store, tab, HIST_KEY, sid, rupee, send, copyText, welcome, boot, setWallet, applyTheme, applyStyle, applyScale, richText, renderReply, fixUrl,
-    T, N, uiLang, loadUI, applyStatic, fyData, openChat, newChat, deleteChat, clearChats, openServiceChat, randomHex, mergeChats,
+    T, N, uiLang, loadUI, applyStatic, openChat, newChat, deleteChat, clearChats, openServiceChat, randomHex, mergeChats,
     get wallet() { return walletNow; },
     get prices() { return pricesNow; },
     set prices(v) { pricesNow = v; },
