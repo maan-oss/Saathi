@@ -434,7 +434,7 @@
     card.append(note);
     return card;
   }
-  const LOCK_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path class="shackle" d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><rect x="5.5" y="11" width="13" height="9.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="12" cy="15.6" r="1.3" fill="currentColor"/></svg>';
+  const LOCK_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path class="shackle" d="M7 11V7a5 5 0 0 1 10 0v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
   function renderSecret(r) {
     const card = el('div', 'sheet vault');
     const ttl = Math.max(10, Math.min(120, Number(r.ttl) || 30));
@@ -971,7 +971,7 @@
         const hit = options.filter((o) => !f || String(o[1]).toLowerCase().includes(f));
         for (const [v, l] of hit) {
           const o = el('button', 'dd-o' + (v === cur ? ' on' : '')); o.type = 'button'; o.setAttribute('role', 'option'); o.setAttribute('aria-selected', String(v === cur));
-          o.append(el('span', '', l)); if (v === cur) { const k = el('span', 'dd-k'); k.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'; o.append(k); }
+          o.append(el('span', '', l)); if (v === cur) { const k = el('span', 'dd-k'); k.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 6L9 17L4 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'; o.append(k); }
           o.onclick = () => choose(v); list.append(o);
         }
         if (!hit.length) list.append(el('div', 'dd-none', T('Nothing found')));

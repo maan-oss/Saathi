@@ -173,3 +173,32 @@ input[type="date"]{cursor:pointer}
 /* The hub is one group: greeting, composer and For you sit together, centred in the space under the top bar. */
 :root[data-style="sky"] .app[data-tab="chat"]:has(.hello)>main.chat{flex:0 0 auto!important;margin-top:auto;overflow-y:auto!important}
 :root[data-style="sky"] .app:has(.hello)>.foryou{margin-bottom:auto}
+
+/* ---- 15. One feel across the app ------------------------------------------------------------------------
+   A soft halo replaces the black line under a selected tab and marks every press. Search takes the top bar in
+   place of the tabs. Guides shows only its own list (no For-you cards underneath). */
+:root{--hk-halo:rgba(31,30,29,.2);--hk-halo-ring:rgba(31,30,29,.18)}
+:root[data-sky="night"]{--hk-halo:rgba(255,255,255,.2);--hk-halo-ring:rgba(255,255,255,.26)}
+:root[data-style] .app[data-tab="guides"]>.foryou,:root[data-style] .app[data-tab="guides"]>.hk-float{display:none!important}
+
+:root[data-style="sky"] .top.hk-top .hk-seg{gap:6px;transition:opacity .28s ease,transform .38s var(--hk-ease,ease)}
+:root[data-style="sky"] .top.hk-top .hk-tab{padding:10px 16px;border-radius:999px!important;opacity:.66;transition:opacity .3s ease,background-color .45s ease,box-shadow .5s var(--hk-ease,ease),color .3s ease}
+:root[data-style="sky"] .top.hk-top .hk-tab::after{display:none}
+:root[data-style="sky"] .top.hk-top .hk-tab.on{opacity:1;background:rgba(255,255,255,.2)!important;box-shadow:0 0 0 1px rgba(255,255,255,.34),0 0 22px 3px rgba(255,255,255,.3)}
+:root[data-style="sky"][data-sky="night"] .top.hk-top .hk-tab.on{background:rgba(255,255,255,.14)!important;box-shadow:0 0 0 1px rgba(255,255,255,.22),0 0 22px 3px rgba(255,255,255,.14)}
+
+.top.hk-top .hk-sbar{position:absolute;left:66px;right:66px;top:50%;margin:0;padding:0;width:auto;max-width:none;transform:translateY(-50%) scale(.94);opacity:0;pointer-events:none;animation:none;transition:opacity .25s ease,transform .4s var(--hk-ease,ease)}
+.top.hk-top .hk-sfield{height:44px;padding:0 14px;box-sizing:border-box;background:rgba(255,255,255,.94)}
+.app[data-search] .top.hk-top .hk-sbar{opacity:1;transform:translateY(-50%);pointer-events:auto}
+.app[data-search] .top.hk-top .hk-seg{opacity:0;transform:scale(.92);pointer-events:none}
+.hk-sfield:focus-within{box-shadow:0 0 0 4px var(--hk-halo-ring)}
+
+.hk-halo{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none;z-index:3}
+.hk-halo i{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:radial-gradient(circle,transparent 0 44%,var(--hk-halo) 58%,transparent 72%);transform:scale(0);animation:hkHalo .8s cubic-bezier(.2,.7,.2,1) forwards}
+.top.hk-top .hk-halo i{background:radial-gradient(circle,transparent 0 44%,rgba(255,255,255,.55) 58%,transparent 72%)}
+@keyframes hkHalo{0%{transform:scale(0);opacity:.9}55%{opacity:.8}100%{transform:scale(var(--s,30));opacity:0}}
+
+:is(button,[role="button"],a[href],.row,.hk-svc,.hk-q,.chip):focus-visible{outline:none;box-shadow:0 0 0 3px var(--hk-halo-ring)}
+input:focus-visible:not(#input),textarea:focus-visible:not(#input){outline:none;box-shadow:0 0 0 3px var(--hk-halo-ring)}
+.hk-svc:active,.hk-q:active,.chip:active,.btn:active,.hk-wide:active,.gtile:active,.tool-card:active,.svc-card:active,.hub-cc:active,.hk-row:active{transform:scale(.975)}
+.btn:has(>svg){display:inline-flex;align-items:center;justify-content:center;gap:8px}

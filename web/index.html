@@ -30,7 +30,7 @@
 <div class="app" id="app">
   <header class="top">
     <button class="icon-btn menu-btn" id="menuBtn" aria-label="Open menu" data-ta="Open menu" aria-expanded="false" aria-controls="sidebar">
-      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 5L20 5M4 12L20 12M4 19L20 19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
     <a class="brand" href="/" aria-label="Saathi home">
       <img src="/logo.svg" width="30" height="30" alt="">
@@ -50,7 +50,7 @@
       <form class="composer" id="form" autocomplete="off">
         <div class="attach-wrap">
           <button class="icon-btn round" id="attachBtn" type="button" aria-label="Attach a photo or PDF" data-ta="Attach a photo or PDF" aria-haspopup="true" aria-expanded="false">
-            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 12L19 12M12 5L12 19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
           <div class="pop" id="attachPop" hidden role="menu">
             <button type="button" role="menuitem" id="pickCamera" data-t="Take a photo">Take a photo</button>
@@ -58,13 +58,13 @@
           </div>
         </div>
         <div class="rec" id="rec" hidden>
-          <button class="icon-btn round rec-x" id="recCancel" type="button" aria-label="Cancel" data-ta="Cancel"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg></button>
+          <button class="icon-btn round rec-x" id="recCancel" type="button" aria-label="Cancel" data-ta="Cancel"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M18 6L6 18M6 6L18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <span class="rec-dot" aria-hidden="true"></span><span id="recTime">0:00</span><span class="rec-msg" id="recMsg" data-t="Recording">Recording</span>
           <button class="rec-lang" id="dictLang" type="button" hidden></button>
         </div>
         <textarea id="input" rows="1" placeholder="Ask anything" data-tp="Ask anything" aria-label="Message" data-ta="Message" maxlength="2000" enterkeyhint="send"></textarea>
         <button class="icon-btn round" id="micBtn" type="button" aria-label="Speak instead of typing" data-ta="Speak instead of typing" hidden>
-          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 19L12 22M19 10L19 12A7 7 0 0 1 5 12L5 10M12 2h0a3 3 0 0 1 3 3v7a3 3 0 0 1 -3 3h0a3 3 0 0 1 -3 -3v-7a3 3 0 0 1 3 -3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <button class="send" id="sendBtn" type="submit" aria-label="Send" data-ta="Send" disabled>
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 19V6M6 11l6-6 6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>

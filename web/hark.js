@@ -113,7 +113,7 @@
   field.append(clr); spBar.append(field);
   const syncClear = () => field.classList.toggle('has', inp.value.length > 0);
   clr.onclick = () => { inp.value = ''; syncClear(); runSearch(); inp.focus({ preventScroll: true }); };
-  sp.append(spBody, spBar); app.append(sp);
+  sp.append(spBody); top.append(spBar); app.append(sp);
   const hint = el('p', 'hk-hint');
   function runSearch() {
     const q = inp.value.trim().toLowerCase(); spBody.replaceChildren();
@@ -170,4 +170,23 @@
     row.scrollLeft += e.deltaY;
     if (row.scrollLeft !== before) e.preventDefault();
   }, { passive: false });
+})();
+
+// ---- a soft halo where you press. It is the feedback on every tap, instead of a black line. ---------------
+(() => {
+  const SEL = 'button, [role="button"], a[href], label.hk-sfield, .row, .hk-svc, .hk-q, .chip, .gtile, .tool-card, .svc-card, .hub-cc, .hk-row, .hk-wide, .dd-o, .lang, .fd-o';
+  const calm = matchMedia('(prefers-reduced-motion: reduce)');
+  document.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0 || calm.matches || !(e.target instanceof Element)) return;
+    const t = e.target.closest(SEL);
+    if (!t || t.disabled || t.getAttribute('aria-disabled') === 'true') return;
+    const r = t.getBoundingClientRect(); if (!r.width || !r.height) return;
+    if (getComputedStyle(t).position === 'static') t.style.position = 'relative';
+    const wrap = document.createElement('span'); wrap.className = 'hk-halo'; wrap.setAttribute('aria-hidden', 'true');
+    const dot = document.createElement('i');
+    dot.style.left = (e.clientX - r.left) + 'px'; dot.style.top = (e.clientY - r.top) + 'px';
+    dot.style.setProperty('--s', String(Math.ceil((Math.hypot(r.width, r.height) * 2) / 10)));
+    wrap.append(dot); t.append(wrap);
+    const done = () => wrap.remove(); dot.addEventListener('animationend', done); setTimeout(done, 900);
+  }, { passive: true });
 })();
