@@ -84,4 +84,199 @@
     new MutationObserver(sync).observe(rec, { attributes: true, attributeFilter: ['hidden'] });
     new MutationObserver(sync).observe(dl, { attributes: true, attributeFilter: ['hidden'] });
   })();
+
+  // 3. Dates: one calendar sheet in place of the phone's own date picker. It writes the same ISO value into the same
+  //    field and fires the same input and change events, so every screen that reads the field keeps working.
+  (() => {
+    const tr = (s, v) => (window.SaathiCore?.T ? window.SaathiCore.T(s, v) : s);
+    const loc = () => document.documentElement.lang || 'en';
+    const pad = (n) => String(n).padStart(2, '0');
+    const iso = (y, m, d) => `${y}-${pad(m + 1)}-${pad(d)}`;
+    const parse = (s) => { const x = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return x ? { y: +x[1], m: +x[2] - 1, d: +x[3] } : null; };
+    const today = () => { const t = new Date(); return { y: t.getFullYear(), m: t.getMonth(), d: t.getDate() }; };
+    const cmp = (a, b) => (a.y - b.y) || (a.m - b.m) || (a.d - b.d);
+    const dayLabel = (p) => new Intl.DateTimeFormat(loc(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(p.y, p.m, p.d));
+    const monthLabel = (y, m) => new Intl.DateTimeFormat(loc(), { month: 'long', year: 'numeric' }).format(new Date(y, m, 1));
+    const CHEV = (d) => `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+    let sheet = null, field = null, view = null, mode = 'days';
+
+    function build() {
+      sheet = document.createElement('div');
+      sheet.className = 'dp';
+      sheet.hidden = true;
+      sheet.innerHTML =
+        '<div class="dp-scrim"></div>' +
+        '<div class="dp-card" role="dialog" aria-modal="true" aria-label="' + tr('Choose a date') + '">' +
+          '<div class="dp-grab" aria-hidden="true"></div>' +
+          '<header class="dp-head">' +
+            '<button type="button" class="dp-nav" data-go="-1" aria-label="' + tr('Previous month') + '">' + CHEV('M15 6l-6 6 6 6') + '</button>' +
+            '<button type="button" class="dp-title" data-mode="years"></button>' +
+            '<button type="button" class="dp-nav" data-go="1" aria-label="' + tr('Next month') + '">' + CHEV('M9 6l6 6-6 6') + '</button>' +
+          '</header>' +
+          '<div class="dp-wk" aria-hidden="true"></div>' +
+          '<div class="dp-grid" role="grid"></div>' +
+          '<div class="dp-years" hidden></div>' +
+          '<footer class="dp-foot">' +
+            '<button type="button" class="dp-link" data-act="clear">' + tr('Clear') + '</button>' +
+            '<button type="button" class="dp-link" data-act="today">' + tr('Today') + '</button>' +
+            '<button type="button" class="dp-done" data-act="close">' + tr('Done') + '</button>' +
+          '</footer>' +
+        '</div>';
+      document.body.append(sheet);
+      sheet.querySelector('.dp-scrim').addEventListener('click', close);
+      sheet.addEventListener('click', onClick);
+      sheet.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.preventDefault(); close(); } });
+    }
+
+    // The field's own min and max bound the calendar. Without them: 1900 to ten years ahead.
+    function bounds() {
+      const t = today();
+      return { min: parse(field.min) || { y: 1900, m: 0, d: 1 }, max: parse(field.max) || { y: t.y + 10, m: 11, d: 31 } };
+    }
+    const inRange = (p, b) => cmp(p, b.min) >= 0 && cmp(p, b.max) <= 0;
+
+    function render() {
+      const b = bounds();
+      const title = sheet.querySelector('.dp-title');
+      const grid = sheet.querySelector('.dp-grid');
+      const wk = sheet.querySelector('.dp-wk');
+      const years = sheet.querySelector('.dp-years');
+      const navs = sheet.querySelectorAll('.dp-nav');
+      const pickMode = mode !== 'days'; // year list or month list
+      wk.hidden = pickMode; grid.hidden = pickMode; years.hidden = !pickMode;
+      navs.forEach((n) => { n.hidden = pickMode; });
+
+      if (mode === 'years') {
+        title.textContent = String(view.y);
+        years.replaceChildren();
+        for (let y = b.max.y; y >= b.min.y; y--) {
+          const btn = document.createElement('button');
+          btn.type = 'button'; btn.className = 'dp-yr' + (y === view.y ? ' sel' : ''); btn.dataset.year = String(y); btn.textContent = String(y);
+          years.append(btn);
+        }
+        years.querySelector('.dp-yr.sel')?.scrollIntoView({ block: 'center' });
+        return;
+      }
+      if (mode === 'months') {
+        title.textContent = String(view.y);
+        years.replaceChildren();
+        const fmt = new Intl.DateTimeFormat(loc(), { month: 'short' });
+        for (let m = 0; m < 12; m++) {
+          const btn = document.createElement('button');
+          const last = new Date(view.y, m + 1, 0).getDate();
+          const off = !(cmp({ y: view.y, m, d: last }, b.min) >= 0 && cmp({ y: view.y, m, d: 1 }, b.max) <= 0); // no day of this month is in range
+          btn.type = 'button'; btn.className = 'dp-yr' + (m === view.m ? ' sel' : ''); btn.dataset.month = String(m);
+          btn.textContent = fmt.format(new Date(view.y, m, 1));
+          btn.disabled = off;
+          years.append(btn);
+        }
+        return;
+      }
+
+      title.textContent = monthLabel(view.y, view.m);
+      if (!wk.childElementCount) {
+        for (let i = 0; i < 7; i++) {
+          const s = document.createElement('span');
+          s.textContent = new Intl.DateTimeFormat(loc(), { weekday: 'narrow' }).format(new Date(2024, 0, 7 + i)); // 7 Jan 2024 was a Sunday
+          wk.append(s);
+        }
+      }
+      const sel = parse(field.value);
+      const now = today();
+      grid.replaceChildren();
+      const lead = new Date(view.y, view.m, 1).getDay();
+      const days = new Date(view.y, view.m + 1, 0).getDate();
+      for (let i = 0; i < lead; i++) grid.append(document.createElement('span'));
+      for (let d = 1; d <= days; d++) {
+        const p = { y: view.y, m: view.m, d };
+        const btn = document.createElement('button');
+        btn.type = 'button'; btn.className = 'dp-day'; btn.dataset.iso = iso(view.y, view.m, d);
+        btn.textContent = String(d); btn.setAttribute('aria-label', dayLabel(p));
+        if (sel && cmp(sel, p) === 0) { btn.classList.add('sel'); btn.setAttribute('aria-pressed', 'true'); }
+        if (cmp(now, p) === 0) btn.classList.add('today');
+        if (!inRange(p, b)) btn.disabled = true;
+        grid.append(btn);
+      }
+      const prevM = view.m === 0 ? { y: view.y - 1, m: 11 } : { y: view.y, m: view.m - 1 };
+      const nextM = view.m === 11 ? { y: view.y + 1, m: 0 } : { y: view.y, m: view.m + 1 };
+      sheet.querySelector('[data-go="-1"]').disabled = cmp({ ...prevM, d: 31 }, b.min) < 0;
+      sheet.querySelector('[data-go="1"]').disabled = cmp({ ...nextM, d: 1 }, b.max) > 0;
+      const todayBtn = sheet.querySelector('[data-act="today"]');
+      todayBtn.disabled = !inRange(now, b);
+    }
+
+    function shift(k) {
+      let y = view.y, m = view.m + k;
+      if (m < 0) { m = 11; y -= 1; }
+      if (m > 11) { m = 0; y += 1; }
+      view = { y, m };
+      render();
+    }
+
+    // Writes the value the way a native date field would, so listeners on the field see a normal change.
+    function choose(value) {
+      const f = field;
+      if (f && f.value !== value) {
+        f.value = value;
+        f.dispatchEvent(new Event('input', { bubbles: true }));
+        f.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      close();
+    }
+
+    function onClick(e) {
+      const t = e.target.closest('button');
+      if (!t || !sheet.contains(t)) return;
+      if (t.dataset.go) return shift(+t.dataset.go);
+      if (t.dataset.mode === 'years') { mode = mode === 'days' ? 'years' : 'days'; return render(); }
+      if (t.dataset.year) { view = { y: +t.dataset.year, m: view.m }; mode = 'months'; return render(); }
+      if (t.dataset.month) { view = { y: view.y, m: +t.dataset.month }; mode = 'days'; return render(); }
+      if (t.dataset.iso) return choose(t.dataset.iso);
+      if (t.dataset.act === 'clear') return choose('');
+      if (t.dataset.act === 'today') { const n = today(); if (inRange(n, bounds())) choose(iso(n.y, n.m, n.d)); return; }
+      if (t.dataset.act === 'close') close();
+    }
+
+    function open(input) {
+      if (!sheet) build();
+      field = input;
+      const b = bounds();
+      const cur = parse(input.value) || (inRange(today(), b) ? today() : b.min);
+      view = { y: cur.y, m: cur.m };
+      mode = 'days';
+      sheet.hidden = false;
+      document.body.classList.add('dp-open');
+      render();
+      requestAnimationFrame(() => sheet.classList.add('on'));
+      const target = sheet.querySelector('.dp-day.sel') || sheet.querySelector('.dp-day.today:not(:disabled)') || sheet.querySelector('.dp-day:not(:disabled)');
+      target?.focus({ preventScroll: true });
+    }
+
+    function close() {
+      if (!sheet || sheet.hidden) return;
+      sheet.classList.remove('on');
+      document.body.classList.remove('dp-open');
+      // Drop focus from the sheet. It is not handed back to the date field: on phones that would open the system picker.
+      if (sheet.contains(document.activeElement)) document.activeElement.blur();
+      field = null;
+      setTimeout(() => { if (!sheet.classList.contains('on')) sheet.hidden = true; }, 240);
+    }
+
+    // A tap on a date field opens the calendar instead of the system picker (the system picker stays as a fallback in the browser).
+    document.addEventListener('mousedown', (e) => {
+      const t = e.target;
+      if (t instanceof HTMLInputElement && t.type === 'date' && !t.disabled && !t.readOnly) { e.preventDefault(); open(t); }
+    }, true);
+    document.addEventListener('click', (e) => {
+      if (e.target instanceof HTMLInputElement && e.target.type === 'date' && !e.target.disabled && !e.target.readOnly) e.preventDefault();
+    }, true);
+    // Keyboard users reach the field with Tab: opening the calendar there too.
+    document.addEventListener('focusin', (e) => {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement) || t.type !== 'date' || t.disabled || t.readOnly) return;
+      if (sheet && !sheet.hidden) return;
+      open(t);
+    });
+  })();
 })();

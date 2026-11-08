@@ -856,7 +856,7 @@
         const page = el('section', 'wl-page');
         const eyebrow = el('p', 'wl-eye', T('Step {n} of {total}', { n: 2, total: OB_TOTAL }));
         const h = el('h1', '', T('Tell us about you')); h.tabIndex = -1;
-        const p = el('p', 'wl-sub', T('Saathi fills your forms from these, so you never type them twice. Stored encrypted, and only you can see it.'));
+        const p = el('p', 'wl-sub', T('Saathi fills your forms from these, so you never type them twice. Saved encrypted on our server. Never shared, and never sent to the AI.'));
         const form = el('div', 'wl-form');
 
         const nm = el('input', 'wl-in'); nm.type = 'text'; nm.autocomplete = 'name'; nm.maxLength = 80; nm.placeholder = T('As on your Aadhaar'); nm.value = about.name;
