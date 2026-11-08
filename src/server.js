@@ -257,6 +257,48 @@ const web = createWeb({
   shell: { whatsappNumber: config.whatsappNumber, voice: stt.enabled, pay: Boolean(payments) },
 });
 
+// The page for a link that does not exist. Browsers asking for HTML get a way back to the app; everything else keeps plain text.
+const NOT_FOUND_HTML = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Page not found · Saathi</title>
+<link rel="icon" href="/logo.svg" type="image/svg+xml">
+<style>
+:root{color-scheme:light dark;--bg:#FAF9F5;--fg:#262624;--mute:#6b6a64;--btn:#262624;--btnfg:#FAF9F5}
+@media (prefers-color-scheme:dark){:root{--bg:#262624;--fg:#FAF9F5;--mute:#b7b5ad;--btn:#FAF9F5;--btnfg:#262624}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;align-items:center;justify-content:center;padding:max(24px,env(safe-area-inset-top)) 22px max(24px,env(safe-area-inset-bottom))}
+main{max-width:360px;text-align:center}
+img{width:56px;height:56px}
+h1{font-size:26px;line-height:1.2;margin:18px 0 8px;letter-spacing:-.01em;text-wrap:balance}
+p{margin:0 0 24px;color:var(--mute);text-wrap:balance}
+a.btn{display:inline-block;padding:13px 24px;border-radius:999px;background:var(--btn);color:var(--btnfg);text-decoration:none;font-weight:600}
+a.btn:focus-visible{outline:3px solid #6b8cff;outline-offset:3px}
+</style>
+</head>
+<body>
+<main>
+<img src="/logo.svg" alt="">
+<h1>This page does not exist</h1>
+<p>The link may be old or mistyped. Saathi is still here.</p>
+<a class="btn" href="/">Back to Saathi</a>
+</main>
+</body>
+</html>`;
+
+function notFound(req, res) {
+  res.statusCode = 404;
+  if (req.method === 'GET' && String(req.headers.accept || '').includes('text/html')) {
+    res.setHeader('content-type', 'text/html; charset=utf-8');
+    return void res.end(NOT_FOUND_HTML);
+  }
+  res.end('not found');
+}
+
 async function handleRequest(req, res) {
   res.setHeader('strict-transport-security', 'max-age=63072000; includeSubDomains; preload'); res.setHeader('x-content-type-options', 'nosniff'); res.setHeader('referrer-policy', 'no-referrer');
   const url = new URL(req.url, 'http://localhost');
@@ -264,10 +306,7 @@ async function handleRequest(req, res) {
   // The web app (page, files and /app/api/*). Everything else below is WhatsApp, payments and the operator's pages.
   if (url.pathname === '/' || url.pathname === '/app' || url.pathname.startsWith('/app/') || url.pathname.startsWith('/fonts/') || /^\/(app\.js|screens\.js|tools\.js|guides\.js|hark\.js|hark\.css|premium\.js|premium\.css|final\.css|guides\.css|polish\.css|welcome\.css|screens\.css|sky\.js|og\.png|robots\.txt|style\.css|manifest\.webmanifest|sw\.js|logo\.svg|favicon\.ico|icon\.svg|icon-192\.png|icon-512\.png|apple-touch-icon\.png)$/.test(url.pathname)) {
     return void web.handle(req, res, url).then((done) => {
-      if (!done && !res.writableEnded) {
-        res.statusCode = 404;
-        res.end('not found');
-      }
+      if (!done && !res.writableEnded) notFound(req, res);
     }).catch((e) => fail(res, e));
   }
 
@@ -464,8 +503,7 @@ async function handleRequest(req, res) {
     });
   }
 
-  res.statusCode = 404;
-  res.end('not found');
+  notFound(req, res);
 }
 const server = http.createServer((req, res) => void handleRequest(req, res).catch((e) => fail(res, e)));
 

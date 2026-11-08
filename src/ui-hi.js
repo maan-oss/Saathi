@@ -338,7 +338,6 @@ export const HI = {
   'That code does not look right.': 'यह कोड सही नहीं लग रहा।',
   'Restore from a code': 'कोड से रीस्टोर करें',
   'Delete all your data?': 'आपका सारा डेटा हटाएँ?',
-  'This removes your saved details, locker, reminders and wallet balance from our server, and your chats from this device. It cannot be undone.': 'इससे आपकी सेव जानकारी, लॉकर, रिमाइंडर और वॉलेट बैलेंस हमारे सर्वर से, और आपकी चैट इस डिवाइस से हट जाएँगी। इसे वापस नहीं किया जा सकता।',
   'Delete everything': 'सब कुछ हटाएँ',
   'Ask in your own words': 'अपने शब्दों में पूछिए',
   'Type or speak, in your language. Saathi explains PAN, Aadhaar, driving licence, passport and more, one simple step at a time.': 'अपनी भाषा में लिखिए या बोलिए। साथी पैन, आधार, ड्राइविंग लाइसेंस, पासपोर्ट और बहुत कुछ एक-एक आसान कदम में समझाता है।',
@@ -899,4 +898,6 @@ export const HI = {
   "Your locker, details, reminders and wallet follow you to any device.": "आपका लॉकर, विवरण, रिमाइंडर और वॉलेट किसी भी डिवाइस पर आपके साथ रहेगा।",
   "Locker, details, reminders and wallet always sync. Chats sync only if you turn them on.": "लॉकर, विवरण, रिमाइंडर और वॉलेट हमेशा सिंक होते हैं। चैट सिंक तभी होती हैं जब आप चालू करें।",
   "Get reminders on WhatsApp. WhatsApp confirms the number is yours. Reply Yes to confirm.": "WhatsApp पर रिमाइंडर पाएँ। WhatsApp पक्का करेगा कि नंबर आपका है; पुष्टि के लिए Yes लिखें।",
+  "Removes your details, locker, reminders and wallet from our server, and your chats from this device. Cannot be undone.": "आपकी जानकारी, लॉकर, रिमाइंडर और वॉलेट हमारे सर्वर से, और आपकी चैट इस डिवाइस से हटा दी जाएंगी। इसे वापस नहीं लाया जा सकता।",
+  "Saathi fills your forms from these. Saved encrypted, never shared, never sent to the AI.": "Saathi इन्हीं से आपके फ़ॉर्म भरता है। एन्क्रिप्टेड रूप में सेव, कभी साझा नहीं, और AI को कभी नहीं भेजा जाता।",
 };

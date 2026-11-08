@@ -829,7 +829,7 @@
   dw.addEventListener('click', (e) => { if (e.target === dw) dismissDialog(); });
   function confirmDelete() {
     showDialog({
-      title: T('Delete all your data?'), body: T('This removes your saved details, locker, reminders and wallet balance from our server, and your chats from this device. It cannot be undone.'),
+      title: T('Delete all your data?'), body: T('Removes your details, locker, reminders and wallet from our server, and your chats from this device. Cannot be undone.'),
       actions: [btn('btn', T('Cancel'), closeDialog), btn('btn danger', T('Delete everything'), async () => {
         closeDialog(); await engine({ type: 'text', text: 'delete' }); await engine({ type: 'reply', id: 'delete_yes' });
         C.resetAfterDelete(); store.del('saathi.onboarded'); store.del('saathi.lang'); location.reload();
@@ -910,7 +910,7 @@
         const page = el('section', 'wl-page');
         const eyebrow = el('p', 'wl-eye', T('Step {n} of {total}', { n: 2, total: OB_TOTAL }));
         const h = el('h1', '', T('Tell us about you')); h.tabIndex = -1;
-        const p = el('p', 'wl-sub', T('Saathi fills your forms from these, so you never type them twice. Saved encrypted on our server. Never shared, and never sent to the AI.'));
+        const p = el('p', 'wl-sub', T('Saathi fills your forms from these. Saved encrypted, never shared, never sent to the AI.'));
         const form = el('div', 'wl-form');
 
         const nm = el('input', 'wl-in'); nm.type = 'text'; nm.autocomplete = 'name'; nm.maxLength = 80; nm.placeholder = T('As on your Aadhaar'); nm.value = about.name;
