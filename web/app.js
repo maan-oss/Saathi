@@ -61,7 +61,14 @@
   // ---- talking to the server --------------------------------------------------------------
   async function api(path, opts = {}) {
     const headers = { 'x-session': sid, 'x-saathi': '1', ...(opts.headers || {}) };
-    const res = await fetch(path, { ...opts, headers });
+    let res;
+    for (let tries = 0; ; tries++) {
+      res = await fetch(path, { ...opts, headers });
+      // The host's router sometimes answers 502 before the app sees the request (a cold start). Nothing ran,
+      // so a short wait and a second try is safe. Give up after two tries.
+      if (res.status === 502 && res.headers.get('x-render-routing') && tries < 2) { await new Promise((r) => setTimeout(r, 900 * (tries + 1))); continue; }
+      break;
+    }
     let j = null;
     try { j = await res.json(); } catch { /* not json */ }
     return { ok: res.ok, status: res.status, j: j || {} };
