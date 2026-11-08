@@ -31,7 +31,7 @@ const bot = createBot({
 
 const USER = 'simulator';
 const PHONE = '919999900000'; // fake, lets reminders work
-console.log(`AI: ${llm.enabled ? config.model : 'off (set ANTHROPIC_API_KEY to enable free-form answers)'}`);
+console.log(`AI: ${llm.enabled ? config.openrouterModel : 'off (set OPENROUTER_API_KEY to enable free-form answers)'}`);
 console.log(`Photo check: ${config.docCheck ? 'on' : 'off (DOC_CHECK=1 to enable)'}`);
 console.log('Say hi to start. /stats /reset /quit\n');
 

@@ -1,7 +1,7 @@
 // Pre-generate the machine translations so the first person to pick a language doesn't wait.
 //   node scripts/translate.js            all languages
 //   node scripts/translate.js ta te      just these
-// Needs ANTHROPIC_API_KEY. Costs a small amount per language (about 350 short texts).
+// Needs OPENROUTER_API_KEY (free models work). About 350 short texts per language.
 // Hand-corrected records (reviewed: true in data/translations.json) are never overwritten.
 import { config } from '../src/config.js';
 import { Store } from '../src/store.js';
@@ -12,7 +12,7 @@ import { LANGS } from '../src/i18n.js';
 
 const llm = createLlm(config);
 if (!llm.enabled) {
-  console.error('Set ANTHROPIC_API_KEY first.');
+  console.error('Set OPENROUTER_API_KEY first.');
   process.exit(1);
 }
 const store = new Store(config.dataDir);

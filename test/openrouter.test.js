@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createLlm } from '../src/llm.js';
+import { createLlm, tidyAnswer } from '../src/llm.js';
 import { diagnose } from '../src/doctor.js';
 
-const cfg = { openrouterKey: 'sk-or-test', openrouterModel: 'stealth/space-bunny-alpha', openrouterFallbacks: ['openrouter/free'], openrouterBase: 'https://or.test', anthropicKey: 'ak', model: 'm' };
+const cfg = { openrouterKey: 'sk-or-test', openrouterModel: 'stealth/space-bunny-alpha', openrouterFallbacks: ['openrouter/free'], openrouterBase: 'https://or.test', llmInUsdPerM: 0, llmOutUsdPerM: 0 };
 
 function stubFetch(handler) {
   const real = globalThis.fetch;
@@ -28,6 +28,7 @@ test('openrouter: used when its key is set, free router by default, OpenAI-shape
     assert.equal(c.body.model, 'stealth/space-bunny-alpha');
     assert.deepEqual(c.body.models, ['stealth/space-bunny-alpha', 'openrouter/free']);
     assert.equal(c.body.messages[0].role, 'system');
+    assert.ok(c.opts.signal, 'every call has a timeout');
   } finally { s.restore(); }
 });
 
@@ -49,19 +50,56 @@ test('openrouter: a busy free model is retried once, then reported', async () =>
   let n = 0;
   const s = stubFetch(() => (++n === 1 ? new Response('busy', { status: 429 }) : ok({ choices: [{ message: { content: 'fine' } }] })));
   try {
-    assert.equal((await createLlm(cfg).answer('s', 'q')).text, 'fine');
+    assert.equal((await createLlm(cfg).answer('s', 'busy question')).text, 'fine');
     assert.equal(n, 2);
   } finally { s.restore(); }
   const s2 = stubFetch(() => new Response('down', { status: 503 }));
-  try { await assert.rejects(() => createLlm(cfg).answer('s', 'q'), /LLM 503/); } finally { s2.restore(); }
+  try { await assert.rejects(() => createLlm(cfg).answer('s', 'down question'), /LLM 503/); } finally { s2.restore(); }
 });
 
-test('anthropic still works when only its key is set', async () => {
-  const s = stubFetch(() => ok({ content: [{ type: 'text', text: 'hi' }], usage: { input_tokens: 5, output_tokens: 1 } }));
+test('no key: the AI is off, nothing is sent, and asking is refused cleanly', async () => {
+  const s = stubFetch(() => ok({}));
   try {
-    const llm = createLlm({ anthropicKey: 'ak', model: 'm' });
-    assert.equal(llm.provider, 'anthropic');
-    assert.equal((await llm.answer('s', 'q')).text, 'hi');
+    const llm = createLlm({ openrouterKey: '' });
+    assert.equal(llm.enabled, false);
+    assert.equal(llm.provider, null);
+    await assert.rejects(() => llm.answer('s', 'q'), /AI is off/);
+    assert.equal(s.calls.length, 0);
+  } finally { s.restore(); }
+});
+
+test('the same question is answered from memory the second time: one call, no spend', async () => {
+  const s = stubFetch(() => ok({ choices: [{ message: { content: 'Apply on the official portal.' } }], usage: { prompt_tokens: 40, completion_tokens: 9 } }));
+  try {
+    const llm = createLlm(cfg);
+    const a = await llm.answer('be kind', 'How do I apply for PAN?');
+    const b = await llm.answer('be kind', 'How do I apply for PAN?');
+    assert.equal(s.calls.length, 1);
+    assert.equal(b.text, a.text);
+    assert.equal(b.cached, true);
+    assert.deepEqual(b.usage, { in: 0, out: 0 });
+    // a different question, or a different system prompt, is a different answer
+    await llm.answer('be kind', 'How do I apply for Aadhaar?');
+    await llm.answer('be strict', 'How do I apply for PAN?');
+    assert.equal(s.calls.length, 3);
+  } finally { s.restore(); }
+});
+
+test('fresh: skips the cache (used to test a key), and an empty reply is never cached', async () => {
+  let n = 0;
+  const s = stubFetch(() => ok({ choices: [{ message: { content: n++ < 2 ? '' : 'OK' } }] }));
+  try {
+    const llm = createLlm(cfg);
+    const empty = await llm.answer('say ok', 'Say OK', { max: 5 }); // empty twice (one retry): returned empty, not cached
+    assert.equal(empty.text, '');
+    assert.equal(s.calls.length, 2);
+    const first = await llm.answer('say ok', 'Say OK', { max: 5 }); // the empty was not cached, so this asks again
+    assert.equal(first.text, 'OK');
+    assert.equal(s.calls.length, 3);
+    await llm.answer('say ok', 'Say OK', { max: 5 }); // now it is cached
+    assert.equal(s.calls.length, 3);
+    await llm.answer('say ok', 'Say OK', { max: 5, fresh: true }); // fresh skips the cache
+    assert.equal(s.calls.length, 4);
   } finally { s.restore(); }
 });
 
@@ -70,21 +108,19 @@ test('doctor checks the OpenRouter key', async () => {
   assert.ok(rows.some((r) => r.s.trim() === 'OK' && /OpenRouter key works/.test(r.t)));
 });
 
-import { tidyAnswer } from '../src/llm.js';
 test('free-model Markdown is turned into what the chat understands', () => {
   const out = tidyAnswer('## Docs\n\nYou need **ID proof** and __a photo__.  \n\n- Aadhaar\n* Passport\n1) Sign\n\n\n\nDone `now`');
   assert.equal(out, '*Docs*\n\nYou need *ID proof* and _a photo_.\n\n• Aadhaar\n• Passport\n1. Sign\n\nDone now');
 });
 
 test('a key set while running turns the AI on and off without a restart', async () => {
-  const { createLlm } = await import('../src/llm.js');
-  const cfg = { openrouterKey: '', anthropicKey: '', llmInUsdPerM: 1, llmOutUsdPerM: 5 };
-  const l = createLlm(cfg);
+  const c = { openrouterKey: '', llmInUsdPerM: 1, llmOutUsdPerM: 5 };
+  const l = createLlm(c);
   assert.equal(l.enabled, false);
   l.setKey('sk-or-v1-testtesttesttesttest');
   assert.equal(l.enabled, true);
   assert.equal(l.provider, 'openrouter');
-  assert.equal(cfg.llmInUsdPerM, 0);
+  assert.equal(c.llmInUsdPerM, 0);
   l.setKey('');
   assert.equal(l.enabled, false);
 });

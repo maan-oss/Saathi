@@ -1,6 +1,7 @@
-// Thin wrapper over the Anthropic Messages API (plain fetch, no SDK).
+// Thin wrapper over OpenRouter's chat API (plain fetch, no SDK). One provider, one key.
 // Used for three things only: answering free-form questions, reading documents (photo or PDF), and translating
-// the bot's own texts into another language (once per language, then cached).
+// the bot's own texts into another language (once per language, then cached). Free models cost nothing to run.
+import { createHash } from 'node:crypto';
 
 /** Free models love Markdown. Chat here only understands *bold*, _italic_ and "• " bullets, so turn the rest into those. */
 export function tidyAnswer(t) {
@@ -17,13 +18,18 @@ export function tidyAnswer(t) {
     .trim();
 }
 
-export function createLlm(config) {
-  // OpenRouter wins when its key is set: it can route to free models. Otherwise Anthropic.
-  // Read live, so a key pasted into the admin page works at once without a restart.
-  const isOpenRouter = () => Boolean(config.openrouterKey);
-  const isEnabled = () => isOpenRouter() || Boolean(config.anthropicKey);
+// A free model that hangs must not hang the chat: give up after this long and let the bot say "try again soon".
+const TIMEOUT_MS = 25_000;
+// Answers to the same question (same system prompt, same wording) are kept for an hour, in memory only, so a common
+// question is answered instantly and costs nothing. Only the hash of the question is used as the key.
+const CACHE_MAX = 300;
+const CACHE_TTL_MS = 60 * 60 * 1000;
 
-  // Our content blocks are Anthropic-shaped; OpenRouter wants OpenAI-shaped ones.
+export function createLlm(config) {
+  // Read live, so a key pasted into the admin page works at once without a restart.
+  const isEnabled = () => Boolean(config.openrouterKey);
+
+  // Our content blocks are Anthropic-shaped in the calling code; OpenRouter wants OpenAI-shaped ones.
   const toOpenAi = (content) =>
     typeof content === 'string'
       ? content
@@ -34,7 +40,24 @@ export function createLlm(config) {
           return b;
         });
 
+  const cache = new Map(); // key -> { at, value }
+  const cacheKey = (system, question, max) =>
+    createHash('sha256').update(`${max}\n${system}\n${typeof question === 'string' ? question : JSON.stringify(question)}`).digest('hex');
+  function recall(key) {
+    const hit = cache.get(key);
+    if (!hit) return null;
+    cache.delete(key);
+    if (Date.now() - hit.at > CACHE_TTL_MS) return null;
+    cache.set(key, hit); // most recently used goes last, so the oldest is the first to go
+    return hit.value;
+  }
+  function remember(key, value) {
+    if (cache.size >= CACHE_MAX) cache.delete(cache.keys().next().value);
+    cache.set(key, { at: Date.now(), value });
+  }
+
   async function callOpenRouter({ system, content, maxTokens }, attempt = 0) {
+    const model = config.openrouterModel || 'stealth/space-bunny-alpha';
     const res = await fetch(`${config.openrouterBase || 'https://openrouter.ai'}/api/v1/chat/completions`, {
       method: 'POST',
       headers: {
@@ -44,13 +67,14 @@ export function createLlm(config) {
         'x-title': 'Saathi',
       },
       body: JSON.stringify({
-        model: config.openrouterModel || 'stealth/space-bunny-alpha',
+        model,
         // If the first model is busy or has been retired, OpenRouter moves to the next one by itself.
-        ...(config.openrouterFallbacks?.length ? { models: [config.openrouterModel || 'stealth/space-bunny-alpha', ...config.openrouterFallbacks] } : {}),
+        ...(config.openrouterFallbacks?.length ? { models: [model, ...config.openrouterFallbacks] } : {}),
         reasoning: { effort: 'low', exclude: true }, // short answers: do not spend the reply budget on hidden thinking
         max_tokens: maxTokens + 300,
         messages: [{ role: 'system', content: system }, { role: 'user', content: toOpenAi(content) }],
       }),
+      signal: AbortSignal.timeout(TIMEOUT_MS),
     });
     // Free models are shared and get busy. One patient retry, then let the bot say "try again soon".
     if ((res.status === 429 || res.status >= 500) && attempt < 1) {
@@ -67,40 +91,33 @@ export function createLlm(config) {
     return { text, usage: { in: data.usage?.prompt_tokens || 0, out: data.usage?.completion_tokens || 0 } };
   }
 
-  async function call({ system, content, maxTokens }) {
-    if (isOpenRouter()) return callOpenRouter({ system, content, maxTokens });
-    const res = await fetch(`${config.anthropicBase || 'https://api.anthropic.com'}/v1/messages`, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-api-key': config.anthropicKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: config.model,
-        max_tokens: maxTokens,
-        system,
-        messages: [{ role: 'user', content }],
-      }),
-    });
-    if (!res.ok) throw new Error(`LLM ${res.status}: ${(await res.text()).slice(0, 200)}`);
-    const data = await res.json();
-    const text = (data.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('').trim();
-    return { text, usage: { in: data.usage?.input_tokens || 0, out: data.usage?.output_tokens || 0 } };
+  async function call(args) {
+    if (!isEnabled()) throw new Error('AI is off: no OPENROUTER_API_KEY');
+    return callOpenRouter(args);
   }
 
   return {
     get enabled() { return isEnabled(); },
-    get provider() { return isOpenRouter() ? 'openrouter' : 'anthropic'; },
+    get provider() { return isEnabled() ? 'openrouter' : null; },
     /** Swap the OpenRouter key while running. Empty string removes it. Free models cost nothing, so the spend counter is zeroed. */
     setKey(key) {
       config.openrouterKey = String(key || '').trim();
       if (config.openrouterKey) { config.llmInUsdPerM = 0; config.llmOutUsdPerM = 0; }
+      cache.clear();
     },
 
+    /** opts.max: reply budget in tokens. opts.fresh: skip the cache (used by the admin "test the key" button). */
     async answer(system, question, opts = {}) {
-      const r = await call({ system, content: question, maxTokens: opts.max || 350 });
-      return { ...r, text: tidyAnswer(r.text) };
+      const max = opts.max || 350;
+      const key = cacheKey(system, question, max);
+      if (!opts.fresh) {
+        const hit = recall(key);
+        if (hit) return { ...hit, usage: { in: 0, out: 0 }, cached: true };
+      }
+      const r = await call({ system, content: question, maxTokens: max });
+      const out = { ...r, text: tidyAnswer(r.text) };
+      if (out.text) remember(key, out); // an empty reply is never cached, so the next try asks again
+      return out;
     },
 
     /**

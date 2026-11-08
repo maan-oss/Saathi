@@ -36,9 +36,8 @@ env.WHATSAPP_TOKEN = await ask('Permanent access token', 'WHATSAPP_TOKEN', 'syst
 env.WHATSAPP_PHONE_ID = await ask('Phone number ID', 'WHATSAPP_PHONE_ID');
 env.APP_SECRET = await ask('App secret (App settings > Basic)', 'APP_SECRET', '', true);
 console.log('\n-- AI: answers, reading documents, translation --');
-env.OPENROUTER_API_KEY = await ask('OpenRouter API key (free models work, openrouter.ai/keys)', 'OPENROUTER_API_KEY', 'blank to use Anthropic instead', true);
+env.OPENROUTER_API_KEY = await ask('OpenRouter API key (free models work, openrouter.ai/keys)', 'OPENROUTER_API_KEY', 'blank to skip AI answers', true);
 env.OPENROUTER_MODEL = old.OPENROUTER_MODEL || 'stealth/space-bunny-alpha';
-if (!env.OPENROUTER_API_KEY) env.ANTHROPIC_API_KEY = await ask('Anthropic API key', 'ANTHROPIC_API_KEY', 'console.anthropic.com', true);
 console.log('\n-- Payments (Stripe dashboard > Developers > API keys) --');
 env.STRIPE_SECRET_KEY = await ask('Stripe secret key (sk_test_... to start, sk_live_... for real money)', 'STRIPE_SECRET_KEY', '', true);
 env.STRIPE_WEBHOOK_SECRET = await ask('Stripe webhook signing secret (whsec_..., shown after you add the webhook)', 'STRIPE_WEBHOOK_SECRET', '', true);

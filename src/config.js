@@ -34,7 +34,6 @@ export const config = {
   hashSalt: process.env.HASH_SALT || 'dev-salt-change-me', // used to scramble phone numbers before storing state
   graphVersion: process.env.GRAPH_VERSION || 'v21.0',
   graphBase: process.env.GRAPH_BASE || 'https://graph.facebook.com', // overridden only in tests
-  anthropicBase: process.env.ANTHROPIC_BASE || 'https://api.anthropic.com',
   stripeBase: process.env.STRIPE_BASE || 'https://api.stripe.com',
 
   // Encrypts saved profiles. Set a long random string in production.
@@ -61,14 +60,12 @@ export const config = {
   // Approved WhatsApp template used for reminders sent after the 24-hour window has closed
   reminderTemplate: process.env.REMINDER_TEMPLATE || 'saathi_reminder',
 
-  // LLM (only used for free-form questions and the optional photo check)
-  // OpenRouter: one key, many models, including free ones. If set it is used instead of Anthropic.
+  // AI (only used for free-form questions, the optional photo check and translation)
+  // OpenRouter: one key, many models, including free ones. Without the key the AI is off and the scripted guide still works.
   openrouterKey: process.env.OPENROUTER_API_KEY || '',
   openrouterModel: process.env.OPENROUTER_MODEL || 'stealth/space-bunny-alpha', // free, fast, reads images. Any slug from openrouter.ai/models works
   openrouterFallbacks: (process.env.OPENROUTER_FALLBACKS ?? 'openrouter/free').split(',').map((x) => x.trim()).filter(Boolean), // tried in order if the first is busy or gone (stealth models get retired)
   openrouterBase: process.env.OPENROUTER_BASE || 'https://openrouter.ai',
-  anthropicKey: process.env.ANTHROPIC_API_KEY || '',
-  model: process.env.LLM_MODEL || 'claude-haiku-4-5-20251001',
   llmInUsdPerM: num('LLM_IN_USD_PER_M', process.env.OPENROUTER_API_KEY ? 0 : 1), // free models cost nothing; set these if you pick a paid model
   llmOutUsdPerM: num('LLM_OUT_USD_PER_M', process.env.OPENROUTER_API_KEY ? 0 : 5),
   usdInr: num('USD_INR', 90),

@@ -1,4 +1,4 @@
-// End to end: the real server process, real HTTP, signed webhooks, and fake Meta / Anthropic / Stripe servers.
+// End to end: the real server process, real HTTP, signed webhooks, and fake Meta / OpenRouter / Stripe servers.
 import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
@@ -12,7 +12,7 @@ const STRIPE_SECRET = 'whsec_e2e';
 const PHONE = '919812345678';
 const sent = []; // every WhatsApp message the bot sent
 const stripeSessions = [];
-const anthropicCalls = [];
+const aiCalls = [];
 let sttCalls = 0;
 let mock, mockPort, server, serverPort, dataDir;
 
@@ -42,12 +42,13 @@ before(async () => {
       sttCalls++;
       return json(res, { transcript: 'menu' });
     }
-    if (u === '/v1/messages') {
+    if (u === '/api/v1/chat/completions') {
       const b = JSON.parse(body);
-      assert.equal(req.headers['x-api-key'], 'sk-test');
-      anthropicCalls.push(b);
-      const hasImage = Array.isArray(b.messages[0].content) && b.messages[0].content.some((c) => c.type === 'image' || c.type === 'document');
-      return json(res, { content: [{ type: 'text', text: hasImage ? JSON.stringify(DOC) : 'You can fix that on the official site.' }], usage: { input_tokens: 900, output_tokens: 80 } });
+      assert.equal(req.headers.authorization, 'Bearer sk-or-e2e');
+      aiCalls.push(b);
+      const parts = Array.isArray(b.messages[1].content) ? b.messages[1].content : [];
+      const hasFile = parts.some((c) => c.type === 'image_url' || c.type === 'file');
+      return json(res, { choices: [{ message: { content: hasFile ? JSON.stringify(DOC) : 'You can fix that on the official site.' } }], usage: { prompt_tokens: 900, completion_tokens: 80 } });
     }
     if (u === '/v1/checkout/sessions') {
       assert.equal(req.headers.authorization, 'Bearer sk_test_e2e');
@@ -66,8 +67,8 @@ before(async () => {
       ...process.env,
       PORT: String(serverPort), DATA_DIR: dataDir,
       WHATSAPP_TOKEN: 'WA_TOKEN', WHATSAPP_PHONE_ID: 'PHONEID', VERIFY_TOKEN: 'verify-me', APP_SECRET, HASH_SALT: 'salt', VAULT_KEY: 'vault-key',
-      GRAPH_BASE: `http://127.0.0.1:${mockPort}`, ANTHROPIC_BASE: `http://127.0.0.1:${mockPort}`, STRIPE_BASE: `http://127.0.0.1:${mockPort}`,
-      ANTHROPIC_API_KEY: 'sk-test', DOC_CHECK: '1', STRIPE_SECRET_KEY: 'sk_test_e2e', STRIPE_WEBHOOK_SECRET: STRIPE_SECRET, PUBLIC_URL: `http://127.0.0.1:${serverPort}`,
+      GRAPH_BASE: `http://127.0.0.1:${mockPort}`, OPENROUTER_BASE: `http://127.0.0.1:${mockPort}`, STRIPE_BASE: `http://127.0.0.1:${mockPort}`,
+      OPENROUTER_API_KEY: 'sk-or-e2e', LLM_IN_USD_PER_M: '1', LLM_OUT_USD_PER_M: '5', DOC_CHECK: '1', STRIPE_SECRET_KEY: 'sk_test_e2e', STRIPE_WEBHOOK_SECRET: STRIPE_SECRET, PUBLIC_URL: `http://127.0.0.1:${serverPort}`,
       SARVAM_API_KEY: 'sarvam-key', SARVAM_BASE: `http://127.0.0.1:${mockPort}`, DETAILS_FLOW_ID: 'FLOW1', ADMIN_KEY: 'adm', DAILY_BUDGET_INR: '300',
     },
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -148,12 +149,12 @@ test('photo: consent, download from Meta, read by the AI, save encrypted, then t
   const [consent] = await say({ type: 'image', image: { id: 'MEDIA1' } });
   assert.equal(consent.interactive.type, 'button');
   assert.match(consent.interactive.body.text, /not saved/);
-  assert.equal(anthropicCalls.length, 0);
+  assert.equal(aiCalls.length, 0);
   await say(tap('1', 'Yes, allow'));
   const [found] = await say({ type: 'image', image: { id: 'MEDIA1' } });
-  assert.equal(anthropicCalls.length, 1);
-  const img = anthropicCalls[0].messages[0].content.find((c) => c.type === 'image');
-  assert.equal(img.source.data, Buffer.from('fakejpegbytes').toString('base64'));
+  assert.equal(aiCalls.length, 1);
+  const img = aiCalls[0].messages[1].content.find((c) => c.type === 'image_url');
+  assert.equal(img.image_url.url, 'data:image/jpeg;base64,' + Buffer.from('fakejpegbytes').toString('base64'));
   assert.match(found.interactive.body.text, /Asha Devi/);
   assert.deepEqual(found.interactive.action.buttons.map((b) => b.reply.id), ['save', 'once', 'discard']);
   const saved = await say(tap('save', 'Save'));
@@ -176,7 +177,7 @@ test('free-form question goes to the AI without any saved detail in the prompt',
   await say(pick('6', 'Ask a question'));
   const ans = await say(text('how do I fix my name spelling?'));
   assert.match(flat(ans), /official site/);
-  const q = anthropicCalls.at(-1);
+  const q = aiCalls.at(-1);
   assert.doesNotMatch(JSON.stringify(q), /Asha|Ram Lal|302001|Gandhi/);
 });
 
@@ -233,11 +234,11 @@ test('voice note is transcribed by Sarvam and handled like typed text', async ()
 });
 
 test('a PDF is read by the AI as a document block', async () => {
-  const before = anthropicCalls.length;
+  const before = aiCalls.length;
   await say(text('scan'), 1);
   const out = await say({ type: 'document', document: { id: 'PDF1', mime_type: 'application/pdf', filename: 'a.pdf' } }, 1);
   assert.ok(out.length >= 1);
-  const call = anthropicCalls.slice(before).find((c) => Array.isArray(c.messages[0].content) && c.messages[0].content.some((x) => x.type === 'document'));
+  const call = aiCalls.slice(before).find((c) => Array.isArray(c.messages[1].content) && c.messages[1].content.some((x) => x.type === 'file'));
   assert.ok(call, 'a document block reached the AI');
 });
 

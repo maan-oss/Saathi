@@ -239,7 +239,7 @@ Reminders: if you set one, we keep the date, its name and your phone number (enc
 Payments: made on Stripe's page. We never see your card details. While a payment is pending we hold your phone number to tell you it arrived.
 Website counts: the website keeps anonymous daily totals only: visits, taps into the app, top-ups started and paid, and the ad source from the link (for example meta or google). No cookie is set, and no IP address, phone number or identity is stored with the totals. They are deleted after 90 days.
 If you ask for a human (type "agent"), we save your phone number and what you write to them so a person can reply. Closed conversations are deleted after 30 days.
-AI: free-form questions, document reading and translation are processed by an AI service (${config.openrouterKey ? 'OpenRouter, which routes to a model provider; free models may keep what they are sent, so with a free model do not photograph documents you would not want a third party to see' : 'Anthropic'}). Other languages than English and Hindi are machine translated and may contain mistakes.
+AI: free-form questions, document reading and translation are processed by an AI service, OpenRouter, which routes to a model provider. Free models may keep what they are sent, so do not photograph documents you would not want a third party to see. Other languages than English and Hindi are machine translated and may contain mistakes.
 We never ask for your OTP or password. Do not share them with anyone.
 `;
 
@@ -262,7 +262,7 @@ async function handleRequest(req, res) {
   const url = new URL(req.url, 'http://localhost');
 
   // The web app (page, files and /app/api/*). Everything else below is WhatsApp, payments and the operator's pages.
-  if (url.pathname === '/' || url.pathname === '/app' || url.pathname.startsWith('/app/') || url.pathname.startsWith('/fonts/') || url.pathname.startsWith('/photos/') || url.pathname.startsWith('/vendor/') || /^\/(app\.js|screens\.js|tools\.js|guides\.js|hark\.js|hark\.css|premium\.js|premium\.css|guides\.css|polish\.css|welcome\.css|screens\.css|site\.css|site\.js|sky\.js|og\.png|robots\.txt|style\.css|manifest\.webmanifest|sw\.js|logo\.svg|favicon\.ico|icon\.svg|icon-192\.png|icon-512\.png|apple-touch-icon\.png)$/.test(url.pathname)) {
+  if (url.pathname === '/' || url.pathname === '/app' || url.pathname.startsWith('/app/') || url.pathname.startsWith('/fonts/') || /^\/(app\.js|screens\.js|tools\.js|guides\.js|hark\.js|hark\.css|premium\.js|premium\.css|guides\.css|polish\.css|welcome\.css|screens\.css|sky\.js|og\.png|robots\.txt|style\.css|manifest\.webmanifest|sw\.js|logo\.svg|favicon\.ico|icon\.svg|icon-192\.png|icon-512\.png|apple-touch-icon\.png)$/.test(url.pathname)) {
     return void web.handle(req, res, url).then((done) => {
       if (!done && !res.writableEnded) {
         res.statusCode = 404;
@@ -381,7 +381,7 @@ async function handleRequest(req, res) {
     });
   }
   if (req.method === 'GET' && url.pathname === '/admin/ai-key') {
-    return void jsonOut(res, 200, { on: llm.enabled, provider: llm.enabled ? llm.provider : null, model: llm.provider === 'openrouter' ? config.openrouterModel : config.model, source: await aiKeySource(), persistent: !process.env.VERCEL });
+    return void jsonOut(res, 200, { on: llm.enabled, provider: llm.enabled ? llm.provider : null, model: config.openrouterModel, source: await aiKeySource(), persistent: !process.env.VERCEL });
   }
   if (req.method === 'POST' && url.pathname === '/admin/ai-key') {
     return void readBody(req, res, async (raw) => {
@@ -397,7 +397,7 @@ async function handleRequest(req, res) {
         const before = config.openrouterKey;
         llm.setKey(key);
         try {
-          await llm.answer('Reply with the single word OK.', 'Say OK');
+          await llm.answer('Reply with the single word OK.', 'Say OK', { max: 5, fresh: true });
         } catch (e) {
           llm.setKey(before);
           return jsonOut(res, 400, { error: 'OpenRouter did not accept that key (' + String(e.message).slice(0, 80) + '). Nothing was saved.' });
@@ -497,7 +497,7 @@ if (!process.env.VERCEL) server.listen(config.port, () => {
   console.log(`Saathi listening on :${config.port}`);
   if (!config.dryRun && (config.vaultKey.startsWith('dev-') || config.hashSalt.startsWith('dev-') || !config.appSecret)) console.error('⚠️  Live WhatsApp with default secrets or no APP_SECRET. Run: npm run doctor');
   console.log(config.dryRun ? '⚠️  DRY RUN: no WhatsApp credentials, replies are printed.' : 'WhatsApp: live');
-  console.log(llm.enabled ? `AI: ${llm.provider === 'openrouter' ? 'OpenRouter ' + config.openrouterModel + (config.openrouterFallbacks.length ? ' (fallback ' + config.openrouterFallbacks.join(', ') + ')' : '') : config.model}` : 'AI: off (scripted guide only)');
+  console.log(llm.enabled ? `AI: OpenRouter ${config.openrouterModel}${config.openrouterFallbacks.length ? ' (fallback ' + config.openrouterFallbacks.join(', ') + ')' : ''}` : 'AI: off (scripted guide only)');
   if (!config.dryRun && config.vaultKey === 'dev-vault-key-change-me') console.warn('⚠️  Set VAULT_KEY: saved profiles are encrypted with a public dev key.');
   console.log(payments ? 'Payments: Stripe' : 'Payments: off (no top-ups)');
   console.log(stt.enabled ? `Voice notes: on (${config.sarvamKey ? 'Sarvam' : 'OpenAI'}${config.sarvamKey && config.openaiKey ? ', OpenAI fallback' : ''})` : 'Voice notes: off (no SARVAM_API_KEY or OPENAI_API_KEY)');

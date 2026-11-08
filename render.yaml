@@ -21,7 +21,6 @@ services:
       - { key: ADMIN_KEY, sync: false }
       - { key: WHATSAPP_TOKEN, sync: false }
       - { key: WHATSAPP_PHONE_ID, sync: false }
-      - { key: ANTHROPIC_API_KEY, sync: false }
       - { key: OPENROUTER_API_KEY, sync: false }
       - { key: STRIPE_SECRET_KEY, sync: false }
       - { key: STRIPE_WEBHOOK_SECRET, sync: false }

@@ -29,10 +29,8 @@ const MEDIA_TTL = 10 * 60 * 1000;
 const STATIC = {
   '/fonts/instrument.woff2': ['fonts/instrument-sans-latin-standard-normal.woff2', 'font/woff2'],
   '/fonts/bricolage.woff2': ['fonts/bricolage-grotesque-latin-wght-normal.woff2', 'font/woff2'],
-  '/': ['site.html', 'text/html; charset=utf-8'],
+  '/': ['index.html', 'text/html; charset=utf-8'],
   '/app': ['index.html', 'text/html; charset=utf-8'],
-  '/site.css': ['site.css', 'text/css; charset=utf-8'],
-  '/site.js': ['site.js', 'text/javascript; charset=utf-8'],
   '/sky.js': ['sky.js', 'text/javascript; charset=utf-8'],
   '/og.png': ['og.png', 'image/png'],
   '/robots.txt': ['robots.txt', 'text/plain; charset=utf-8'],
@@ -193,11 +191,7 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
   }
 
   function serveStatic(req, res, url) {
-    // Photos for the landing page: only plain file names from web/photos, nothing else.
-    const photo = /^\/photos\/([a-z0-9-]+\.jpg)$/.exec(url.pathname);
-    // Animation libraries for the landing page, copied into web/vendor (no CDN; the CSP is 'self' only).
-    const vendor = /^\/vendor\/([A-Za-z]+(?:\.min)?\.js)$/.exec(url.pathname);
-    const ent = photo ? [`photos/${photo[1]}`, 'image/jpeg'] : vendor ? [`vendor/${vendor[1]}`, 'text/javascript; charset=utf-8'] : STATIC[url.pathname];
+    const ent = STATIC[url.pathname]; // only the files listed above are ever served
     if (!ent) return false;
     const [file, type] = ent;
     let buf = fileCache.get(file);
@@ -209,7 +203,7 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
     }
     let body = buf;
     if (file === 'index.html' || file === 'app.js') body = Buffer.from(buf.toString('utf8').replaceAll('__WA_NUMBER__', shell.whatsappNumber || ''));
-    headers(res, { 'content-type': type, 'cache-control': (file === 'sw.js' || /\.(js|css|html)$/.test(file)) ? 'no-cache' : file.startsWith('fonts/') ? 'public, max-age=31536000, immutable' : file.startsWith('photos/') ? 'public, max-age=2592000' : 'public, max-age=300' });
+    headers(res, { 'content-type': type, 'cache-control': (file === 'sw.js' || /\.(js|css|html)$/.test(file)) ? 'no-cache' : file.startsWith('fonts/') ? 'public, max-age=31536000, immutable' : 'public, max-age=300' });
     res.end(req.method === 'HEAD' ? undefined : body);
     return true;
   }

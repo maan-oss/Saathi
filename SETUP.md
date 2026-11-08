@@ -39,7 +39,6 @@ Use **Render**, not Vercel. The bot keeps saved details and wallet balances on a
 | `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_ID` | WhatsApp access | Step 3 |
 | `WHATSAPP_NUMBER` | Your number, digits with country code | Your number, e.g. `919876543210` |
 | `OPENROUTER_API_KEY` | Free AI answers | openrouter.ai/keys (step 4) |
-| `ANTHROPIC_API_KEY` | Optional paid AI | console.anthropic.com |
 | `STRIPE_SECRET_KEY` | Stripe secret key | Step 5 |
 | `STRIPE_WEBHOOK_SECRET` | Stripe signing secret | Step 5 |
 | `SARVAM_API_KEY`, `OPENAI_API_KEY` | Voice notes (optional) | dashboard.sarvam.ai, platform.openai.com |
@@ -66,8 +65,6 @@ Keep `DOC_CHECK=0` until your privacy page is live (step 7).
 ## 4. AI (free, 5 minutes)
 
 openrouter.ai > **Keys** > create one > `OPENROUTER_API_KEY`. The bot uses `stealth/space-bunny-alpha` and falls back to `openrouter/free`. Free models may keep what they are sent, so the bot never sends saved details to the AI, and photo ID checks stay off (`DOC_CHECK=0`).
-
-Paid Claude is optional: `ANTHROPIC_API_KEY`, used only when no OpenRouter key is set.
 
 ## 5. Payments (Stripe) (about an hour; ID checks take days)
 

@@ -32,7 +32,7 @@ export async function diagnose(cfg = config, f = fetch) {
   }
   out.push(cfg.appSecret ? ok('APP_SECRET set (webhook signatures are checked)') : bad('APP_SECRET', 'empty: anyone could post fake messages to your webhook. Meta app > Settings > Basic > App secret.'));
 
-  // AI: OpenRouter (free models) or Anthropic
+  // AI: OpenRouter (free models by default)
   if (cfg.openrouterKey) {
     try {
       const r = await f(`${cfg.openrouterBase || 'https://openrouter.ai'}/api/v1/auth/key`, { headers: { authorization: `Bearer ${cfg.openrouterKey}` } });
@@ -40,19 +40,7 @@ export async function diagnose(cfg = config, f = fetch) {
     } catch (e) {
       out.push(bad('OpenRouter', 'could not reach it: ' + e.message));
     }
-  } else if (!cfg.anthropicKey) out.push(skip('AI', 'no OPENROUTER_API_KEY or ANTHROPIC_API_KEY: the guide works, but no free-form answers, no document reading, no extra languages.'));
-  else {
-    try {
-      const r = await f(`${cfg.anthropicBase}/v1/messages`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-api-key': cfg.anthropicKey, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: cfg.model, max_tokens: 5, messages: [{ role: 'user', content: 'hi' }] }),
-      });
-      out.push(r.ok ? ok('Anthropic key works', cfg.model) : bad('Anthropic key', `${r.status}: ${await short(r)}`));
-    } catch (e) {
-      out.push(bad('Anthropic', 'could not reach it: ' + e.message));
-    }
-  }
+  } else out.push(skip('AI', 'no OPENROUTER_API_KEY: the guide works, but no free-form answers, no document reading, no extra languages.'));
 
   if (cfg.openrouterKey && cfg.docCheck) out.push(bad('Document reading on a free model', 'free and stealth models on OpenRouter may keep and learn from what you send. Do not read ID photos with them: set DOC_CHECK=0 or pick a paid model whose data policy you accept.'));
 

@@ -50,7 +50,12 @@ test('web: serves the app with strict security headers, and the files exist', as
   assert.doesNotMatch(r.headers.get('content-security-policy'), /unsafe-inline|unsafe-eval/);
   assert.equal(r.headers.get('x-frame-options'), 'DENY');
   assert.match(r.text, /Saathi/);
-  for (const p of ['/app.js', '/tools.js', '/style.css', '/site.css', '/site.js', '/og.png', '/robots.txt', '/manifest.webmanifest', '/sw.js', '/logo.svg', '/icon.svg', '/icon-192.png', '/icon-512.png', '/apple-touch-icon.png']) {
+  // The root is the app itself: a first visit lands on onboarding, there is no marketing page any more.
+  const root = await w.call('/', { sid: null });
+  assert.equal(root.status, 200);
+  assert.match(root.text, /id="onboard"/);
+  assert.doesNotMatch(root.text, /site\.css|site\.js/);
+  for (const p of ['/app.js', '/tools.js', '/style.css', '/og.png', '/robots.txt', '/manifest.webmanifest', '/sw.js', '/logo.svg', '/icon.svg', '/icon-192.png', '/icon-512.png', '/apple-touch-icon.png']) {
     assert.equal((await w.call(p, { sid: null })).status, 200, p);
   }
   assert.equal((await w.call('/nope', { sid: null })).status, 404);
@@ -173,21 +178,18 @@ test('web: reminders explain they need WhatsApp, and the details form is asked o
   w.close();
 });
 
-test('web: landing page at / , app at /app, and the config feeds the pricing chart', async () => {
+test('web: the root is the app itself (onboarding on arrival), /app is the same page, and the config feeds the pricing chart', async () => {
   const w = await boot();
-  const home = await w.call('/', { sid: null });
-  assert.equal(home.status, 200);
-  assert.match(home.text, /<h1 id="hT" class="display">[\s\S]*Government forms,[\s\S]*step by step\.[\s\S]*<\/h1>/);
-  assert.match(home.text, /gethelp\.saathi@gmail\.com/);
-  assert.doesNotMatch(home.text, /data-wa|wa\.me/, 'WhatsApp stays out of visitor copy until Meta approves');
-  assert.match(home.text, /not affiliated with or endorsed by any government/);
-  assert.doesNotMatch(home.text, /<script>(?!\s*<)/);
-  const app = await w.call('/app', { sid: null });
-  assert.match(app.text, /id="composer"|composer/);
-  const cfg = JSON.parse((await w.call('/app/api/config', { sid: null })).text);
-  assert.ok(cfg.prices === null || (Number.isFinite(cfg.prices.msgPaise) && cfg.prices.pack));
-  assert.match((await w.call('/robots.txt', { sid: null })).text, /Disallow: \/admin/);
-  w.close();
+  try {
+    const home = await w.call('/', { sid: null });
+    assert.equal(home.status, 200);
+    assert.match(home.text, /id="onboard"/, 'a first visit lands on onboarding');
+    assert.match(home.text, /not affiliated with or endorsed by any government|Saathi/);
+    assert.equal(home.text, (await w.call('/app', { sid: null })).text, '/ and /app serve the same app');
+    const cfg = JSON.parse((await w.call('/app/api/config', { sid: null })).text);
+    assert.ok(cfg.prices === null || (Number.isFinite(cfg.prices.msgPaise) && cfg.prices.pack));
+    assert.match((await w.call('/robots.txt', { sid: null })).text, /Disallow: \/admin/);
+  } finally { w.close(); }
 });
 
 test('web: the public checker gives the same verdicts as the bot and stores nothing', async () => {
@@ -206,15 +208,14 @@ test('web: the public checker gives the same verdicts as the bot and stores noth
   w.close();
 });
 
-test('web: the landing page can read real service facts, and the site and app are separate pages', async () => {
+test('web: the app reads real service facts from the server, and the root shows onboarding', async () => {
   const w = await boot();
   try {
     const j = JSON.parse((await w.call('/app/api/services', { sid: null })).text);
     assert.ok(j.verified && j.services.length >= 5);
     const pan = j.services.find((s) => /PAN/i.test(s.name));
     assert.ok(pan.fee && pan.docs.length && pan.sites.every((u) => /^https:\/\//.test(u)));
-    assert.match((await w.call("/", { sid: null })).text, /id="services"/);
-    assert.match((await w.call('/app', { sid: null })).text, /id="onboard"/);
+    assert.match((await w.call('/', { sid: null })).text, /id="onboard"/);
   } finally { w.close(); }
 });
 
