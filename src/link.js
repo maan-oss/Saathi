@@ -13,7 +13,6 @@ import { credit } from './billing.js';
 
 const ALPHA = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const TTL = 5 * 60 * 1000;
-const MAX_DEVICES = 5;
 const HOUR = 3600 * 1000;
 
 export class LinkError extends Error {
@@ -67,7 +66,6 @@ export function createLinks({ store, config, vault }) {
     async newDeviceCode(primary, label) {
       const p = await store.getUser(primary);
       if (!p) throw new LinkError('no_account');
-      if ((p.devices || []).length >= MAX_DEVICES) throw new LinkError('too_many');
       if (!p.mainLabel) {
         p.mainLabel = String(label || 'First device').slice(0, 40);
         await store.putUser(primary, p);
@@ -93,7 +91,6 @@ export function createLinks({ store, config, vault }) {
       const mine = await store.getUser(deviceUid);
       if (mine?.linkTo) throw new LinkError('already_linked');
       if (mine?.devices?.length) throw new LinkError('has_devices');
-      if ((p.devices || []).length >= MAX_DEVICES) throw new LinkError('too_many');
       // Claim the code before linking: of two devices that enter it at the same moment, only one gets through.
       if (!(await takeCode(k))) throw new LinkError('bad_code');
       const now = Date.now();
@@ -181,7 +178,11 @@ export function createLinks({ store, config, vault }) {
       const w = await store.getUser(phoneUid);
       if (w && !w.linkTo) {
         if (!p.locker && w.locker) p.locker = w.locker;
-        if (!p.vault && w.vault) { p.vault = w.vault; p.vaultConsent = w.vaultConsent; }
+        if (!p.vault && w.vault) {
+          p.vault = w.vault;
+          p.vaultConsent = w.vaultConsent;
+          if (w.people) { p.people = w.people; p.activePerson = w.activePerson; }
+        }
         if (!p.extras && w.extras) p.extras = w.extras;
         if ((w.reminders || []).length) {
           const have = new Set((p.reminders || []).map((r) => r.id));

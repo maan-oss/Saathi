@@ -1443,6 +1443,8 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
     function doForget() {
       delete u.vault;
       delete u.vaultConsent;
+      delete u.people;
+      delete u.activePerson;
       delete u.pending;
       delete u.locker;
       delete u.pendingLocker;

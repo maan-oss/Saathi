@@ -4,7 +4,7 @@
 import { TYPES, TYPE_IDS, normNumber, normExpiry, showNumber, maskNumber, daysLeft, fmtDate } from './locker.js';
 import { findState, STATE_NAMES } from './states.js';
 import { FIELDS, GENDER, normAll, fromExtraction } from './profile.js';
-import { makeReminder, parseFutureDate, MAX_REMINDERS, daysUntil, rollReminder, rollYearly } from './reminders.js';
+import { makeReminder, parseFutureDate, MAX_REMINDERS, MILESTONES, pickAlerts, daysUntil, rollReminder, rollYearly } from './reminders.js';
 import { SERVICES } from './services.js';
 import { charge, refund, grantTrial } from './billing.js';
 import { ToolError } from './errors.js';
@@ -12,6 +12,7 @@ import { guideOps } from './guides.js';
 
 export const MAX_APPS = 30;
 export const MAX_WEB_REMINDERS = 12;
+export const MAX_PEOPLE = 8;
 const MAX_EXTRAS_BYTES = 80_000;
 const DAY_MS = 86_400_000;
 const MAX_CHATS_BYTES = 220_000;
@@ -198,11 +199,57 @@ export function createTools({ store, vault, llm, guard, config }) {
       return out;
     },
 
+    // ---- people: one account can hold several people's details (you, a parent, a child).
+    // The active person's details always sit in u.vault, so the guides, chat and prefills use them as they are.
+    // The other people wait in u.people as { id, vault }. Switching swaps them in.
+    async 'people.list'(uid) {
+      const u = await load(uid);
+      const activeId = u?.activePerson || 'self';
+      const me = u ? await open(u.vault) : {};
+      const people = [{ id: activeId, name: me.full_name || 'You', active: true }];
+      for (const p of u?.people || []) people.push({ id: p.id, name: (await open(p.vault)).full_name || (p.id === 'self' ? 'You' : 'Family member'), active: false });
+      return { people };
+    },
+    async 'people.add'(uid, a) {
+      const name = clip(a.name, 60);
+      if (name.length < 2) throw new ToolError('name_short');
+      const u = await load(uid, true);
+      if ((u.people || []).length >= MAX_PEOPLE - 1) throw new ToolError('too_many_people');
+      const activeId = u.activePerson || 'self';
+      u.people = [...(u.people || []), { id: activeId, vault: u.vault || null }];
+      u.activePerson = 'p' + uuid();
+      u.vault = await vault.seal({ full_name: name });
+      u.vaultConsent = true;
+      await store.putUser(uid, u);
+      return ops['people.list'](uid);
+    },
+    async 'people.switch'(uid, a) {
+      const u = await load(uid);
+      if (!u) throw new ToolError('no_person');
+      const activeId = u.activePerson || 'self';
+      if (a.id === activeId) return ops['people.list'](uid);
+      const target = (u.people || []).find((p) => p.id === a.id);
+      if (!target) throw new ToolError('no_person');
+      u.people = [...u.people.filter((p) => p.id !== a.id), { id: activeId, vault: u.vault || null }];
+      u.activePerson = target.id;
+      if (target.vault) u.vault = target.vault;
+      else delete u.vault;
+      await store.putUser(uid, u);
+      return ops['people.list'](uid);
+    },
+    async 'people.remove'(uid, a) {
+      const u = await load(uid);
+      if (!u || a.id === (u.activePerson || 'self')) throw new ToolError('no_person');
+      u.people = (u.people || []).filter((p) => p.id !== a.id);
+      await store.putUser(uid, u);
+      return ops['people.list'](uid);
+    },
+
     // ---- reminders ---------------------------------------------------------------------------------
     async 'reminders.list'(uid) {
       const u = await load(uid);
       if (u?.reminders?.length && rollYearly(u)) await store.putUser(uid, u);
-      const items = (u?.reminders || []).map((r) => ({ id: r.id, label: r.label, due: r.due, left: daysUntil(r.due), note: r.note || '', repeat: r.repeat || null })).sort((a, b) => a.left - b.left);
+      const items = (u?.reminders || []).map((r) => ({ id: r.id, label: r.label, due: r.due, left: daysUntil(r.due), note: r.note || '', repeat: r.repeat || null, alerts: r.alerts || [...MILESTONES] })).sort((a, b) => a.left - b.left);
       return { items, wa: Boolean(u?.phoneSealed), max: MAX_WEB_REMINDERS };
     },
     async 'reminders.add'(uid, a) {
@@ -210,10 +257,12 @@ export function createTools({ store, vault, llm, guard, config }) {
       const due = parseFutureDate(a.due);
       if (!label) throw new ToolError('bad_label');
       if (!due) throw new ToolError('bad_date');
+      const alerts = a.alerts === undefined ? undefined : pickAlerts(a.alerts);
+      if (alerts && !alerts.length) throw new ToolError('pick_alert');
       const u = await load(uid, true);
       const list = (u.reminders || []).filter((r) => r.label !== label);
       if (list.length >= Math.max(MAX_REMINDERS, MAX_WEB_REMINDERS)) throw new ToolError('full');
-      u.reminders = [...list, makeReminder({ id: 'r' + Date.now().toString(36) + uuid().slice(0, 3), type: 'custom', label, due, note: clip(a.note, 120), repeat: a.repeat === 'yearly' ? 'yearly' : null })];
+      u.reminders = [...list, makeReminder({ id: 'r' + Date.now().toString(36) + uuid().slice(0, 3), type: 'custom', label, due, note: clip(a.note, 120), repeat: a.repeat === 'yearly' ? 'yearly' : null, alerts })];
       await store.putUser(uid, u);
       return ops['reminders.list'](uid);
     },
@@ -231,10 +280,22 @@ export function createTools({ store, vault, llm, guard, config }) {
       }
       const note = a.note === undefined ? r.note || '' : clip(a.note, 120);
       const repeat = a.repeat === undefined ? r.repeat : a.repeat === 'yearly' ? 'yearly' : null;
+      const prevOn = r.alerts || MILESTONES;
+      const alerts = a.alerts === undefined ? prevOn : pickAlerts(a.alerts);
+      if (!alerts.length) throw new ToolError('pick_alert');
       if (u.reminders.some((x) => x.id !== r.id && x.label === label)) throw new ToolError('bad_label');
-      const next = due === r.due ? { ...r, label, note: note || undefined, repeat: repeat || undefined } : { ...makeReminder({ id: r.id, type: r.type, label, due, note, repeat }), made: r.made };
+      let next;
+      if (due !== r.due) next = { ...makeReminder({ id: r.id, type: r.type, label, due, note, repeat, alerts }), made: r.made };
+      else {
+        // Same date: keep the notices already sent. A notice switched on now counts from today, so one already passed is not sent late.
+        const left = daysUntil(r.due);
+        const sent = { ...r.sent };
+        for (const m of MILESTONES) sent[m] = !alerts.includes(m) || (prevOn.includes(m) ? Boolean(r.sent[m]) : left < m);
+        next = { ...r, label, note: note || undefined, repeat: repeat || undefined, sent, alerts: alerts.length < MILESTONES.length ? alerts : undefined };
+      }
       if (!next.note) delete next.note;
       if (!next.repeat) delete next.repeat;
+      if (!next.alerts) delete next.alerts;
       u.reminders = u.reminders.map((x) => (x.id === r.id ? next : x));
       await store.putUser(uid, u);
       return ops['reminders.list'](uid);

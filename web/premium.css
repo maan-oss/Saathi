@@ -106,3 +106,20 @@
 body.dp-open{overflow:hidden}
 input[type="date"]{cursor:pointer}
 
+
+/* 11. People: whose details the details screen and the guides use */
+.dt-people{margin:0 0 14px}
+.dt-people-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.dt-person{font:inherit;font-size:14px;line-height:1.2;min-height:40px;padding:8px 14px;border-radius:999px;border:1px solid var(--line,#d9d6cc);background:transparent;color:var(--ink);cursor:pointer;max-width:100%;overflow-wrap:anywhere}
+.dt-person.on{background:var(--ink);color:var(--bg);border-color:transparent;cursor:default}
+.dt-person.add{border-style:dashed}
+.dt-person:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.dt-add{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.dt-add .field-i{flex:1 1 180px;min-width:0}
+.dt-people-rm{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px}
+
+/* 12. Reminders: which notices each one sends */
+.rm-alerts{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 12px}
+.rm-alert{min-height:40px}
+.rm-alert[aria-pressed="true"],.rm-alert.on{background:var(--ink);color:var(--bg);border-color:transparent}
+.rm-alert:focus-visible{outline:2px solid var(--ink);outline-offset:2px}

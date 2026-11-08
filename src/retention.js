@@ -30,7 +30,7 @@ export function eraseDetails(u, now) {
 
 // An account with no wallet balance keeps its record while it still holds something worth keeping.
 export function hasValue(u, now) {
-  return Boolean(u.vault) || (u.packs || []).some((p) => p.until > now) || (u.reminders || []).length > 0 || (u.devices || []).length > 0 || Boolean(u.locker) || Boolean(u.extras);
+  return Boolean(u.vault) || (u.people || []).length > 0 || (u.packs || []).some((p) => p.until > now) || (u.reminders || []).length > 0 || (u.devices || []).length > 0 || Boolean(u.locker) || Boolean(u.extras);
 }
 
 /**

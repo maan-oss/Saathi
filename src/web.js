@@ -10,6 +10,7 @@
 //  - Strict content-security-policy: scripts and styles only from our own server.
 import { createTools, ToolError } from './tools.js';
 import { LinkError } from './link.js';
+import { gzipSync, brotliCompressSync, constants as zlibConstants } from 'node:zlib';
 import crypto from 'node:crypto';
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -112,6 +113,23 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
   const okCheck = limiter(store, 'okCheck', 30, 60_000);
   const okEvent = limiter(store, 'okEvent', 120, 60_000); // the landing page's anonymous counts, per address per minute
   const fileCache = new Map();
+  const zCache = new Map();
+  /** Brotli or gzip for text files, compressed once and kept (the files only change on a deploy). Images and fonts go as they are. */
+  function encodeFor(req, file, type, body) {
+    if (!/text|javascript|json|svg|xml/.test(type)) return { body, enc: null };
+    const acc = String(req.headers['accept-encoding'] || '');
+    const enc = /\bbr\b/.test(acc) ? 'br' : /\bgzip\b/.test(acc) ? 'gzip' : null;
+    if (!enc || body.length < 512) return { body, enc: null };
+    const key = file + '|' + enc;
+    let z = process.env.SAATHI_DEV ? null : zCache.get(key);
+    if (!z) {
+      z = enc === 'br'
+        ? brotliCompressSync(body, { params: { [zlibConstants.BROTLI_PARAM_QUALITY]: 10 } })
+        : gzipSync(body, { level: 9 });
+      if (!process.env.SAATHI_DEV) zCache.set(key, z);
+    }
+    return { body: z, enc };
+  }
 
   const rawUidOf = (sid) => 'w' + crypto.createHmac('sha256', config.hashSalt).update('web:' + sid).digest('hex').slice(0, 23);
   // A device linked to an account works on that account's record.
@@ -203,8 +221,15 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
     }
     let body = buf;
     if (file === 'index.html' || file === 'app.js') body = Buffer.from(buf.toString('utf8').replaceAll('__WA_NUMBER__', shell.whatsappNumber || ''));
-    headers(res, { 'content-type': type, 'cache-control': (file === 'sw.js' || /\.(js|css|html)$/.test(file)) ? 'no-cache' : file.startsWith('fonts/') ? 'public, max-age=31536000, immutable' : 'public, max-age=300' });
-    res.end(req.method === 'HEAD' ? undefined : body);
+    const z = encodeFor(req, file, type, body);
+    headers(res, {
+      'content-type': type,
+      'cache-control': (file === 'sw.js' || /\.(js|css|html)$/.test(file)) ? 'no-cache' : file.startsWith('fonts/') ? 'public, max-age=31536000, immutable' : 'public, max-age=300',
+      'content-length': String(z.body.length),
+      vary: 'accept-encoding',
+      ...(z.enc ? { 'content-encoding': z.enc } : {}),
+    });
+    res.end(req.method === 'HEAD' ? undefined : z.body);
     return true;
   }
 

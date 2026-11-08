@@ -138,11 +138,11 @@ test('link: expired codes fail, and you cannot join yourself', async () => {
   r.done();
 });
 
-test('link: removing a device cuts access at once; limit of 5', async () => {
+test('link: removing a device cuts access at once; there is no device limit', async () => {
   const r = rig();
   r.store.putUser('main', { state: 'menu' });
-  for (let i = 0; i < 5; i++) await r.links.joinDevice((await r.links.newDeviceCode('main')).code, 'd' + i);
-  assert.equal(await r.code(Promise.resolve().then(() => r.links.newDeviceCode('main'))), 'too_many');
+  for (let i = 0; i < 8; i++) await r.links.joinDevice((await r.links.newDeviceCode('main')).code, 'd' + i);
+  assert.equal(await r.links.resolve('d7'), 'main');
   await r.links.removeDevice('main', 'd0');
   assert.equal(await r.links.resolve('d0'), 'd0');
   assert.equal(await r.links.resolve('d1'), 'main');
@@ -295,4 +295,36 @@ test('tools: summary returns what the hub needs in one call', async () => {
   assert.deepEqual(s.guides, {});
   assert.doesNotMatch(JSON.stringify(s), /A1234567/);
   r.done();
+});
+
+test('people: one account keeps several people; switching swaps the details the screen and guides use', async () => {
+  const r = rig();
+  await r.run('u1', 'details.set', { values: { full_name: 'Asha Devi', pincode: '302001' } });
+  let list = await r.run('u1', 'people.add', { name: 'Ravi Devi' });
+  assert.equal(list.people.length, 2);
+  assert.equal(list.people.find((p) => p.active).name, 'Ravi Devi');
+  assert.equal((await r.run('u1', 'details.get')).fields.find((f) => f.key === 'pincode').value, '');
+  const asha = list.people.find((p) => !p.active).id;
+  list = await r.run('u1', 'people.switch', { id: asha });
+  assert.equal(list.people.find((p) => p.active).name, 'Asha Devi');
+  assert.equal((await r.run('u1', 'details.get')).fields.find((f) => f.key === 'pincode').value, '302001');
+  const ravi = list.people.find((p) => !p.active).id;
+  await r.run('u1', 'people.switch', { id: ravi });
+  assert.equal((await r.run('u1', 'details.get')).fields.find((f) => f.key === 'full_name').value, 'Ravi Devi');
+  assert.equal(await r.code(r.run('u1', 'people.remove', { id: ravi })), 'no_person');
+  list = await r.run('u1', 'people.remove', { id: asha });
+  assert.equal(list.people.length, 1);
+  assert.equal(await r.code(r.run('u1', 'people.add', { name: 'x' })), 'name_short');
+});
+
+test('reminders: alerts are chosen per reminder and can be changed later', async () => {
+  const r = rig();
+  const due = new Date(Date.now() + 60 * 864e5).toISOString().slice(0, 10);
+  let list = await r.run('u1', 'reminders.add', { label: 'Licence', due, alerts: [7] });
+  const id = list.items[0].id;
+  assert.deepEqual(list.items[0].alerts, [7]);
+  list = await r.run('u1', 'reminders.update', { id, alerts: [30, 0] });
+  assert.deepEqual(list.items[0].alerts, [30, 0]);
+  assert.equal(await r.code(r.run('u1', 'reminders.update', { id, alerts: [] })), 'pick_alert');
+  assert.equal(await r.code(r.run('u1', 'reminders.add', { label: 'Other', due, alerts: [] })), 'pick_alert');
 });

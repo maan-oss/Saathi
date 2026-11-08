@@ -33,7 +33,10 @@
     same: N('This is the same device.'),
     already_linked: N('This device is already linked. Unlink it first.'),
     has_devices: N('Other devices are linked to this one. Sign them out first.'),
-    too_many: N('You can link up to 5 devices. Remove one first.'),
+    name_short: N('Please type their full name.'),
+    pick_alert: N('Pick at least one time to be reminded.'),
+    too_many_people: N('You can keep up to 8 people here. Remove one first.'),
+    no_person: N('That person is not here any more.'),
     expired: N('That took too long. Please scan again.'),
     network: N('Could not reach Saathi. Check your internet and try again.'),
   };
@@ -410,11 +413,57 @@
     [T('Contact'), 'phone', ['mobile', 'email']], [T('Address'), 'card', ['address', 'city', 'state', 'pincode']],
   ];
 
+  /** The people bar: whose details this screen and the guides use. Switch, add, or remove the others. */
+  function drawPeople(box, list, again) {
+    box.replaceChildren();
+    const row = el('div', 'dt-people-row');
+    row.setAttribute('role', 'group'); row.setAttribute('aria-label', T('Whose details'));
+    for (const p of list) {
+      const chip = el('button', 'dt-person' + (p.active ? ' on' : ''), p.name);
+      chip.type = 'button'; chip.setAttribute('aria-pressed', String(p.active));
+      if (!p.active) chip.onclick = async () => { const r = await tcall('people.switch', { id: p.id }); if (r.ok) again(); else toast(errText(r.error)); };
+      row.append(chip);
+    }
+    const add = el('button', 'dt-person add', '+ ' + T('Add a person'));
+    add.type = 'button';
+    add.onclick = () => {
+      if (box.querySelector('.dt-add')) return box.querySelector('.dt-add input').focus();
+      const f = el('form', 'dt-add'); f.noValidate = true;
+      const inp = el('input', 'field-i'); inp.type = 'text'; inp.maxLength = 60; inp.autocomplete = 'off'; inp.placeholder = T('Their full name'); inp.setAttribute('aria-label', T('Their full name'));
+      const go = btn('btn pri sm', T('Add'), null); go.type = 'submit';
+      const cancel = btn('btn sm', T('Cancel'), null); cancel.type = 'button'; cancel.onclick = () => f.remove();
+      f.append(inp, go, cancel);
+      f.onsubmit = (e) => { e.preventDefault(); busyBtn(go, async () => {
+        const r = await tcall('people.add', { name: inp.value.trim() });
+        if (r.ok) again(); else toast(errText(r.error));
+      }); };
+      box.append(f); inp.focus();
+    };
+    row.append(add);
+    box.append(row);
+    const others = list.filter((p) => !p.active);
+    if (others.length) {
+      const rm = el('div', 'dt-people-rm');
+      for (const p of others) {
+        const b = el('button', 'link-btn', T('Remove {name}', { name: p.name }));
+        b.type = 'button';
+        b.onclick = async () => {
+          if (!window.confirm(T('Remove {name} and their saved details? This cannot be undone.', { name: p.name }))) return;
+          const r = await tcall('people.remove', { id: p.id }); if (r.ok) again(); else toast(errText(r.error));
+        };
+        rm.append(b);
+      }
+      box.append(rm);
+    }
+  }
+
   S.details = async () => {
     const col = frame(T('My details'), T('What forms keep asking for. Saved once, ready to copy any time.'));
     col.classList.add('wide-col');
-    const holder = el('div', 'dt-wrap'); col.append(holder);
-    const r = await tcall('details.get');
+    const people = el('div', 'dt-people');
+    const holder = el('div', 'dt-wrap'); col.append(people, holder);
+    const [r, pr] = await Promise.all([tcall('details.get'), tcall('people.list')]);
+    if (pr.ok) drawPeople(people, pr.data.people, () => openScreen('details'));
     if (!r.ok) { holder.append(empty('user', T('Could not load'), errText(r.error))); return; }
     let data = r.data; let ready = {};
     const inputs = {};
@@ -519,6 +568,20 @@
     ];
     const apply = async (p, done) => { const r = await p; if (!r.ok) return toast(errText(r.error)); st = r.data; draw(); if (done) toast(done); };
 
+    /** Three switches for which notices a reminder sends. Returns { el, get() } where get() gives the chosen days, e.g. [30, 7]. */
+    const alertPicker = (on) => {
+      const picked = new Set(on);
+      const wrap = el('div', 'rm-alerts'); wrap.setAttribute('role', 'group'); wrap.setAttribute('aria-label', T('When to remind you'));
+      for (const [v, text] of [[30, T('30 days before')], [7, T('7 days before')], [0, T('On the day')]]) {
+        const b = btn('gchip rm-alert', text, null); b.type = 'button';
+        const sync = () => { const k = picked.has(v); b.setAttribute('aria-pressed', String(k)); b.classList.toggle('on', k); };
+        sync();
+        b.onclick = () => { if (picked.has(v)) picked.delete(v); else picked.add(v); sync(); };
+        wrap.append(b);
+      }
+      return { el: wrap, get: () => [30, 7, 0].filter((m) => picked.has(m)) };
+    };
+
     const addCard = () => {
       const c = el('section', 'rm-new');
       const open = addOpen === null ? !st.items.length : addOpen;
@@ -534,6 +597,7 @@
       const due = el('input', 'field-i'); due.type = 'date'; due.min = todayIso(); due.setAttribute('aria-label', T('Date'));
       const nt = textInput(T('Note (optional)')); nt.maxLength = 120; nt.setAttribute('aria-label', T('Note'));
       const yr = switchRow(T('Repeat every year'), false);
+      const alerts = alertPicker([30, 7, 0]);
       const chips = el('div', 'chipbox rm-presets');
       const hint = el('small', 'fld-h', '');
       for (const p of PRESETS()) chips.append(btn('gchip', p.name, () => { label.value = p.label || p.name; if (p.due) due.value = p.due; yr.input.checked = Boolean(p.repeat); hint.textContent = p.hint || ''; (p.due ? nt : due).focus(); }));
@@ -541,10 +605,11 @@
       const go = btn('btn pri xl', T('Add reminder'), null); go.type = 'submit';
       const dl = field(T('Date'), due);
       form.append(el('span', 'fld-l', T('Quick start')), chips, field(T('Name'), label), dl, hint, field(T('Note'), nt), yr,
+        el('span', 'fld-l', T('When to remind you')), alerts.el,
         el('p', 'rm-explain', T('Saathi counts down to this date and shows it here.')), er, go);
       form.onsubmit = (e) => { e.preventDefault(); busyBtn(go, async () => {
         er.hide();
-        const r = await tcall('reminders.add', { label: label.value, due: due.value, note: nt.value, repeat: yr.input.checked ? 'yearly' : '' });
+        const r = await tcall('reminders.add', { label: label.value, due: due.value, note: nt.value, repeat: yr.input.checked ? 'yearly' : '', alerts: alerts.get() });
         if (!r.ok) return er.show(errText(r.error));
         st = r.data; addOpen = false; draw(); toast(T('Reminder set'));
       }); };
@@ -560,6 +625,8 @@
       const tx = el('span', 'rm-tx'); tx.append(el('b', '', r.label), el('small', '', fmtIso(r.due) + (r.note ? ' · ' + r.note : '')));
       const right = el('span', 'rm-right'); right.append(el('span', 'tag ' + (r.left < 0 ? 'bad' : r.left <= 7 ? 'warn' : ''), whenText(r.left)));
       if (r.repeat) right.append(el('span', 'tag', T('Yearly')));
+      // Selected notices, shown on the row when not all three are on.
+      if (r.alerts && r.alerts.length < 3) right.append(el('span', 'tag', r.alerts.map((m) => (m ? T('{n} days', { n: m }) : T('On the day'))).join(' · ')));
       const chev = ico('chev', 18); chev.classList.add('rm-chev'); right.append(chev);
       head.append(ic, tx, right);
       head.onclick = () => {
@@ -575,14 +642,15 @@
       const due = el('input', 'field-i'); due.type = 'date'; due.value = r.due;
       const nt = textInput(T('Note (optional)'), r.note || ''); nt.maxLength = 120;
       const yr = switchRow(T('Repeat every year'), Boolean(r.repeat));
+      const pick = alertPicker(r.alerts || [30, 7, 0]);
       const er = errBox();
       const two = el('div', 'two'); two.append(field(T('Name'), label), field(T('Date'), due));
-      body.append(two, field(T('Note'), nt), yr);
+      body.append(two, field(T('Note'), nt), yr, el('span', 'fld-l', T('When to remind you')), pick.el);
       const acts = el('div', 'rm-acts');
       const done = btn('btn pri sm', r.repeat ? T('Done, remind me next year') : T('Mark done'), () => busyBtn(done, () => apply(tcall('reminders.done', { id: r.id }), r.repeat ? T('Moved to next year') : T('Done'))));
       const save = btn('btn sm', T('Save changes'), () => busyBtn(save, async () => {
         er.hide();
-        const rr = await tcall('reminders.update', { id: r.id, label: label.value, due: due.value, note: nt.value, repeat: yr.input.checked ? 'yearly' : '' });
+        const rr = await tcall('reminders.update', { id: r.id, label: label.value, due: due.value, note: nt.value, repeat: yr.input.checked ? 'yearly' : '', alerts: pick.get() });
         if (!rr.ok) return er.show(errText(rr.error));
         st = rr.data; draw(); toast(T('Saved'));
       }));

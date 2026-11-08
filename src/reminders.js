@@ -40,15 +40,20 @@ export function fmtDue(due) {
   return `${String(d).padStart(2, '0')} ${MONTHS[m - 1][0].toUpperCase()}${MONTHS[m - 1].slice(1)} ${y}`;
 }
 
-/** Build a reminder. Milestones that are already behind are marked sent. */
-export function makeReminder({ id, type, label, due, note, repeat }, now = Date.now()) {
+/** The notice days picked from [30, 7, 0], in that order. Anything else is ignored. */
+export const pickAlerts = (a) => MILESTONES.filter((m) => (Array.isArray(a) ? a.map(Number) : []).includes(m));
+
+/** Build a reminder. Milestones that are already behind, or switched off, are marked sent so they never go out. */
+export function makeReminder({ id, type, label, due, note, repeat, alerts }, now = Date.now()) {
   const left = daysUntil(due, now);
+  const on = Array.isArray(alerts) && alerts.length ? pickAlerts(alerts) : MILESTONES;
   const sent = {};
-  for (const m of MILESTONES) sent[m] = left < m;
+  for (const m of MILESTONES) sent[m] = left < m || !on.includes(m);
   // Created within a milestone window but not past it (e.g. 20 days left): the 30-day notice is skipped too.
   const r = { id, type, label, due, sent, made: now };
   if (note) r.note = note;
   if (repeat === 'yearly') r.repeat = 'yearly';
+  if (on.length < MILESTONES.length) r.alerts = on;
   return r;
 }
 
