@@ -25,7 +25,7 @@
 .app[data-hk]{position:relative}
 .app[data-tab="home"]>.chat,.app[data-tab="home"]>.dock,.app[data-tab="guides"]>.chat,.app[data-tab="guides"]>.dock{display:none!important}
 .app:not([data-tab="home"])>.hk-home,.app:not([data-tab="guides"])>.hk-guides,.app[data-tab="chat"]>.hk-float{display:none}
-.app .foryou{display:none!important}
+:root:not([data-style="sky"]) .app .foryou{display:none!important}
 :root[data-style] .app[data-tab="chat"]>.chat{flex:1 1 auto!important;overflow-y:auto!important}
 :root[data-style] .app[data-tab="chat"]>.dock{order:0!important}
 :root[data-style="sky"] .app[data-tab="chat"] .hello{padding:12vh 0 3vh}

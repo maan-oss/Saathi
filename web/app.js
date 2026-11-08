@@ -882,6 +882,7 @@
   // ---- an empty chat: just a greeting and the box to type in ---------------------------------------
   function welcome() {
     const box = el('div', 'hello');
+    box.append(el('h1', '', T('What do you need help with today?')), el('p', '', T('Ask in your own words')), el('small', 'hello-trust', T('Private, and never asks for your OTP')));
     thread.append(box);
     forYou(box);
     if (matchMedia('(pointer:fine)').matches) input.focus({ preventScroll: true }); // on a phone, the keyboard waits for a tap
