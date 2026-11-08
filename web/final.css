@@ -23,19 +23,29 @@
 :root[data-style] .attach-wrap .pop { left: 0 !important; right: auto !important; bottom: calc(100% + 12px); min-width: 230px; }
 :root[data-style] .dock { padding-left: 14px; padding-right: 14px; }
 
-/* The empty chat: the box sits in the middle of the screen. The first message sends it to the bottom. */
-:root[data-style] .app[data-tab="chat"][data-empty] > .chat { flex: 0 0 0 !important; min-height: 0 !important; padding: 0 !important; overflow: hidden !important; }
-:root[data-style] .app[data-tab="chat"][data-empty] > .dock { margin: auto 0 !important; padding-bottom: max(26px, env(safe-area-inset-bottom)) !important; }
-:root[data-style] .quick-btn {
-  display: flex; align-items: center; gap: 9px; margin: 16px auto 0; height: 46px; padding: 0 20px 0 16px;
-  border: 0; border-radius: 999px; background: rgba(255, 255, 255, .94); color: #1d1d1f;
-  font: 600 15px/1 var(--sans); box-shadow: 0 6px 18px rgba(10, 30, 70, .14); cursor: pointer;
-  transition: transform .18s ease, background .2s ease, box-shadow .2s ease;
+/* The empty chat: one line of text at the top, and the box at the bottom, big. Nothing animates in. */
+:root[data-style] .ask-head { display: none; }
+:root[data-style] .app[data-tab="chat"][data-empty] > .chat { flex: 1 1 auto !important; min-height: 0 !important; padding: 0 !important; overflow: hidden !important; }
+:root[data-style] .app[data-tab="chat"][data-empty] .ask-head {
+  display: block; margin: 0; padding: calc(env(safe-area-inset-top, 0px) + 13vh) 26px 0; text-align: center;
+  font: 650 clamp(28px, 7.4vw, 38px)/1.14 var(--sans); letter-spacing: -.02em; color: var(--onsky, #fff); text-wrap: balance;
+  text-shadow: 0 1px 14px rgba(20, 30, 70, .18);
 }
-:root[data-style] .quick-btn[hidden] { display: none !important; }
-:root[data-style] .quick-btn:hover { background: #fff; box-shadow: 0 10px 26px rgba(10, 30, 70, .2); transform: translateY(-1px); }
-:root[data-style] .quick-btn:active { transform: scale(.97); }
-:root[data-style] .quick-btn:focus-visible { outline: 2px solid #1d1d1f; outline-offset: 3px; }
+:root[data-style] .app[data-tab="chat"][data-empty] > .dock { margin: 0 !important; padding-bottom: max(18px, env(safe-area-inset-bottom)) !important; }
+:root[data-style] .app[data-tab="chat"][data-empty] > .dock { padding-left: 14px !important; padding-right: 14px !important; }
+:root[data-style] .app[data-empty] .composer-wrap { margin: 0 !important; width: 100% !important; max-width: none !important; }
+@media (min-width: 641px) {
+  :root[data-style] .app[data-empty] .composer-wrap { width: var(--hub-col) !important; margin: 0 auto !important; }
+}
+/* Phone: the box uses the same side gutter as the messages, so it is not squeezed into the middle. */
+@media (max-width: 640px) {
+  :root[data-style] .app[data-tab="chat"] > .dock { padding-left: 14px !important; padding-right: 14px !important; }
+}
+:root[data-style] .app[data-empty] .composer { min-height: 68px; border-radius: 34px; }
+:root[data-style] .app[data-empty] .composer textarea { font-size: 18px; }
+:root[data-style] .app[data-empty] .attach-wrap .attach { width: 68px; height: 68px; min-width: 68px; }
+:root[data-style] .app[data-empty],
+:root[data-style] .app[data-empty] * { animation: none !important; transition: none !important; }
 
 /* 3. Scan: the four corner marks sit inside the frame, and the photo fits between them. */
 :root[data-style] .scan-c { width: 26px; height: 26px; border-width: 3px; border-color: #1d1d1f; }
@@ -130,9 +140,6 @@
 /* The plus sits first, on the left, and the pill follows it. The older rules that ordered the composer are overridden here. */
 :root[data-style] .composer-wrap .attach-wrap { order: 0 !important; }
 :root[data-style] .composer-wrap .composer { order: 1 !important; }
-/* The dock text is light on the sky background. The Scan button sits on a white pill, so its text is dark. */
-:root[data-style] .dock .quick-btn { color: #1d1d1f !important; opacity: 1 !important; }
-:root[data-style] .dock .quick-btn svg { color: #1d1d1f; stroke: #1d1d1f; }
 /* The recovery and restore cards keep their content inside a comfortable inner edge. */
 .bk-box { display: grid; gap: 12px; padding: 14px; border-radius: 26px; }
 .bk-box > .restore { margin: 0; }

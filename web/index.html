@@ -42,6 +42,7 @@
   </header>
 
   <main class="chat" id="chat" aria-live="polite" aria-label="Conversation" data-ta="Conversation">
+    <p class="ask-head" data-t="How can I help you?">How can I help you?</p>
     <div class="thread" id="thread">
     </div>
   </main>
@@ -72,10 +73,6 @@
         </button>
       </form>
     </div>
-    <button class="quick-btn" id="quickScan" type="button" hidden>
-      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M20 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3M4 12h16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span data-t="Scan a document">Scan a document</span>
-    </button>
     <input type="file" id="fileInput" accept="image/*,application/pdf" hidden>
     <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
   </footer>

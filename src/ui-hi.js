@@ -893,4 +893,5 @@ export const HI = {
   "Read it": "इसे पढ़ें",
   "Saved once. Copy any time.": "एक बार सेव हुआ। कभी भी कॉपी करें।",
   "Dates you cannot afford to miss.": "वो तारीखें जो आप नहीं भूल सकते।",
+  "How can I help you?": "मैं आपकी कैसे मदद कर सकता हूँ?",
 };

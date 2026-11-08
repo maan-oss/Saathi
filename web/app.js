@@ -789,7 +789,7 @@
   const engineReset = () => { freshNext = true; };
   const markEngine = (id) => { engineChat = id; };
   // The empty chat: the box sits in the middle of the screen, with one shortcut to scanning. Sending clears it.
-  const leaveWelcome = () => { delete document.getElementById('app').dataset.empty; $('quickScan').hidden = true; };
+  const leaveWelcome = () => { delete document.getElementById('app').dataset.empty; };
   const clearThread = () => { thread.replaceChildren(); document.querySelectorAll('.suggest, .hello').forEach((g) => g.remove()); leaveWelcome(); };
 
   function openChat(id, { fromSwitch = false } = {}) {
@@ -882,10 +882,9 @@
     if (ok) setWallet(j.wallet);
   }
 
-  // ---- an empty chat: only the box, and one shortcut. No greeting and no questions.
+  // ---- an empty chat: one line at the top and the box at the bottom. Nothing else, and nothing moves in.
   function welcome() {
     document.getElementById('app').dataset.empty = '1';
-    const q = $('quickScan'); q.hidden = false; q.onclick = () => core.openScreen?.('scan');
     if (matchMedia('(pointer:fine)').matches) input.focus({ preventScroll: true }); // on a phone, the keyboard waits for a tap
   }
   const brandLink = document.querySelector('.top .brand');
