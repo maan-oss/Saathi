@@ -292,3 +292,25 @@
 
 /* The attach button sits beside the field, outside the form, so it steps aside too: the voice bar gets the full row. */
 :root[data-style="sky"] .composer-wrap:has(#rec:not([hidden])) .attach-wrap { display: none !important; }
+
+/* ---- Photos from the phone, round 2 ---- */
+/* A dark button turns black when pressed. Its label has to turn light with it, or it disappears. */
+:root[data-style="sky"] :is(.btn.pri, .btn.xl, .btn.ink):active { background: #000 !important; color: #fff !important; }
+
+/* The message field keeps a fixed corner radius as it grows, so a long message stays a rounded box instead of an oval that cuts the text. */
+:root[data-style="sky"] .composer { --r-pill: 34px; }
+
+/* Guides and tools: each row is a pill when pressed or hovered, inset from the card edge, with thin dividers that stop short of the ends. */
+:root[data-style="sky"] .hk-card.hk-flush > .hk-svc,
+:root[data-style="sky"] .hk-card.hk-flush > .hk-row {
+  position: relative; width: auto; margin: 0 8px; border-top: 0 !important; border-radius: 999px !important;
+  padding-left: 14px !important; padding-right: 14px !important;
+}
+:root[data-style="sky"] .hk-card.hk-flush > .hk-svc + .hk-svc::before,
+:root[data-style="sky"] .hk-card.hk-flush > .hk-row + .hk-row::before {
+  content: ""; position: absolute; top: 0; left: 72px; right: 14px; height: 1px; background: rgba(60, 80, 120, .14);
+}
+:root[data-style="sky"] .hk-card.hk-flush > .hk-svc:hover,
+:root[data-style="sky"] .hk-card.hk-flush > .hk-row:hover { background: rgba(31, 30, 29, .06) !important; box-shadow: none !important; }
+:root[data-style="sky"] .hk-card.hk-flush > .hk-svc:active,
+:root[data-style="sky"] .hk-card.hk-flush > .hk-row:active { background: rgba(31, 30, 29, .11) !important; }
