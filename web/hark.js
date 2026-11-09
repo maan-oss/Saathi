@@ -58,15 +58,16 @@
   // ---- Guides tab ---------------------------------------------------------------------------------
   const card = (cls) => el('div', 'hk-card ' + (cls || ''));
   async function drawGuides() {
-    guides.replaceChildren(); guides.dataset.done = '1'; guides.classList.add('fresh'); setTimeout(() => guides.classList.remove('fresh'), 1200);
+    guides.replaceChildren(); guides.dataset.done = '1';
     guides.append(el('h1', 'hk-h1', T('Guides')));
-    const d = await U.loadServices().catch(() => ({}));
-    const box = card('hk-flush');
+    // Drawn at once from what the app already knows, so the cards always rise, even when the network is slow.
+    // The names and blurbs from the server are filled in afterwards, in place.
+    const box = card('hk-flush'); const filled = [];
     for (const [id, name, ic] of U.SERVICES) {
-      const s = (d.services || []).find((x) => x.id === id);
       const b = el('button', 'hk-svc'); b.type = 'button';
       const c = el('span', 'hk-circ'); c.append(ico(ic, 20));
-      const tx = el('span', 'hk-st'); tx.append(el('b', '', s?.name || T(name)), el('small', '', s?.blurb || ''));
+      const tb = el('b', '', T(name)), sm = el('small', '', '');
+      const tx = el('span', 'hk-st'); tx.append(tb, sm); filled.push({ id, tb, sm });
       b.append(c, tx, ico('chev', 18)); b.onclick = () => U.openScreen('service', { id }); box.append(b);
     }
     guides.append(box);
@@ -79,6 +80,13 @@
     }
     guides.append(el('h2', 'hk-h2', T('Tools')), tl);
     [...guides.children].forEach((c, i) => c.style.setProperty('--d', i * 60 + 'ms'));
+    guides.classList.add('fresh'); setTimeout(() => guides.classList.remove('fresh'), 1200);
+    const d = await U.loadServices().catch(() => ({}));
+    for (const f of filled) {
+      const s = (d.services || []).find((x) => x.id === f.id);
+      if (s?.name) f.tb.textContent = s.name;
+      f.sm.textContent = s?.blurb || '';
+    }
   }
 
   // ---- Profile and search pages ---------------------------------------------------------------------

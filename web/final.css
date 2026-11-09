@@ -52,8 +52,11 @@
 :root[data-style] .app[data-empty] .composer { min-height: 68px; border-radius: 34px; }
 :root[data-style] .app[data-empty] .composer textarea { font-size: 18px; }
 :root[data-style] .app[data-empty] .attach-wrap .attach { width: 68px; height: 68px; min-width: 68px; }
-:root[data-style] .app[data-empty],
-:root[data-style] .app[data-empty] * { animation: none !important; transition: none !important; }
+/* The empty chat is quiet: nothing in the chat or the box animates in. Guides and the rest of the app still move. */
+:root[data-style] .app[data-empty] > .chat,
+:root[data-style] .app[data-empty] > .chat *,
+:root[data-style] .app[data-empty] > .dock,
+:root[data-style] .app[data-empty] > .dock * { animation: none !important; transition: none !important; }
 
 /* 3. Scan: the four corner marks sit inside the frame, and the photo fits between them. */
 :root[data-style] .scan-c { width: 26px; height: 26px; border-width: 3px; border-color: #1d1d1f; }
