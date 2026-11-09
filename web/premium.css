@@ -39,15 +39,7 @@
 @keyframes pvPop{from{opacity:0;transform:translateY(12px) scale(.9)}to{opacity:1;transform:none}}
 @keyframes pvItem{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
-/* 6. Dictation: a live wave in place of the red dot. It moves with your voice when the microphone can be read. */
-.composer .rec{gap:10px!important}
-.composer .rec-dot{display:none!important}
-.composer .rec .wave{flex:1 1 auto;min-width:0;height:34px;display:flex;align-items:center;justify-content:center;gap:3px;overflow:hidden}
-.composer .rec .wave i{display:block;flex:none;width:3px;height:12%;border-radius:3px;background:var(--cmp-rec,var(--ink));transition:height .09s linear;opacity:.9}
-.composer .rec:not(.dict) .wave{display:none}
-.composer .rec.dict .rec-msg{display:none}
-.composer .rec.dict #recTime{display:none}
-.composer .rec.dict .rec-lang{font-size:12px;padding:4px 10px}
+/* 6. Voice bar: styled in system.css (.rec-wave, #recTime, .rec-msg). */
 
 /* 7. Typing: three dots that you can see in both themes, with a gentle wave, not a faint grey. */
 :root .msg.botrow.thinking .bot .typing{gap:6px!important}

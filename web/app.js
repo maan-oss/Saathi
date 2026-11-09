@@ -859,6 +859,11 @@
   const joinSpeech = (a, b) => (a && b ? `${a} ${b}` : a || b);
   const dictCodes = () => { const u = uiLang(); return u === 'en' ? ['en', 'hi'] : u === 'hi' ? ['hi', 'en'] : [u, 'en']; };
   const codeLabel = (c) => ({ en: 'English', hi: 'हिन्दी' }[c] || (core.cfg?.languages || []).find((l) => l.code === c)?.native || c);
+  // One clock for every kind of speaking, so the time reads the same for dictation and for a voice note.
+  let clockTimer = 0; let clockStart = 0;
+  const showClock = () => { const s = Math.floor((Date.now() - clockStart) / 1000); $('recTime').textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+  function startClock(fresh = true) { if (fresh || !clockStart) clockStart = Date.now(); clearInterval(clockTimer); showClock(); clockTimer = setInterval(showClock, 250); }
+  function stopClock() { clearInterval(clockTimer); clockTimer = 0; }
   // resume: the browser ended the session after a pause, so carry on from the text already on screen.
   function startDictation(resume = false) {
     if (!dictLang || !dictCodes().includes(dictLang)) dictLang = dictCodes()[0];
@@ -875,6 +880,9 @@
         if (e.results[i].isFinal) finalText = joinSpeech(finalText, t); else interim = joinSpeech(interim, t);
       }
       input.value = dictBase + joinSpeech(finalText, interim); grow();
+      // The field is covered while listening, so the bar shows the last words as they arrive.
+      const latest = input.value.trim(); const msg = $('recMsg');
+      msg.textContent = latest || T('Listening… speak now'); msg.classList.toggle('words', !!latest);
     };
     r.onerror = (e) => {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') showError(T('I could not use the microphone. Allow it in your browser settings, or just type.'));
@@ -889,7 +897,7 @@
     try { r.start(); } catch { if (resume) stopDictation(); return; }
     sr = r; dictating = true;
     micBtn.classList.add('live'); micBtn.setAttribute('aria-pressed', 'true');
-    $('rec').hidden = false; $('recTime').hidden = true; $('recMsg').textContent = T('Listening… speak now');
+    $('rec').hidden = false; $('recTime').hidden = false; startClock(!resume); $('recMsg').textContent = T('Listening… speak now');
     const dl = $('dictLang'); dl.hidden = false; dl.textContent = codeLabel(dictLang) + ' ⇄'; dl.setAttribute('aria-label', T('Change the language you speak'));
     dl.onclick = () => { const cs = dictCodes(); const cur = input.value; stopDictation(); dictLang = cs[(cs.indexOf(dictLang) + 1) % cs.length]; input.value = cur; startDictation(); };
     $('recCancel').onclick = () => { stopDictation(); input.value = dictStart.trim(); grow(); };
@@ -899,7 +907,8 @@
     const r = sr; sr = null;
     try { r?.stop(); } catch { /* already stopped */ }
     micBtn.classList.remove('live'); micBtn.setAttribute('aria-pressed', 'false');
-    $('rec').hidden = true; $('recTime').hidden = false; $('dictLang').hidden = true; $('recCancel').onclick = () => stopRecording(false);
+    stopClock();
+    $('rec').hidden = true; $('dictLang').hidden = true; $('recCancel').onclick = () => stopRecording(false);
     grow(); if (matchMedia('(pointer:fine)').matches) input.focus({ preventScroll: true });
   }
 
@@ -919,15 +928,12 @@
     recording = true; recStart = Date.now();
     $('rec').hidden = false; $('recMsg').textContent = T('Recording'); input.disabled = true; sendBtn.disabled = false; sendBtn.classList.add('rec-stop');
     sendBtn.setAttribute('aria-label', T('Stop and send voice message'));
-    recTimer = setInterval(() => {
-      const s = Math.floor((Date.now() - recStart) / 1000);
-      $('recTime').textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-      if (s >= 80) stopRecording(true);
-    }, 250);
+    startClock(true);
+    recTimer = setInterval(() => { if (Date.now() - recStart >= 80000) stopRecording(true); }, 250);
   }
   function stopRecording(sendIt) {
     if (!recording) return;
-    recording = false; clearInterval(recTimer);
+    recording = false; clearInterval(recTimer); stopClock();
     const mime = recorder.mimeType || 'audio/webm';
     recorder.onstop = async () => {
       recStream?.getTracks().forEach((t) => t.stop());
