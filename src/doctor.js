@@ -42,7 +42,7 @@ export async function diagnose(cfg = config, f = fetch) {
     }
   } else out.push(skip('AI', 'no OPENROUTER_API_KEY: the guide works, but no free-form answers, no document reading, no extra languages.'));
 
-  if (cfg.openrouterKey && cfg.docCheck) out.push(bad('Document reading on a free model', 'free and stealth models on OpenRouter may keep and learn from what you send. Do not read ID photos with them: set DOC_CHECK=0 or pick a paid model whose data policy you accept.'));
+  if (cfg.openrouterKey && cfg.docCheck) out.push(ok('Document reading on a free model', 'chosen on purpose: people are asked first, and the consent screen says the AI service may keep what it reads.'));
 
   // Stripe
   if (!cfg.stripeSecretKey) out.push(skip('Payments', 'no Stripe secret key: top-ups are not offered, people use the free daily messages and welcome credit only.'));

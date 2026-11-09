@@ -44,7 +44,7 @@ Use **Render**, not Vercel. The bot keeps saved details and wallet balances on a
 | `SARVAM_API_KEY`, `OPENAI_API_KEY` | Voice notes (optional) | dashboard.sarvam.ai, platform.openai.com |
 | `DETAILS_FLOW_ID` | WhatsApp Flow id (optional) | Step 3 |
 
-Keep `DOC_CHECK=0` until your privacy page is live (step 7).
+Set `DOC_CHECK=1` once your privacy page is live (step 7). Photo reading uses free models, so people are asked first and the consent screen says the AI service may keep what it reads.
 
 ## 3. WhatsApp (Meta) (about 30 minutes, plus approval waits)
 
@@ -64,7 +64,7 @@ Keep `DOC_CHECK=0` until your privacy page is live (step 7).
 
 ## 4. AI (free, 5 minutes)
 
-openrouter.ai > **Keys** > create one > `OPENROUTER_API_KEY`. The bot uses `google/gemma-4-31b-it:free` and falls back to `openrouter/free`. Free models may keep what they are sent, so the bot never sends saved details to the AI, and photo ID checks stay off (`DOC_CHECK=0`).
+openrouter.ai > **Keys** > create one > `OPENROUTER_API_KEY`. The bot uses `google/gemma-4-31b-it:free` and falls back to `openrouter/free`. Free models may keep what they are sent. The bot never sends saved details to the AI. Photo reading is on (`DOC_CHECK=1`) and people are asked before any photo is read.
 
 ## 5. Payments (Stripe) (about an hour; ID checks take days)
 

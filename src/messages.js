@@ -144,7 +144,7 @@ const M = {
     docs_off:
       'I can\'t check photos yet. Type *docs* to see the documents you need, and make sure every photo is bright, flat and shows all four corners.',
     doc_consent:
-      'I read your photo or PDF with AI to pull out your name, date of birth, address, ID number and expiry date. The photo is *not saved*. Only if you tap Save do the details go into your encrypted profile and locker.\n\nAllow this?',
+      'I read your photo or PDF with AI to pull out your name, date of birth, address, ID number and expiry date. The AI service is free and may keep what it reads, so send only papers you are happy to share with it. The photo is *not saved* by Saathi. Only if you tap Save do the details go into your encrypted profile and locker.\n\nAllow this?',
     doc_consent_yes: 'Thanks. Send the photo now.',
     doc_consent_no: 'No problem, I won\'t read any photos. Type *docs* for the documents list.',
     doc_busy: 'Photo reading is paused for today and starts again tomorrow. Meanwhile, type *docs* for the checklist of what to bring.',
@@ -454,7 +454,7 @@ const M = {
     docs_off:
       'मैं अभी फोटो चेक नहीं कर सकता। ज़रूरी दस्तावेज़ देखने के लिए *docs* लिखें, और हर फोटो साफ रोशनी में, सीधी और चारों कोने दिखाती हुई खींचें।',
     doc_consent:
-      'मैं AI से आपकी फोटो या PDF पढ़कर नाम, जन्मतिथि, पता, ID नंबर और खत्म होने की तारीख निकालता हूँ। फोटो *सेव नहीं* होती। आप सेव दबाएँ तभी ये एन्क्रिप्टेड प्रोफाइल और लॉकर में जाते हैं।\n\nक्या इजाज़त है?',
+      'मैं AI से आपकी फोटो या PDF पढ़कर नाम, जन्मतिथि, पता, ID नंबर और खत्म होने की तारीख निकालता हूँ। यह AI सेवा मुफ़्त है और पढ़ी गई चीज़ें रख सकती है, इसलिए सिर्फ़ वही कागज़ भेजें जो आप उसके साथ साझा करने में ठीक समझते हों। साथी फोटो *सेव नहीं* करता। आप सेव दबाएँ तभी ये एन्क्रिप्टेड प्रोफाइल और लॉकर में जाते हैं।\n\nक्या इजाज़त है?',
     doc_consent_yes: 'धन्यवाद। अब फोटो भेजिए।',
     doc_consent_no: 'कोई बात नहीं, मैं कोई फोटो नहीं पढ़ूँगा। दस्तावेज़ों की सूची के लिए *docs* लिखें।',
     doc_busy: 'आज के लिए फोटो पढ़ना बंद है और कल फिर शुरू होगा। तब तक कौन से दस्तावेज़ चाहिए, यह देखने के लिए *docs* लिखें।',

@@ -78,7 +78,7 @@ export const config = {
   waMsgInr: num('WA_MSG_INR', 0.14), // Rs 0.115 + 18% GST, counted for every outbound message (conservative)
 
   // Features
-  docCheck: flag('DOC_CHECK', false), // photo check is OFF until you have a privacy notice
+  docCheck: flag('DOC_CHECK', false), // photo reading: on in production (render.yaml); people are asked first and the photo is not saved
   userIdleHours: num('USER_IDLE_HOURS', 24),
   accountKeepDays: num('ACCOUNT_KEEP_DAYS', 180), // saved details erased this long after the last message. A wallet balance is never deleted for inactivity.
 
