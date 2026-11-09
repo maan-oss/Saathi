@@ -655,19 +655,22 @@
   $('pickCamera').onclick = () => { closePop(); $('cameraInput').click(); };
   for (const id of ['fileInput', 'cameraInput']) $(id).addEventListener('change', (e) => { const f = e.target.files[0]; e.target.value = ''; if (f) attachFile(f); });
 
+  // Every photo is redrawn here, which drops where and when it was taken (GPS, camera details) and turns it upright.
+  // Phone photos are also huge, so it shrinks to about 1800px. A photo that cannot be redrawn is refused, never sent as it is.
   async function shrink(file) {
-    // Phone photos are huge. Shrink to about 1800px: much faster on a slow connection, and easily readable.
-    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return file;
+    if (!file.type.startsWith('image/')) return file;
     try {
-      const bmp = await createImageBitmap(file);
+      const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
       const scale = Math.min(1, 1800 / Math.max(bmp.width, bmp.height));
-      if (scale === 1 && file.size < 1.5 * 1024 * 1024) return file;
       const c = document.createElement('canvas');
       c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
-      c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); // a transparent PNG becomes white, not black
+      ctx.drawImage(bmp, 0, 0, c.width, c.height);
+      bmp.close?.();
       const blob = await new Promise((r) => c.toBlob(r, 'image/jpeg', 0.86));
-      return blob || file;
-    } catch { return file; }
+      return blob || null;
+    } catch { return null; }
   }
 
   async function upload(blob, mime) {
@@ -701,6 +704,7 @@
     if (!isPdf && !isImg) return showError(T('I can read photos and PDF files. Try one of those.'));
     if (file.size > 25 * 1024 * 1024) return showError(T('That file is too big. Try a smaller photo or PDF.'));
     const blob = await shrink(file);
+    if (!blob) return showError(T('I could not prepare that photo safely. Send it as a JPEG or PNG, or take a screenshot.'));
     const mime = blob.type || file.type;
     if (blob.size > 6 * 1024 * 1024) return showError(T('That file is too big after shrinking. Try a smaller PDF, or a photo.'));
     const att = { kind: isPdf ? 'document' : 'image', name: file.name.slice(0, 120), mime, blob, url: isImg ? URL.createObjectURL(blob) : '', upload: null };

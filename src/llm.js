@@ -25,6 +25,9 @@ const TIMEOUT_MS = 25_000;
 const CACHE_MAX = 300;
 const CACHE_TTL_MS = 60 * 60 * 1000;
 
+/** Free models (and OpenRouter's free router) may keep what they are sent, so they are never used for anything personal. */
+export const isFreeModel = (m) => /:free$/.test(String(m || '')) || /^stealth\//.test(String(m || '')) || String(m || '') === 'openrouter/free';
+
 export function createLlm(config) {
   // Read live, so a key pasted into the admin page works at once without a restart.
   const isEnabled = () => Boolean(config.openrouterKey);
@@ -71,6 +74,8 @@ export function createLlm(config) {
         // If the first model is busy or has been retired, OpenRouter moves to the next one by itself.
         ...(config.openrouterFallbacks?.length ? { models: [model, ...config.openrouterFallbacks] } : {}),
         reasoning: { effort: 'low', exclude: true }, // short answers: do not spend the reply budget on hidden thinking
+        // Zero data retention: only providers that have agreed not to keep or train on what they receive can serve this.
+        provider: { zdr: true },
         max_tokens: maxTokens + 300,
         messages: [{ role: 'system', content: system }, { role: 'user', content: toOpenAi(content) }],
       }),
@@ -99,10 +104,10 @@ export function createLlm(config) {
   return {
     get enabled() { return isEnabled(); },
     get provider() { return isEnabled() ? 'openrouter' : null; },
-    /** Swap the OpenRouter key while running. Empty string removes it. Free models cost nothing, so the spend counter is zeroed. */
+    /** Swap the OpenRouter key while running. Empty string removes it. Only a free model costs nothing, so only then is the spend counter zeroed. */
     setKey(key) {
       config.openrouterKey = String(key || '').trim();
-      if (config.openrouterKey) { config.llmInUsdPerM = 0; config.llmOutUsdPerM = 0; }
+      if (config.openrouterKey && isFreeModel(config.openrouterModel)) { config.llmInUsdPerM = 0; config.llmOutUsdPerM = 0; }
       cache.clear();
     },
 

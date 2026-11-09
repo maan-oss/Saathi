@@ -29,7 +29,19 @@ test('openrouter: used when its key is set, free router by default, OpenAI-shape
     assert.deepEqual(c.body.models, ['stealth/space-bunny-alpha', 'openrouter/free']);
     assert.equal(c.body.messages[0].role, 'system');
     assert.ok(c.opts.signal, 'every call has a timeout');
+    assert.deepEqual(c.body.provider, { zdr: true }, 'only zero-retention providers may serve a request');
   } finally { s.restore(); }
+});
+
+test('openrouter: the default models are paid and zero-retention, and a free model is flagged by the doctor', async () => {
+  const { isFreeModel } = await import('../src/llm.js');
+  assert.equal(isFreeModel('anthropic/claude-haiku-5.5'), false);
+  assert.equal(isFreeModel('openai/gpt-6-luna'), false);
+  assert.equal(isFreeModel('stealth/space-bunny-alpha'), true);
+  assert.equal(isFreeModel('openrouter/free'), true);
+  assert.equal(isFreeModel('meta-llama/llama-3.3-70b-instruct:free'), true);
+  const rows = await diagnose({ openrouterKey: 'sk-or-test', openrouterModel: 'stealth/space-bunny-alpha', openrouterFallbacks: [], docCheck: true, publicUrl: 'https://me.example' }, async () => ({ ok: true, status: 200 }));
+  assert.ok(rows.some((r) => r.s === 'FIX' && /free model/.test(r.t)), 'a free model for photos is a FIX');
 });
 
 test('openrouter: photos and PDFs go as image_url / file, and the JSON reply is parsed', async () => {
@@ -114,15 +126,23 @@ test('free-model Markdown is turned into what the chat understands', () => {
 });
 
 test('a key set while running turns the AI on and off without a restart', async () => {
-  const c = { openrouterKey: '', llmInUsdPerM: 1, llmOutUsdPerM: 5 };
+  const c = { openrouterKey: '', openrouterModel: 'stealth/space-bunny-alpha', llmInUsdPerM: 1, llmOutUsdPerM: 5 };
   const l = createLlm(c);
   assert.equal(l.enabled, false);
   l.setKey('sk-or-v1-testtesttesttesttest');
   assert.equal(l.enabled, true);
   assert.equal(l.provider, 'openrouter');
-  assert.equal(c.llmInUsdPerM, 0);
+  assert.equal(c.llmInUsdPerM, 0, 'a free model costs nothing, so the spend counter is zeroed');
   l.setKey('');
   assert.equal(l.enabled, false);
+});
+
+test('a key set while running keeps the spend counter for a paid model', async () => {
+  const c = { openrouterKey: '', openrouterModel: 'anthropic/claude-haiku-5.5', llmInUsdPerM: 0.1, llmOutUsdPerM: 0.5 };
+  const l = createLlm(c);
+  l.setKey('sk-or-v1-testtesttesttesttest');
+  assert.equal(c.llmInUsdPerM, 0.1, 'a paid model is counted');
+  assert.equal(c.llmOutUsdPerM, 0.5);
 });
 
 test('openrouter: an empty reply is retried once, so a free model that returns nothing does not end in "can\'t answer"', async () => {
