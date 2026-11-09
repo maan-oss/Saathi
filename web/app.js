@@ -648,8 +648,16 @@
   // attach: photos and PDFs
   const attachBtn = $('attachBtn');
   const pop = $('attachPop');
-  const closePop = () => { pop.hidden = true; attachBtn.setAttribute('aria-expanded', 'false'); };
-  attachBtn.onclick = (e) => { e.stopPropagation(); pop.hidden = !pop.hidden; attachBtn.setAttribute('aria-expanded', String(!pop.hidden)); };
+  // Opening plays the menu's entrance (CSS). Closing plays it in reverse first, then hides it. A reopen during that cancels the hide.
+  let popTimer = 0;
+  const openPop = () => { clearTimeout(popTimer); pop.classList.remove('closing'); pop.hidden = false; attachBtn.setAttribute('aria-expanded', 'true'); };
+  const closePop = () => {
+    attachBtn.setAttribute('aria-expanded', 'false');
+    if (pop.hidden || pop.classList.contains('closing')) return;
+    pop.classList.add('closing');
+    popTimer = setTimeout(() => { if (!pop.classList.contains('closing')) return; pop.hidden = true; pop.classList.remove('closing'); }, 200);
+  };
+  attachBtn.onclick = (e) => { e.stopPropagation(); if (pop.hidden || pop.classList.contains('closing')) openPop(); else closePop(); };
   document.addEventListener('click', (e) => { if (!pop.contains(e.target)) closePop(); });
   $('pickFile').onclick = () => { closePop(); $('fileInput').click(); };
   $('pickCamera').onclick = () => { closePop(); $('cameraInput').click(); };

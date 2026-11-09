@@ -52,11 +52,12 @@
 :root[data-style] .app[data-empty] .composer { min-height: 68px; border-radius: 34px; }
 :root[data-style] .app[data-empty] .composer textarea { font-size: 18px; }
 :root[data-style] .app[data-empty] .attach-wrap .attach { width: 68px; height: 68px; min-width: 68px; }
-/* The empty chat is quiet: nothing in the chat or the box animates in. Guides and the rest of the app still move. */
+/* The empty chat is quiet: nothing in the chat itself animates in, and the bar does not slide in on load.
+   Typing, the + button and its menu still animate. */
 :root[data-style] .app[data-empty] > .chat,
-:root[data-style] .app[data-empty] > .chat *,
-:root[data-style] .app[data-empty] > .dock,
-:root[data-style] .app[data-empty] > .dock * { animation: none !important; transition: none !important; }
+:root[data-style] .app[data-empty] > .chat * { animation: none !important; transition: none !important; }
+:root[data-style] .app[data-empty] > .dock.in-r,
+:root[data-style] .app[data-empty] > .dock.in-l { animation: none !important; }
 
 /* 3. Scan: the four corner marks sit inside the frame, and the photo fits between them. */
 :root[data-style] .scan-c { width: 26px; height: 26px; border-width: 3px; border-color: #1d1d1f; }
@@ -225,6 +226,17 @@
 }
 :root[data-style] .attach-wrap .pop button:hover { background: var(--pop-hov) !important; }
 :root[data-style] .attach-wrap .pop button::before { background: var(--pop-ink) !important; }
+/* The + turns into an × while the menu is open, with a small spring. */
+:root[data-style] .attach-wrap .attach svg { transition: transform .42s cubic-bezier(.3, 1.45, .5, 1); }
+:root[data-style] .attach-wrap .attach[aria-expanded="true"] svg { transform: rotate(45deg); }
+/* The menu closes the way it opens (it fades and shrinks back into the + button), instead of vanishing. */
+:root[data-style] .attach-wrap .pop.closing { animation: pvOut .2s cubic-bezier(.4, 0, 1, 1) both !important; pointer-events: none; }
+@keyframes pvOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(10px) scale(.94); } }
+/* The field: a tap lifts it a little and rings it, so you can see it is ready to type. It eases back when you leave. */
+@keyframes fieldFocus { 0% { transform: translateY(0) scale(.985); } 55% { transform: translateY(-4px) scale(1.014); } 100% { transform: translateY(-3px) scale(1.01); } }
+@keyframes fieldRing { 0% { box-shadow: 0 0 0 0 rgba(20, 30, 60, .22); } 100% { box-shadow: 0 0 0 16px rgba(20, 30, 60, 0); } }
+:root[data-style] .app[data-tab="chat"] .composer:focus-within { animation: fieldFocus .5s cubic-bezier(.2, .9, .25, 1.15) both, fieldRing .8s ease-out !important; }
+:root[data-style] .composer { transition: transform .4s cubic-bezier(.2, .9, .25, 1.1), box-shadow .4s ease, border-color .25s ease, opacity .2s ease; }
 
 /* Send: one blue. Disabled is quiet, not orange, not black. */
 :root[data-style] .composer .send,
