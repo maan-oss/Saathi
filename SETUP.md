@@ -64,7 +64,7 @@ Keep `DOC_CHECK=0` until your privacy page is live (step 7).
 
 ## 4. AI (free, 5 minutes)
 
-openrouter.ai > **Keys** > create one > `OPENROUTER_API_KEY`. The bot uses `stealth/space-bunny-alpha` and falls back to `openrouter/free`. Free models may keep what they are sent, so the bot never sends saved details to the AI, and photo ID checks stay off (`DOC_CHECK=0`).
+openrouter.ai > **Keys** > create one > `OPENROUTER_API_KEY`. The bot uses `google/gemma-4-31b-it:free` and falls back to `openrouter/free`. Free models may keep what they are sent, so the bot never sends saved details to the AI, and photo ID checks stay off (`DOC_CHECK=0`).
 
 ## 5. Payments (Stripe) (about an hour; ID checks take days)
 

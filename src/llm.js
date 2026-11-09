@@ -57,7 +57,7 @@ export function createLlm(config) {
   }
 
   async function callOpenRouter({ system, content, maxTokens }, attempt = 0) {
-    const model = config.openrouterModel || 'stealth/space-bunny-alpha';
+    const model = config.openrouterModel || 'google/gemma-4-31b-it:free';
     const res = await fetch(`${config.openrouterBase || 'https://openrouter.ai'}/api/v1/chat/completions`, {
       method: 'POST',
       headers: {

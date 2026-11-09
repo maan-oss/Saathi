@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createLlm, tidyAnswer } from '../src/llm.js';
 import { diagnose } from '../src/doctor.js';
 
-const cfg = { openrouterKey: 'sk-or-test', openrouterModel: 'stealth/space-bunny-alpha', openrouterFallbacks: ['openrouter/free'], openrouterBase: 'https://or.test', llmInUsdPerM: 0, llmOutUsdPerM: 0 };
+const cfg = { openrouterKey: 'sk-or-test', openrouterModel: 'google/gemma-4-31b-it:free', openrouterFallbacks: ['openrouter/free'], openrouterBase: 'https://or.test', llmInUsdPerM: 0, llmOutUsdPerM: 0 };
 
 function stubFetch(handler) {
   const real = globalThis.fetch;
@@ -25,8 +25,8 @@ test('openrouter: used when its key is set, free router by default, OpenAI-shape
     const c = s.calls[0];
     assert.equal(c.url, 'https://or.test/api/v1/chat/completions');
     assert.equal(c.opts.headers.authorization, 'Bearer sk-or-test');
-    assert.equal(c.body.model, 'stealth/space-bunny-alpha');
-    assert.deepEqual(c.body.models, ['stealth/space-bunny-alpha', 'openrouter/free']);
+    assert.equal(c.body.model, 'google/gemma-4-31b-it:free');
+    assert.deepEqual(c.body.models, ['google/gemma-4-31b-it:free', 'openrouter/free']);
     assert.equal(c.body.messages[0].role, 'system');
     assert.ok(c.opts.signal, 'every call has a timeout');
   } finally { s.restore(); }
