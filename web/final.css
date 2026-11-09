@@ -462,3 +462,23 @@
 :root[data-style] .scan-stage .scan-c.tr { top: 0 !important; right: 0 !important; border-top-width: 3px !important; border-right-width: 3px !important; border-top-right-radius: 35px !important; }
 :root[data-style] .scan-stage .scan-c.bl { bottom: 0 !important; left: 0 !important; border-bottom-width: 3px !important; border-left-width: 3px !important; border-bottom-left-radius: 35px !important; }
 :root[data-style] .scan-stage .scan-c.br { bottom: 0 !important; right: 0 !important; border-bottom-width: 3px !important; border-right-width: 3px !important; border-bottom-right-radius: 35px !important; }
+
+/* ---- Reduce motion: when the phone or browser asks for less motion, nothing slides, fades in or pulses. ---- */
+@media (prefers-reduced-motion: reduce) {
+  :root[data-style] body *, :root[data-style] body *::before, :root[data-style] body *::after,
+  :root[data-style] #screen .rise, :root[data-style] #screen .rise * {
+    animation-duration: 1ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important; transition-delay: 0ms !important; scroll-behavior: auto !important;
+  }
+}
+
+/* ---- White buttons stay white on hover, with dark text. Only the dark buttons turn dark. ---- */
+:root[data-style] .btn.pri:hover, :root[data-style] .btn.xl:hover, :root[data-style] .btn.pri:focus-visible, :root[data-style] .btn.xl:focus-visible {
+  background: #f2f2f5 !important; color: #1d1d1f !important; opacity: 1 !important; filter: none !important;
+}
+
+/* ---- Long messages scroll inside the box and fade at the edges, so a line is never cut off hard. ---- */
+:root[data-style] #input.scrolls {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
+          mask-image: linear-gradient(to bottom, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
+}

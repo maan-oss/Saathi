@@ -487,7 +487,7 @@
 
   // Counts the balance up like a win on a machine: quick steps that slow down, each step flashes, then it lands.
   function countUp(node, from, to, onStep, ms = 1900) {
-    const reduce = false;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const t0 = performance.now(); let last = null;
     const tick = (now) => {
       const t = reduce ? 1 : Math.min(1, (now - t0) / ms);

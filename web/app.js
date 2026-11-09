@@ -625,7 +625,7 @@
   const sendBtn = $('sendBtn');
   // A photo or PDF waiting above the text box. It is sent only when the person presses send, together with what they typed.
   let pendingAtt = null;
-  const grow = () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 160) + 'px'; sendBtn.disabled = (!input.value.trim() && !recording && !pendingAtt) || busy; };
+  const grow = () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 160) + 'px'; input.classList.toggle('scrolls', input.scrollHeight > 160); sendBtn.disabled = (!input.value.trim() && !recording && !pendingAtt) || busy; };
   input.addEventListener('input', grow);
   // The mic and send buttons appear and disappear beside the text, which changes the width the text wraps in.
   // Re-measure whenever that width changes, so the box is never left two lines tall.
@@ -842,32 +842,44 @@
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   const BCP = { en: 'en-IN', hi: 'hi-IN', bn: 'bn-IN', ta: 'ta-IN', te: 'te-IN', mr: 'mr-IN', gu: 'gu-IN', kn: 'kn-IN', ml: 'ml-IN', pa: 'pa-IN', or: 'or-IN', ur: 'ur-IN', as: 'as-IN', ne: 'ne-NP', mai: 'hi-IN', kok: 'mr-IN', sa: 'hi-IN' };
   const micBtn = $('micBtn');
-  let sr = null; let dictating = false; let dictLang = null; let dictBase = '';
+  let sr = null; let dictating = false; let dictLang = null; let dictBase = ''; let dictStart = ''; let dictRestarts = 0;
+  const joinSpeech = (a, b) => (a && b ? `${a} ${b}` : a || b);
   const dictCodes = () => { const u = uiLang(); return u === 'en' ? ['en', 'hi'] : u === 'hi' ? ['hi', 'en'] : [u, 'en']; };
   const codeLabel = (c) => ({ en: 'English', hi: 'हिन्दी' }[c] || (core.cfg?.languages || []).find((l) => l.code === c)?.native || c);
-  function startDictation() {
+  // resume: the browser ended the session after a pause, so carry on from the text already on screen.
+  function startDictation(resume = false) {
     if (!dictLang || !dictCodes().includes(dictLang)) dictLang = dictCodes()[0];
     const r = new SR();
     r.lang = BCP[dictLang] || 'en-IN'; r.interimResults = true; r.continuous = true;
     dictBase = input.value ? input.value.replace(/\s*$/, ' ') : '';
-    let finalText = '';
+    if (!resume) { dictStart = dictBase; dictRestarts = 0; }
+    let finalText = ''; let heard = false;
     r.onresult = (e) => {
       let interim = '';
-      for (let i = e.resultIndex; i < e.results.length; i++) { const t = e.results[i][0].transcript; if (e.results[i].isFinal) finalText += t; else interim += t; }
-      input.value = dictBase + finalText + interim; grow();
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript.trim(); if (!t) continue;
+        heard = true;
+        if (e.results[i].isFinal) finalText = joinSpeech(finalText, t); else interim = joinSpeech(interim, t);
+      }
+      input.value = dictBase + joinSpeech(finalText, interim); grow();
     };
     r.onerror = (e) => {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') showError(T('I could not use the microphone. Allow it in your browser settings, or just type.'));
       if (e.error !== 'aborted' && e.error !== 'no-speech') stopDictation();
     };
-    r.onend = () => { if (dictating && sr === r) stopDictation(); };
-    try { r.start(); } catch { return; }
+    r.onend = () => {
+      if (!dictating || sr !== r) return;
+      // The browser ends a session after a pause. Keep listening while the person is still speaking.
+      if (heard && dictRestarts < 25) { dictRestarts++; sr = null; startDictation(true); return; }
+      stopDictation();
+    };
+    try { r.start(); } catch { if (resume) stopDictation(); return; }
     sr = r; dictating = true;
     micBtn.classList.add('live'); micBtn.setAttribute('aria-pressed', 'true');
     $('rec').hidden = false; $('recTime').hidden = true; $('recMsg').textContent = T('Listening… speak now');
     const dl = $('dictLang'); dl.hidden = false; dl.textContent = codeLabel(dictLang) + ' ⇄'; dl.setAttribute('aria-label', T('Change the language you speak'));
     dl.onclick = () => { const cs = dictCodes(); const cur = input.value; stopDictation(); dictLang = cs[(cs.indexOf(dictLang) + 1) % cs.length]; input.value = cur; startDictation(); };
-    $('recCancel').onclick = () => { stopDictation(); input.value = dictBase.trim(); grow(); };
+    $('recCancel').onclick = () => { stopDictation(); input.value = dictStart.trim(); grow(); };
   }
   function stopDictation() {
     dictating = false;
@@ -1111,10 +1123,10 @@
 // ---- small motion helpers shared by every screen -------------------------------------------------------------------
 // 1) <details> opens and closes with a real height animation. 2) Scrolling lists fade at the edge that has more to see.
 (() => {
-  const reduce = false;
+  const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   document.addEventListener('click', (e) => {
     const sum = e.target.closest && e.target.closest('summary'); const d = sum && sum.parentElement;
-    if (!d || d.tagName !== 'DETAILS' || reduce || !d.animate) return;
+    if (!d || d.tagName !== 'DETAILS' || reduce() || !d.animate) return;
     e.preventDefault();
     if (d._anim) { d._anim.cancel(); d._anim = null; }
     const startH = d.offsetHeight; d.style.overflow = 'hidden';
