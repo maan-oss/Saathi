@@ -1,7 +1,6 @@
 // Checks every connection and tells you exactly what is missing. Used by `npm run doctor` and the setup console.
 // It only reads; it sends nothing to real users.
 import { config } from './config.js';
-import { isFreeModel } from './llm.js';
 
 const ok = (t, d = '') => ({ s: 'OK ', t, d });
 const bad = (t, d) => ({ s: 'FIX', t, d });
@@ -43,9 +42,7 @@ export async function diagnose(cfg = config, f = fetch) {
     }
   } else out.push(skip('AI', 'no OPENROUTER_API_KEY: the guide works, but no free-form answers, no document reading, no extra languages.'));
 
-  const docFree = isFreeModel(cfg.openrouterModel) || (cfg.openrouterFallbacks || []).some(isFreeModel);
-  if (cfg.openrouterKey && cfg.docCheck && docFree) out.push(bad('Document reading on a free model', 'free and stealth models on OpenRouter may keep and learn from what you send. Do not read ID photos with them: set OPENROUTER_MODEL and OPENROUTER_FALLBACKS to paid models.'));
-  if (cfg.openrouterKey && cfg.docCheck && !docFree) out.push(ok('Document reading on a paid model', 'requests ask for zero-retention providers only'));
+  if (cfg.openrouterKey && cfg.docCheck) out.push(bad('Document reading on a free model', 'free and stealth models on OpenRouter may keep and learn from what you send. Do not read ID photos with them: set DOC_CHECK=0 or pick a paid model whose data policy you accept.'));
 
   // Stripe
   if (!cfg.stripeSecretKey) out.push(skip('Payments', 'no Stripe secret key: top-ups are not offered, people use the free daily messages and welcome credit only.'));

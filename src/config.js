@@ -63,13 +63,11 @@ export const config = {
   // AI (only used for free-form questions, the optional photo check and translation)
   // OpenRouter: one key, many models, including free ones. Without the key the AI is off and the scripted guide still works.
   openrouterKey: process.env.OPENROUTER_API_KEY || '',
-  // A paid model that reads images and is served only by zero-retention providers (llm.js sends provider.zdr). Free models
-  // may keep what they are sent, so they are not used for anything personal.
-  openrouterModel: process.env.OPENROUTER_MODEL || 'anthropic/claude-haiku-5.5',
-  openrouterFallbacks: (process.env.OPENROUTER_FALLBACKS ?? 'openai/gpt-6-luna').split(',').map((x) => x.trim()).filter(Boolean), // tried in order if the first is busy
+  openrouterModel: process.env.OPENROUTER_MODEL || 'stealth/space-bunny-alpha', // free, fast, reads images. Any slug from openrouter.ai/models works
+  openrouterFallbacks: (process.env.OPENROUTER_FALLBACKS ?? 'openrouter/free').split(',').map((x) => x.trim()).filter(Boolean), // tried in order if the first is busy or gone (stealth models get retired)
   openrouterBase: process.env.OPENROUTER_BASE || 'https://openrouter.ai',
-  llmInUsdPerM: num('LLM_IN_USD_PER_M', process.env.OPENROUTER_API_KEY ? 0.1 : 1), // USD per million input tokens; the spend caps use these
-  llmOutUsdPerM: num('LLM_OUT_USD_PER_M', process.env.OPENROUTER_API_KEY ? 0.5 : 5),
+  llmInUsdPerM: num('LLM_IN_USD_PER_M', process.env.OPENROUTER_API_KEY ? 0 : 1), // free models cost nothing; set these if you pick a paid model
+  llmOutUsdPerM: num('LLM_OUT_USD_PER_M', process.env.OPENROUTER_API_KEY ? 0 : 5),
   usdInr: num('USD_INR', 90),
 
   // Spend protection (all amounts in INR)
