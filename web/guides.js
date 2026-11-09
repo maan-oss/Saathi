@@ -10,7 +10,7 @@
   const C = window.SaathiCore;
   const U = C.ui;
   const { el, api, toast, store, T, N } = C;
-  const { frame, btn, ico, SCREENS: S, openScreen, showDialog, closeDialog, rupee } = U;
+  const { frame, btn, ico, SCREENS: S, openScreen, redraw, tabLine, showDialog, closeDialog, rupee } = U;
 
   const JSON_H = { 'content-type': 'application/json' };
   async function tcall(op, args = {}) {
@@ -135,19 +135,21 @@
       }
       tabsDraw();
     }
-    function tabsDraw() {
-      tabs.replaceChildren();
-      const items = [
-        ['steps', T('Steps'), ''],
-        ['docs', T('What you need'), ''],
-        ['me', T('Fill it'), ''],
-      ];
-      for (const [k, label, badge] of items) {
-        const b = el('button', 'g-tab'); b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', String(tab === k));
-        b.append(el('span', '', label)); if (badge) b.append(el('small', '', badge));
-        b.onclick = () => { tab = k; tabsDraw(); drawPane(); };
-        tabs.append(b);
+    // The tabs are made once; switching only moves the one line under the chosen tab.
+    let placeLine = null;
+    function tabsDraw(animate = true) {
+      if (!placeLine) {
+        const items = [['steps', T('Steps')], ['docs', T('What you need')], ['me', T('Fill it')]];
+        for (const [k, label] of items) {
+          const b = el('button', 'g-tab'); b.type = 'button'; b.dataset.k = k; b.setAttribute('role', 'tab');
+          b.append(el('span', '', label));
+          b.onclick = () => { if (tab === k) return; tab = k; tabsDraw(true); drawPane(); };
+          tabs.append(b);
+        }
+        placeLine = tabLine(tabs);
       }
+      for (const b of tabs.querySelectorAll('.g-tab')) b.setAttribute('aria-selected', String(b.dataset.k === tab));
+      placeLine(animate);
     }
     function confirmReset() {
       showDialog({

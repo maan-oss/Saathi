@@ -88,7 +88,6 @@ details.tips[open]>summary{margin-bottom:12px}
 .btn:not(.ghost):not(.sm):hover{box-shadow:var(--shadow)}
 .sc-h,.screen-head{}
 
-@media (prefers-reduced-motion:reduce){.hello,.tool-card,.gtile,.fd-o,.g-tab::after{animation:none!important;transition:none!important}}
 @media(max-width:520px){.g-tab[aria-selected=true] small{background:none;color:var(--ink)}}
 
 .btn.xl{min-height:58px;border-radius:18px;font-size:17px;box-shadow:0 8px 24px rgba(31,30,29,.18);transition:transform .2s var(--pol),box-shadow .2s}
@@ -263,7 +262,6 @@ details.tips .tp li svg{flex:none;margin-top:2px;color:var(--mut)}
 @keyframes gkDraw{to{stroke-dashoffset:0}}
 @keyframes stpArrive{0%{transform:translateY(8px);opacity:.6}100%{transform:none;opacity:1}}
 @keyframes stpActs{0%{opacity:0;transform:translateY(-6px)}100%{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){.stp-i.just,.stp-i.just .gk,.stp-i.arrive,.stp-i.arrive .stp-a,.stp-i.undo{animation:none}}
 
 /* "everything you need" card */
 .pack .pk-txt{padding:6px 18px 14px}

@@ -212,7 +212,19 @@
   // A screen has a back button, a small title that appears once you scroll, and a big title at the top of the page.
   let colObs = null;
   const skeleton = () => { const s = el('div', 'sk-wrap'); s.setAttribute('aria-hidden', 'true'); s.append(el('i'), el('i'), el('i')); return s; };
+  let frameOf = null; // the page the frame on screen was built for
+  let inPlace = false; // true while a page redraws its own content (a tab, a person, a filter)
   function frame(title, sub) {
+    const cur = stack[stack.length - 1];
+    // Same page, new content: keep the header and back button where they are, and only swap the content.
+    if (inPlace && cur && frameOf === cur.name && screen.querySelector('.sc-col')) {
+      const col = screen.querySelector('.sc-col');
+      const small = screen.querySelector('.sc-small'); if (small) small.textContent = title;
+      const big = el('div', 'sc-big'); big.append(el('h1', '', title)); if (sub) big.append(el('p', '', sub));
+      col.replaceChildren(big);
+      return col;
+    }
+    frameOf = cur ? cur.name : null;
     screen.replaceChildren();
     const head = el('header', 'sc-head');
     const nested = stack.length > 1;
@@ -229,6 +241,8 @@
       let i = 0;
       for (const m of muts) for (const n of m.addedNodes) {
         if (!(n instanceof Element) || n.classList.contains('sk-wrap') || n.classList.contains('sc-big') || n.classList.contains('rise')) continue;
+        // The sliding tab line is positioned by script; a rise animation would pin its transform.
+        if (n.classList.contains('tab-line') || n.parentElement?.closest('.g-tabs, .seg')) continue;
         n.classList.add('rise'); n.style.setProperty('--d', Math.min(i++, 12) * 40 + 'ms');
       }
     });
@@ -249,13 +263,21 @@
     const cur = stack[stack.length - 1];
     if (!cur) return;
     markActive(cur.name === 'service' ? 'svc_' + cur.params.id : ['topup', 'packs', 'activity'].includes(cur.name) ? 'wallet' : ['backup', 'language'].includes(cur.name) ? 'settings' : cur.name);
-    screen.scrollTop = 0;
+    if (!inPlace) screen.scrollTop = 0;
     const ret = SCREENS[cur.name](cur.params);
     if (ret && typeof ret.then === 'function') {
       const col = screen.querySelector('.sc-col');
       if (col) { const sk = skeleton(); col.append(sk); const done = () => sk.remove(); ret.then(done, done); }
     }
-    screen.classList.remove('swap'); void screen.offsetWidth; screen.classList.add('swap');
+    if (!inPlace) { screen.classList.remove('swap'); void screen.offsetWidth; screen.classList.add('swap'); }
+  }
+  // Same page, different content (a tab, a person, a filter). The page stays put and the back arrow still goes to the page before it.
+  function redraw(params) {
+    const cur = stack[stack.length - 1];
+    if (!cur) return;
+    if (params) cur.params = { ...cur.params, ...params };
+    inPlace = true;
+    try { render(); } finally { inPlace = false; }
   }
   function goBack() { stack.pop(); if (stack.length) render(); else hideScreen(); }
   function hideScreen() { screen.classList.remove('on'); document.body.classList.remove('screen-open'); markActive(null); setTimeout(() => { if (!stack.length) { screen.hidden = true; screen.replaceChildren(); } }, 480); }
@@ -276,13 +298,35 @@
     else { if (value) r.append(el('span', 'ri-v', value)); if (onclick || href) { const c = ico(href ? 'ext' : 'chev', href ? 16 : 18); c.classList.add('ri-c'); r.append(c); } }
     return r;
   }
+  // Tabs share one line that glides under the chosen tab; each tab does not animate on its own.
+  // Returns place(animate), which moves the line under whichever tab is selected.
+  function tabLine(box) {
+    const line = el('span', 'tab-line');
+    box.prepend(line);
+    const place = (animate = true) => {
+      const on = box.querySelector('[aria-selected="true"],[aria-pressed="true"]');
+      if (!on) { line.style.opacity = '0'; return; }
+      line.style.opacity = '1';
+      if (!animate) line.style.transition = 'none';
+      line.style.width = on.offsetWidth + 'px';
+      line.style.transform = `translateX(${on.offsetLeft}px)`;
+      if (!animate) { void line.offsetWidth; line.style.transition = ''; }
+    };
+    requestAnimationFrame(() => place(false));
+    if (window.ResizeObserver) new ResizeObserver(() => place(false)).observe(box);
+    return place;
+  }
   function seg(options, current, onPick) {
     const g = el('div', 'seg'); g.setAttribute('role', 'group');
     for (const [val, label] of options) {
       const b = btn('', label); b.setAttribute('aria-pressed', String(val === current));
-      b.onclick = () => { for (const x of g.children) x.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-pressed', 'true'); onPick(val); };
+      b.onclick = () => {
+        for (const x of g.querySelectorAll('button')) x.setAttribute('aria-pressed', 'false');
+        b.setAttribute('aria-pressed', 'true'); place(true); onPick(val);
+      };
       g.append(b);
     }
+    const place = tabLine(g);
     return g;
   }
   function note(text, icon = 'shield') { const n = el('div', 'note'); n.append(ico(icon, 18), el('span', '', text)); return n; }
@@ -443,7 +487,7 @@
 
   // Counts the balance up like a win on a machine: quick steps that slow down, each step flashes, then it lands.
   function countUp(node, from, to, onStep, ms = 1900) {
-    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduce = false;
     const t0 = performance.now(); let last = null;
     const tick = (now) => {
       const t = reduce ? 1 : Math.min(1, (now - t0) / ms);
@@ -496,7 +540,7 @@
       card.append(checkRing(), el('h3', '', T('Payment received')), el('p', 'mut', T('{amt} added to your wallet.', { amt: rupee(j.paise) })), bal, done);
       stage.append(card);
       const walletText = document.getElementById('walletText');
-      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) chip.classList.add('on');
+      chip.classList.add('on');
       countUp(num, from, to, (v) => { if (walletText) walletText.textContent = rupee(v); }, 1900);
       setTimeout(() => { C.setWallet?.(j.wallet); }, 2000);
       // Then back to the top page on its own, with the amount confirmed there.
@@ -1088,7 +1132,7 @@
     try { sessionStorage.removeItem('saathi.open'); } catch { /* private mode */ }
     openScreen('service', { id });
   };
-  C.ui = { STATE_LIST, frame, row, group, seg, note, empty, btn, ico, SCREENS, openScreen, goBack, closeAll, showDialog, closeDialog, refreshMe, rupee, fmtDate, chatDo, startServiceChat, loadServices, svcMeta, SERVICES, packName };
+  C.ui = { STATE_LIST, frame, row, group, seg, tabLine, redraw, note, empty, btn, ico, SCREENS, openScreen, goBack, closeAll, showDialog, closeDialog, refreshMe, rupee, fmtDate, chatDo, startServiceChat, loadServices, svcMeta, SERVICES, packName };
   buildSidebar();
   C.rebuild = buildSidebar;
   C.openScreen = openScreen;

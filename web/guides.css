@@ -154,10 +154,6 @@ button.chip:hover{background:var(--bg2);border-color:var(--ink)}
   .tot-v{font-size:28px}
   .stp-i,.dcl-i{padding:14px;gap:12px}
 }
-@media (prefers-reduced-motion:reduce){
-  .g-pane.in>*,.stp-i,.dcl-i,.me-r,.cf-f,.tot-v{animation:none}
-  .gr-fg,.gk svg,.sw i{transition:none}
-}
 @media (max-width:520px){
   .g-tabs{gap:2px;padding:4px}
   .g-tab{flex:1 1 0;flex-direction:column;gap:1px;min-height:50px;padding:6px 4px;font-size:13.5px}

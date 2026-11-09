@@ -634,6 +634,39 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
       }
     }
 
+    // ---- photos with a question: the model looks at the photo and answers ------
+    async function answerPhoto() {
+      if (!config.docCheck) return say('docs_off');
+      if (!u.docConsent) {
+        setAwait('consent');
+        return ask(T('doc_consent'), [btn('1', 'btn_allow'), btn('2', 'btn_no')]);
+      }
+      if (!llm.enabled || !(await guard.llmAllowed(userId))) return say('doc_busy');
+      const shield = inspectInput(String(input.text || '').trim());
+      if (shield.block) return say('qa_blocked');
+      const c = gate('scan');
+      if (!c) return;
+      try {
+        const { buffer, mime } = await downloadMedia(input.mediaId);
+        if (buffer.length > MAX_DOC_BYTES) { refund(u, c, 'scan'); return say('doc_too_big'); }
+        const langName = L() === 'hi' ? 'Hindi (Devanagari)' : L() === 'en' ? 'simple English' : `${langDef(L())?.en || 'English'} (its own script)`;
+        const system =
+          'You help people in India with everyday paperwork. The person sent a photo and asks something about it. ' +
+          `Answer in ${langName}, in short plain sentences. Describe only what you can clearly see. ` +
+          'If it is an ID or a form, say what it is and what it asks for, but never repeat a full ID number, card number, account number or OTP. ' +
+          'If the photo is too blurred or dark to answer, say so and suggest a clearer photo.';
+        const q = wrapUntrusted(shield.text.slice(0, MAX_QUESTION_CHARS));
+        const r = await llm.answerImage(buffer, mime, q, system);
+        await guard.recordLlm(userId, r.usage);
+        const out = inspectOutput(r.text);
+        if (!r.text || !out.ok) { refund(u, c, 'scan'); return say('qa_blocked'); }
+        replies.push(r.text);
+      } catch {
+        refund(u, c, 'scan');
+        say('qa_fail');
+      }
+    }
+
     // ---- documents ------------------------------------------------------
     async function checkPhoto() {
       if (!config.docCheck) return say('docs_off');
@@ -1191,7 +1224,9 @@ export function createBot({ store, guard, llm, config, downloadMedia, vault, pay
     else if (u.state === 'scam_ask' && (input.type === 'image' || input.type === 'document')) {
       say('scam_image');
     } else if (input.type === 'image' || (input.type === 'document' && /^(application\/pdf|image\/)/.test(input.mime || ''))) {
-      await checkPhoto();
+      // A photo with a question is looked at and answered; a bare photo is read as a document to keep.
+      if (String(input.text || '').trim()) await answerPhoto();
+      else await checkPhoto();
     } else if (input.type === 'form') {
       await handleForm();
     } else if (input.type === 'other' || input.type === 'document') {

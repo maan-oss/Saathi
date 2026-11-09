@@ -167,7 +167,6 @@ button.row-i:hover,a.row-i:hover{background:var(--bg2)}
 .a-ln2{fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:round;opacity:.55}
 .a-fill{fill:var(--ink)}.a-tick{fill:none;stroke:var(--bg);stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
 .a-brk{fill:none;stroke:var(--ink);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}.a-dot{fill:var(--bg)}
-@media (prefers-reduced-motion:reduce){.screen,.screen.swap .sc-col,.dialog,.ok-ic{animation:none!important}}
 
 
 /* ---------- v3: large titles, chats in the sidebar, packs, checks, dictation ---------- */
@@ -322,7 +321,6 @@ button.row-i:active,a.row-i:active{background:var(--bg2)}
 .res-f:last-child{border-bottom:0}.res-f span{color:var(--mut);font-size:13.5px}.res-f b{font:600 14.5px var(--sans);text-align:right;word-break:break-word}
 .res-acts{display:flex;flex-wrap:wrap;gap:8px}.res-acts>*{flex:1 1 140px}
 .scan-out{display:flex;flex-direction:column;gap:14px}
-@media (prefers-reduced-motion:reduce){.scanning .scan-beam{animation:none;top:40%}.scanning .scan-grid,.scanning .scan-c,.scanning .scan-hud i{animation:none}.res-f{animation-duration:.01s;animation-delay:0s}}
 
 /* --- locker, applications ------------------------------------------------------------------------ */
 .lk-card,.ap-card{display:flex;flex-direction:column;gap:12px;padding:16px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);animation:scin .35s var(--out) both}
@@ -550,4 +548,3 @@ textarea.field-i{min-height:84px;resize:vertical;line-height:1.5}
 @keyframes payRoll{from{transform:translateY(-10%);opacity:.45}to{transform:none;opacity:1}}
 @keyframes payGlow{0%{text-shadow:0 0 0 transparent}35%{text-shadow:0 0 22px color-mix(in srgb,var(--green,#0F8A5F) 70%,transparent)}100%{text-shadow:0 0 0 transparent}}
 @keyframes payChip{0%{opacity:0;transform:translateY(8px) scale(.9)}15%{opacity:1;transform:none}70%{opacity:1;transform:translateY(-6px)}100%{opacity:0;transform:translateY(-18px)}}
-@media (prefers-reduced-motion:reduce){.pay-ring,.pay-ring path,.pay-num.tick,.pay-num.done,.pay-chip.on{animation:none!important}.pay-ring path{stroke-dashoffset:0}}

@@ -173,11 +173,14 @@
 // ---- a soft halo where you press. It is the feedback on every tap, instead of a black line. ---------------
 (() => {
   const SEL = 'button, [role="button"], a[href], label.hk-sfield, .row, .hk-svc, .hk-q, .chip, .gtile, .tool-card, .svc-card, .hub-cc, .hk-row, .hk-wide, .dd-o, .lang, .fd-o';
-  const calm = matchMedia('(prefers-reduced-motion: reduce)');
+  const NO_HALO = '.ap-card, .ap-tl, .rm-item, .rm-new, .tool-card, .svc-card, .gtile, .hub-cc, .hk-svc, .hk-wide, .hk-tile, .hk-row';
+  const calm = { matches: false };
   document.addEventListener('pointerdown', (e) => {
     if (e.button !== 0 || calm.matches || !(e.target instanceof Element)) return;
     const t = e.target.closest(SEL);
     if (!t || t.disabled || t.getAttribute('aria-disabled') === 'true') return;
+    // Cards keep no ring of their own: the press shows on the card itself, not as a circle inside it.
+    if (t.closest(NO_HALO)) return;
     const r = t.getBoundingClientRect(); if (!r.width || !r.height) return;
     if (getComputedStyle(t).position === 'static') t.style.position = 'relative';
     const wrap = document.createElement('span'); wrap.className = 'hk-halo'; wrap.setAttribute('aria-hidden', 'true');

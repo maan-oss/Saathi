@@ -48,7 +48,6 @@ button{cursor:pointer}
 
 .chat{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scroll-behavior:smooth}
 .thread{max-width:740px;margin:0 auto;padding:22px 16px 30px;display:flex;flex-direction:column;gap:22px}
-@media (prefers-reduced-motion:reduce){.chat{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
 
 /* welcome */
 .hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:8vh 0 4vh}
@@ -243,7 +242,6 @@ button:active:not(:disabled){transform:scale(.97)}
 .trustrow{display:flex;flex-wrap:wrap;gap:8px 14px;justify-content:center;margin-top:12px;color:var(--mut);font-size:13.5px}
 .trustrow span{display:inline-flex;gap:6px;align-items:center}.trustrow svg{color:var(--green)}
 @media (max-width:359px){.word-hi{display:none}.top{gap:6px}.pill{padding:6px 9px}}
-@media (prefers-reduced-motion:reduce){.msg,.pop,.typing i{animation:none!important}.drawer,.modal,.panel,.scrim{transition:none!important}}
 
 /* locker card */
 .vault{border-color:var(--green)}
@@ -468,7 +466,6 @@ body{font-family:var(--sans)}
 .lockedmsg{border-top:0;align-items:center}
 .lockedmsg .sh-ic{width:30px;height:30px;border-radius:9px}
 .lockedmsg .sh-ic svg{width:16px;height:16px}
-@media (prefers-reduced-motion:reduce){.reveal-v,.sheet-row,.sheet,.tile,.chip,.row,.txt p,.hero h1,.hero>p{animation:none!important}}
 
 /* ===== popups: settings sheet, toast, attach menu ===== */
 .modal{background:rgba(31,30,29,.38);transition:opacity .3s var(--out),visibility 0s .3s}
@@ -504,7 +501,6 @@ body{font-family:var(--sans)}
 .pop{border-radius:14px;border:1px solid var(--line);box-shadow:0 14px 44px rgba(31,30,29,.16);padding:6px}
 .pop button{border-radius:9px;font-weight:500;padding:12px}
 .pop button:hover{background:var(--bg2)}
-@media (prefers-reduced-motion:reduce){.panel section{animation:none!important}}
 
 /* ===== Black and white ===== */
 :root{--green:#1F1E1D;--green-ink:#1F1E1D;--on-green:#FAF9F5;--logofilter:none}
@@ -601,7 +597,6 @@ body .msg.me .bubble-me a{color:inherit}
 .pack .pk-dots.on{color:var(--fg);letter-spacing:.02em;animation:pkin .25s ease}
 .pack .pk-row .copy+.copy{margin-left:0}
 @keyframes pkin{from{opacity:0;filter:blur(4px)}to{opacity:1;filter:none}}
-@media (prefers-reduced-motion:reduce){.pack .pk-dots.on{animation:none}}
 .pack .pk-v{white-space:nowrap;font-size:15px;letter-spacing:.02em}.pack .pk-row .copy{padding-inline:12px}.pack .pk-row{gap:8px}
 .pack .pk-row .copy{font-size:13px;padding-inline:10px;min-height:34px}.pack .pk-row .k{min-width:0}
 .pack .pk-row .copy{min-width:0;padding:6px 11px}

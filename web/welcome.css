@@ -116,10 +116,6 @@ body.ob-open .app{visibility:hidden}
 }
 @media (min-width:700px) and (max-height:860px){.wl{padding-top:20px}.wl h1{font-size:38px}}
 
-@media (prefers-reduced-motion:reduce){
-  .wl-page,.wl-svc li,.wl-points li,.wl-tick circle{animation:none!important}
-  .wl-tick path{animation:none!important;stroke-dashoffset:0}
-}
 
 /* ---- focus: no white or black ring when you tap or click a field or a button. Fields keep their own shape and colour. ---- */
 :focus,:focus-visible{outline:none!important}

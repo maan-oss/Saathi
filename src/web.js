@@ -262,6 +262,8 @@ export function createWeb({ store, config, media, converse, enqueue, shell = {},
       const id = String(b.mediaId || '');
       if (!media.owns(id, uid)) return json(res, 400, { error: 'upload_expired' });
       input = { type: b.type, mediaId: id, mime: String(b.mime || '').toLowerCase().slice(0, 80), filename: String(b.filename || '').slice(0, 120) };
+      // A question typed with the photo (its caption) goes to the model together with it.
+      if (b.type !== 'voice') input.text = String(b.text || '').trim().slice(0, 500);
     } else return json(res, 400, { error: 'bad_request' });
     if (input.type === 'text' && !input.text.trim()) return json(res, 400, { error: 'empty' });
     // What the chat screen knows: which service the person opened, and the last few turns (kept on their device, not here).

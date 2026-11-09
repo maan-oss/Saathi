@@ -246,7 +246,7 @@
       const top = tall
         ? chat.scrollTop + node.getBoundingClientRect().top - chat.getBoundingClientRect().top - 12
         : chat.scrollHeight;
-      chat.scrollTo({ top: Math.max(0, top), behavior: matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth' });
+      chat.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
     }));
   };
   const jump = $('jump');
@@ -623,7 +623,9 @@
   // ---- composer ---------------------------------------------------------------------------
   const input = $('input');
   const sendBtn = $('sendBtn');
-  const grow = () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 160) + 'px'; sendBtn.disabled = (!input.value.trim() && !recording) || busy; };
+  // A photo or PDF waiting above the text box. It is sent only when the person presses send, together with what they typed.
+  let pendingAtt = null;
+  const grow = () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 160) + 'px'; sendBtn.disabled = (!input.value.trim() && !recording && !pendingAtt) || busy; };
   input.addEventListener('input', grow);
   // The mic and send buttons appear and disappear beside the text, which changes the width the text wraps in.
   // Re-measure whenever that width changes, so the box is never left two lines tall.
@@ -637,6 +639,7 @@
     if (recording) return void stopRecording(true);
     if (dictating) stopDictation();
     const text = input.value.trim();
+    if (pendingAtt) return void sendPending(text);
     if (!text || busy) return; // keep what they typed instead of losing it
     input.value = ''; grow();
     send({ type: 'text', text });
@@ -673,29 +676,166 @@
     return j.mediaId;
   }
 
+  // The file waits above the text box. It uploads in the background and is sent only when the person presses send.
+  const attTray = $('attTray'); const attThumb = $('attThumb'); const attName = $('attName');
+  const uploadError = (e) => (e?.status === 415 ? T('That kind of file is not supported.') : e?.status === 429 ? T('Slow down a little, then try again.') : T('The upload failed. Check your connection and try again.'));
+  function renderTray() {
+    attThumb.replaceChildren();
+    attTray.hidden = !pendingAtt;
+    if (!pendingAtt) { attName.textContent = ''; return; }
+    if (pendingAtt.url) { const im = document.createElement('img'); im.src = pendingAtt.url; im.alt = ''; attThumb.append(im); }
+    else attThumb.append(svg(ICON.file, 22));
+    attName.textContent = pendingAtt.name;
+  }
+  function clearAttach() {
+    pendingAtt = null;
+    renderTray();
+    grow();
+  }
+  $('attX').onclick = () => { clearAttach(); if (matchMedia('(pointer:fine)').matches) input.focus({ preventScroll: true }); };
+  attThumb.onclick = () => { if (pendingAtt?.url) openPhoto(pendingAtt, attThumb.querySelector('img')); };
+
   async function attachFile(file) {
-    if (busy) return;
     const isPdf = file.type === 'application/pdf';
     const isImg = file.type.startsWith('image/');
     if (!isPdf && !isImg) return showError(T('I can read photos and PDF files. Try one of those.'));
     if (file.size > 25 * 1024 * 1024) return showError(T('That file is too big. Try a smaller photo or PDF.'));
-    const chip = el('div');
-    if (isImg) { const im = document.createElement('img'); im.src = URL.createObjectURL(file); im.alt = 'Your photo'; chip.append(im); }
-    else { const f = el('div', 'file'); f.append(svg(ICON.file, 18), file.name.slice(0, 40)); chip.append(f); }
     const blob = await shrink(file);
     const mime = blob.type || file.type;
     if (blob.size > 6 * 1024 * 1024) return showError(T('That file is too big after shrinking. Try a smaller PDF, or a photo.'));
-    setBusy(true);
-    addMe(chip, { who: 'me', text: isPdf ? T('Sent a PDF') : T('Sent a photo') });
-    const tp = typing();
+    const att = { kind: isPdf ? 'document' : 'image', name: file.name.slice(0, 120), mime, blob, url: isImg ? URL.createObjectURL(blob) : '', upload: null };
+    att.upload = upload(blob, mime);
+    att.upload.catch(() => {}); // the error is shown when they press send
+    pendingAtt = att;
+    renderTray();
+    grow();
+    if (matchMedia('(pointer:fine)').matches) input.focus({ preventScroll: true });
+  }
+
+  async function sendPending(caption) {
+    const att = pendingAtt;
+    if (!att || busy) return;
+    pendingAtt = null; renderTray();
+    input.value = ''; grow();
+    let mediaId;
     try {
-      const mediaId = await upload(blob, mime);
-      tp.remove(); setBusy(false);
-      await send({ type: isPdf ? 'document' : 'image', mediaId, mime, filename: file.name }, null);
+      mediaId = await att.upload;
     } catch (e) {
-      tp.remove(); setBusy(false);
-      showError(e.status === 415 ? T('That kind of file is not supported.') : e.status === 429 ? T('Slow down a little, then try again.') : T('The upload failed. Check your connection and try again.'));
+      pendingAtt = att; renderTray(); input.value = caption; grow(); // keep it, so they can try again
+      return showError(uploadError(e));
     }
+    const label = caption || (att.kind === 'document' ? T('Sent a PDF') : T('Sent a photo'));
+    send({ type: att.kind, mediaId, mime: att.mime, filename: att.name, text: caption }, label, photoBubble(att, caption));
+  }
+
+  // What the person sees in the chat for a photo they sent: the picture (tap to view it large) and their question under it.
+  function photoBubble(att, caption) {
+    const wrap = el('div', 'me-att');
+    if (att.url) {
+      const b = el('button', 'me-photo'); b.type = 'button'; b.setAttribute('aria-label', T('Open photo'));
+      const im = document.createElement('img'); im.src = att.url; im.alt = att.name;
+      b.append(im);
+      b.onclick = () => openPhoto(att, im);
+      wrap.append(b);
+    } else {
+      const f = el('div', 'file'); f.append(svg(ICON.file, 18), att.name.slice(0, 40)); wrap.append(f);
+    }
+    if (caption) wrap.append(el('div', 'bubble-me me-cap', caption));
+    return wrap;
+  }
+
+  async function asPng(blob) {
+    const bmp = await createImageBitmap(blob);
+    const c = document.createElement('canvas'); c.width = bmp.width; c.height = bmp.height;
+    c.getContext('2d').drawImage(bmp, 0, 0);
+    return new Promise((r) => c.toBlob(r, 'image/png'));
+  }
+
+  // ---- a photo, large: it grows out of where it was tapped, and everything behind it is blurred ----
+  function openPhoto(att, fromImg) {
+    if (!att?.url || document.querySelector('.pv')) return;
+    const pv = el('div', 'pv');
+    pv.setAttribute('role', 'dialog'); pv.setAttribute('aria-modal', 'true'); pv.setAttribute('aria-label', att.name);
+    const bg = el('div', 'pv-bg');
+    const top = el('div', 'pv-top');
+    const x = el('button', 'pv-x'); x.type = 'button'; x.setAttribute('aria-label', T('Close')); x.append(iconEl('M18 6L6 18M6 6L18 18', 20));
+    const title = el('div', 'pv-name', att.name);
+    const share = el('button', 'pv-share'); share.type = 'button'; share.setAttribute('aria-label', T('Share')); share.append(iconEl('M12 3v12M7 8l5-5 5 5M5 14v5h14v-5', 20));
+    top.append(x, title, share);
+    const img = document.createElement('img'); img.className = 'pv-img'; img.src = att.url; img.alt = att.name;
+    const bar = el('div', 'pv-bar');
+    const dl = el('button', 'pv-btn', T('Download')); dl.type = 'button';
+    const cp = el('button', 'pv-btn', T('Copy')); cp.type = 'button';
+    bar.append(dl, cp);
+    pv.append(bg, top, img, bar);
+    document.body.append(pv);
+
+    const boxOf = (r) => ({ left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px` });
+    const from = fromImg?.isConnected ? fromImg.getBoundingClientRect() : null;
+    let closing = false;
+    const close = () => {
+      if (closing) return;
+      closing = true;
+      document.removeEventListener('keydown', onKey);
+      const src = fromImg?.isConnected ? fromImg.getBoundingClientRect() : null;
+      pv.classList.remove('on');
+      if (src && src.width) {
+        const cur = img.getBoundingClientRect();
+        img.animate([boxOf(cur), boxOf(src)], { duration: 300, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' });
+      }
+      setTimeout(() => pv.remove(), 320);
+    };
+    const onKey = (e) => { if (e.key === 'Escape') close(); };
+    document.addEventListener('keydown', onKey);
+    x.onclick = close;
+    bg.onclick = close;
+    pv.addEventListener('click', (e) => { if (e.target === pv) close(); });
+
+    // The final size: as large as fits, between the top bar and the buttons.
+    const fit = () => {
+      const W = innerWidth; const H = innerHeight;
+      const maxW = W - 32; const maxH = H - 150;
+      const nw = img.naturalWidth || 1; const nh = img.naturalHeight || 1;
+      const s = Math.min(maxW / nw, maxH / nh);
+      const w = nw * s; const h = nh * s;
+      return { left: (W - w) / 2, top: 72 + (maxH - h) / 2, width: w, height: h };
+    };
+    const show = () => {
+      const to = fit();
+      if (!from || !from.width) {
+        img.animate([{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'ease-out' });
+        requestAnimationFrame(() => pv.classList.add('on'));
+        return;
+      }
+      Object.assign(img.style, boxOf(to));
+      requestAnimationFrame(() => {
+        pv.classList.add('on');
+        img.animate([boxOf(from), boxOf(to)], { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' });
+      });
+    };
+    if (img.complete && img.naturalWidth) show();
+    else img.addEventListener('load', show, { once: true });
+
+    dl.onclick = () => {
+      const a = document.createElement('a'); a.href = att.url; a.download = att.name || 'photo.jpg';
+      document.body.append(a); a.click(); a.remove();
+    };
+    cp.onclick = async () => {
+      try {
+        if (!navigator.clipboard?.write || !window.ClipboardItem) throw new Error('no clipboard');
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': await asPng(att.blob) })]);
+        toast(T('Photo copied'));
+      } catch { toast(T('Could not copy the photo. Try Download instead.')); }
+    };
+    share.onclick = async () => {
+      const file = new File([att.blob], att.name || 'photo.jpg', { type: att.mime || 'image/jpeg' });
+      try {
+        if (navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file], title: att.name });
+        else { dl.click(); toast(T('Sharing is not available here, so the photo was saved instead.')); }
+      } catch (e) {
+        if (e?.name !== 'AbortError') toast(T('Could not share the photo.'));
+      }
+    };
   }
 
   // ---- speaking instead of typing: browser dictation (free), or a voice note when the browser has none ----
@@ -971,7 +1111,7 @@
 // ---- small motion helpers shared by every screen -------------------------------------------------------------------
 // 1) <details> opens and closes with a real height animation. 2) Scrolling lists fade at the edge that has more to see.
 (() => {
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reduce = false;
   document.addEventListener('click', (e) => {
     const sum = e.target.closest && e.target.closest('summary'); const d = sum && sum.parentElement;
     if (!d || d.tagName !== 'DETAILS' || reduce || !d.animate) return;

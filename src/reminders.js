@@ -40,20 +40,22 @@ export function fmtDue(due) {
   return `${String(d).padStart(2, '0')} ${MONTHS[m - 1][0].toUpperCase()}${MONTHS[m - 1].slice(1)} ${y}`;
 }
 
-/** The notice days picked from [30, 7, 0], in that order. Anything else is ignored. */
-export const pickAlerts = (a) => MILESTONES.filter((m) => (Array.isArray(a) ? a.map(Number) : []).includes(m));
+/** The notice days: any whole number of days before, from 0 (on the day) to a year. Repeats and junk are ignored; the biggest comes first. */
+export const pickAlerts = (a) => [...new Set((Array.isArray(a) ? a : []).map(Number).filter((n) => Number.isInteger(n) && n >= 0 && n <= 365))].sort((x, y) => y - x);
+/** True when the notices are the usual three (30 days, 7 days, on the day). */
+export const sameAsDefault = (on) => on.length === MILESTONES.length && MILESTONES.every((m) => on.includes(m));
 
 /** Build a reminder. Milestones that are already behind, or switched off, are marked sent so they never go out. */
 export function makeReminder({ id, type, label, due, note, repeat, alerts }, now = Date.now()) {
   const left = daysUntil(due, now);
   const on = Array.isArray(alerts) && alerts.length ? pickAlerts(alerts) : MILESTONES;
   const sent = {};
-  for (const m of MILESTONES) sent[m] = left < m || !on.includes(m);
+  for (const m of new Set([...MILESTONES, ...on])) sent[m] = left < m || !on.includes(m);
   // Created within a milestone window but not past it (e.g. 20 days left): the 30-day notice is skipped too.
   const r = { id, type, label, due, sent, made: now };
   if (note) r.note = note;
   if (repeat === 'yearly') r.repeat = 'yearly';
-  if (on.length < MILESTONES.length) r.alerts = on;
+  if (!sameAsDefault(on)) r.alerts = on;
   return r;
 }
 
@@ -92,7 +94,8 @@ export function dueNotices(u, now = Date.now()) {
   for (const r of u.reminders || []) {
     const days = daysUntil(r.due, now);
     if (days < 0) continue;
-    const due = MILESTONES.filter((m) => days <= m && !r.sent[m]);
+    const marks = Array.isArray(r.alerts) && r.alerts.length ? r.alerts : MILESTONES;
+    const due = marks.filter((m) => days <= m && !r.sent[m]);
     if (!due.length) continue;
     const milestone = Math.min(...due);
     for (const m of due) r.sent[m] = true;

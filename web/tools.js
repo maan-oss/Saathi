@@ -6,7 +6,7 @@
   const C = window.SaathiCore;
   const U = C.ui;
   const { $, el, api, toast, store, T, N } = C;
-  const { frame, row, group, seg, note, empty, btn, ico, SCREENS: S, openScreen, showDialog, closeDialog, rupee } = U;
+  const { frame, row, group, seg, note, empty, btn, ico, SCREENS: S, openScreen, redraw, showDialog, closeDialog, rupee } = U;
 
   // ---- helpers -----------------------------------------------------------------------------------------
   const JSON_H = { 'content-type': 'application/json' };
@@ -463,7 +463,7 @@
     const people = el('div', 'dt-people');
     const holder = el('div', 'dt-wrap'); col.append(people, holder);
     const [r, pr] = await Promise.all([tcall('details.get'), tcall('people.list')]);
-    if (pr.ok) drawPeople(people, pr.data.people, () => openScreen('details'));
+    if (pr.ok) drawPeople(people, pr.data.people, () => redraw({}));
     if (!r.ok) { holder.append(empty('user', T('Could not load'), errText(r.error))); return; }
     let data = r.data; let ready = {};
     const inputs = {};
@@ -568,30 +568,45 @@
     ];
     const apply = async (p, done) => { const r = await p; if (!r.ok) return toast(errText(r.error)); st = r.data; draw(); if (done) toast(done); };
 
-    /** Three switches for which notices a reminder sends. Returns { el, get() } where get() gives the chosen days, e.g. [30, 7]. */
+    /** Switches for which notices a reminder sends: 30 days, 7 days, on the day, or a custom number of days before.
+     *  Returns { el, get() } where get() gives the chosen days, e.g. [30, 0, 14]. */
     const alertPicker = (on) => {
-      const picked = new Set(on);
       const wrap = el('div', 'rm-alerts'); wrap.setAttribute('role', 'group'); wrap.setAttribute('aria-label', T('When to remind you'));
-      for (const [v, text] of [[30, T('30 days before')], [7, T('7 days before')], [0, T('On the day')]]) {
-        const b = btn('gchip rm-alert', text, null); b.type = 'button';
-        const sync = () => { const k = picked.has(v); b.setAttribute('aria-pressed', String(k)); b.classList.toggle('on', k); };
-        sync();
-        b.onclick = () => { if (picked.has(v)) picked.delete(v); else picked.add(v); sync(); };
-        wrap.append(b);
-      }
-      return { el: wrap, get: () => [30, 7, 0].filter((m) => picked.has(m)) };
+      const fixed = [[30, T('30 days before')], [7, T('7 days before')], [0, T('On the day')]].map(([v, text]) => ({ v, sw: switchRow(text, on.includes(v)) }));
+      const extra = on.find((m) => ![30, 7, 0].includes(m));
+      const cu = switchRow(T('Custom'), extra !== undefined);
+      const num = el('input', 'field-i rm-custom-n'); num.type = 'number'; num.min = '0'; num.max = '365'; num.inputMode = 'numeric';
+      num.value = String(extra ?? 14); num.setAttribute('aria-label', T('days before'));
+      const custom = el('div', 'rm-custom'); custom.append(num, el('span', 'mut', T('days before')));
+      custom.hidden = extra === undefined;
+      cu.input.addEventListener('change', () => { custom.hidden = !cu.input.checked; });
+      for (const f of fixed) wrap.append(f.sw);
+      wrap.append(cu, custom);
+      return {
+        el: wrap,
+        get: () => {
+          const out = fixed.filter((f) => f.sw.input.checked).map((f) => f.v);
+          if (cu.input.checked) { const n = Math.round(Number(num.value)); if (Number.isInteger(n) && n >= 0 && n <= 365) out.push(n); }
+          return [...new Set(out)];
+        },
+      };
     };
 
     const addCard = () => {
       const c = el('section', 'rm-new');
       const open = addOpen === null ? !st.items.length : addOpen;
+      c.classList.toggle('open', open);
       const head = el('button', 'rm-new-h'); head.type = 'button'; head.setAttribute('aria-expanded', String(open));
       const ic = el('span', 'rm-new-ic'); ic.append(ico('plus', 20));
-      head.append(ic, el('b', '', T('Add a reminder')), el('span', 'sp'));
-      const chev = ico('chev', 18); chev.classList.add('rm-chev'); head.append(chev); c.classList.toggle('open', open);
-      head.onclick = () => { addOpen = !open; draw(); };
-      c.append(head);
-      if (!open) return c;
+      const chev = ico('chev', 18); chev.classList.add('rm-chev');
+      head.append(ic, el('b', '', T('Add a reminder')), el('span', 'sp'), chev);
+      // The form is always there; the panel opens and closes in place, so nothing else on the page redraws.
+      const panel = el('div', 'rm-collapse'); const inner = el('div', 'rm-collapse-in'); panel.append(inner); panel.inert = !open;
+      head.onclick = () => {
+        const now = !c.classList.contains('open');
+        c.classList.toggle('open', now); head.setAttribute('aria-expanded', String(now)); panel.inert = !now;
+        addOpen = now;
+      };
       const form = el('form', 'rm-form'); form.noValidate = true;
       const label = textInput(T('What is it? (for example, Licence renewal)')); label.maxLength = 40; label.setAttribute('aria-label', T('Reminder name'));
       const due = el('input', 'field-i'); due.type = 'date'; due.min = todayIso(); due.setAttribute('aria-label', T('Date'));
@@ -600,43 +615,58 @@
       const alerts = alertPicker([30, 7, 0]);
       const chips = el('div', 'chipbox rm-presets');
       const hint = el('small', 'fld-h', '');
-      for (const p of PRESETS()) chips.append(btn('gchip', p.name, () => { label.value = p.label || p.name; if (p.due) due.value = p.due; yr.input.checked = Boolean(p.repeat); hint.textContent = p.hint || ''; (p.due ? nt : due).focus(); }));
+      const presetBtns = [];
+      for (const p of PRESETS()) {
+        const b = btn('gchip', p.name, null); b.type = 'button'; b.setAttribute('aria-pressed', 'false'); presetBtns.push(b);
+        b.onclick = () => {
+          const was = b.getAttribute('aria-pressed') === 'true';
+          for (const x of presetBtns) x.setAttribute('aria-pressed', 'false');
+          b.setAttribute('aria-pressed', String(!was));
+          // Picking a preset fills in its name (and date, if it has a fixed one); picking it again clears it.
+          label.value = was ? '' : (p.label || p.name);
+          if (p.due && !was) due.value = p.due;
+          yr.input.checked = !was && Boolean(p.repeat);
+          hint.textContent = was ? '' : (p.hint || '');
+        };
+        chips.append(b);
+      }
       const er = errBox();
       const go = btn('btn pri xl', T('Add reminder'), null); go.type = 'submit';
       const dl = field(T('Date'), due);
       form.append(el('span', 'fld-l', T('Quick start')), chips, field(T('Name'), label), dl, hint, field(T('Note'), nt), yr,
-        el('span', 'fld-l', T('When to remind you')), alerts.el,
-        el('p', 'rm-explain', T('Saathi counts down to this date and shows it here.')), er, go);
+        el('span', 'fld-l', T('When to remind you')), alerts.el, er, go);
       form.onsubmit = (e) => { e.preventDefault(); busyBtn(go, async () => {
         er.hide();
         const r = await tcall('reminders.add', { label: label.value, due: due.value, note: nt.value, repeat: yr.input.checked ? 'yearly' : '', alerts: alerts.get() });
         if (!r.ok) return er.show(errText(r.error));
         st = r.data; addOpen = false; draw(); toast(T('Reminder set'));
       }); };
-      c.append(form);
+      inner.append(form);
+      c.append(head, panel);
       return c;
     };
 
     const itemCard = (r) => {
       const open = openId === r.id;
-      const w = el('div', 'rm-item' + (open ? ' open' : '') + (r.left < 0 ? ' late' : ''));
+      const w = el('div', 'rm-item' + (r.left < 0 ? ' late' : ''));
+      w.classList.toggle('open', open);
       const head = el('button', 'rm-head'); head.type = 'button'; head.setAttribute('aria-expanded', String(open));
       const ic = el('span', 'rm-ic'); ic.append(ico(r.repeat ? 'refresh' : 'bell', 18));
       const tx = el('span', 'rm-tx'); tx.append(el('b', '', r.label), el('small', '', fmtIso(r.due) + (r.note ? ' · ' + r.note : '')));
       const right = el('span', 'rm-right'); right.append(el('span', 'tag ' + (r.left < 0 ? 'bad' : r.left <= 7 ? 'warn' : ''), whenText(r.left)));
       if (r.repeat) right.append(el('span', 'tag', T('Yearly')));
       // Selected notices, shown on the row when not all three are on.
-      if (r.alerts && r.alerts.length < 3) right.append(el('span', 'tag', r.alerts.map((m) => (m ? T('{n} days', { n: m }) : T('On the day'))).join(' · ')));
+      if (r.alerts && r.alerts.length) right.append(el('span', 'tag', r.alerts.map((m) => (m ? T('{n} days', { n: m }) : T('On the day'))).join(' · ')));
       const chev = ico('chev', 18); chev.classList.add('rm-chev'); right.append(chev);
       head.append(ic, tx, right);
+      const panel = el('div', 'rm-collapse'); const inner = el('div', 'rm-collapse-in'); panel.append(inner); panel.inert = !open;
+      // One reminder open at a time; opening another closes the first in place.
       head.onclick = () => {
-        if (!open) { openId = r.id; draw(); return; }
-        // Close with motion: play the exit, then redraw the list with nothing open.
-        w.classList.add('closing');
-        setTimeout(() => { if (openId === r.id) { openId = null; draw(); } }, 200);
+        const now = !w.classList.contains('open');
+        for (const o of document.querySelectorAll('.rm-item.open')) if (o !== w) { o.classList.remove('open'); o.querySelector('.rm-head')?.setAttribute('aria-expanded', 'false'); const pn = o.querySelector('.rm-collapse'); if (pn) pn.inert = true; }
+        w.classList.toggle('open', now); head.setAttribute('aria-expanded', String(now)); panel.inert = !now;
+        openId = now ? r.id : null;
       };
-      w.append(head);
-      if (!open) return w;
       const body = el('div', 'rm-body');
       const label = textInput('', r.label); label.maxLength = 40;
       const due = el('input', 'field-i'); due.type = 'date'; due.value = r.due;
@@ -659,7 +689,8 @@
       acts.append(done, save, cal, del);
       body.append(er, acts);
       if (r.repeat) body.append(el('small', 'mut', T('Marking it done moves it to {date}.', { date: fmtIso(nextYearIso(r.due)) })));
-      w.append(body);
+      inner.append(body);
+      w.append(head, panel);
       return w;
     };
 
@@ -720,14 +751,18 @@
     const holder = el('div', 'ap-wrap'); col.append(holder);
     const ex = await loadExtras(); let apps = ex.apps.slice();
     let filter = 'all';
-    const persist = async () => { const r = await saveExtras({ apps }); if (!r.ok) toast(errText(r.error)); else apps = r.data.apps; return r.ok; };
+    // keepLocal: the page already shows the change, so take nothing back from the server and redraw nothing.
+    const persist = async (keepLocal = false) => { const r = await saveExtras({ apps }); if (!r.ok) toast(errText(r.error)); else if (!keepLocal) apps = r.data.apps; return r.ok; };
     const d = await U.loadServices();
     const isDone = (a) => a.status === 'done';
     const sinceOf = (a) => (a.date && /^\d{4}-\d{2}-\d{2}$/.test(a.date) ? -dayDiff(a.date) : null);
-    const setStatus = async (a, id) => {
+    // A stage tapped: the line glides to it and its tick draws in. The rest of the page stays as it is.
+    const setStatus = async (a, id, card) => {
       if (a.status === id) return;
+      const from = statusIdx(a.status);
       a.status = id; a.hist = [...(a.hist || []), { s: id, ts: Date.now() }].slice(-8);
-      await persist(); draw();
+      card?._advance(from, statusIdx(id));
+      await persist(true);
     };
     const remind = (a, b) => busyBtn(b, async () => {
       const r = await tcall('reminders.add', { label: T('Check {title}', { title: a.title }).slice(0, 40), due: addDaysIso(todayIso(), 7) });
@@ -735,36 +770,28 @@
     });
 
     function appCard(a) {
-      const c = el('article', 'ap-card' + (isDone(a) ? ' fin' : ''));
+      const c = el('article', 'ap-card');
       const head = el('div', 'ap-head'); const ic = el('span', 'lk-ic'); ic.append(ico((svcById(a.svc) || [0, 0, 'doc'])[2], 22));
       const tt = el('div', 'lk-t'); tt.append(el('b', '', a.title || T('Application')));
       const sub = el('div', 'ap-sub');
       if (a.ref) { const rc = btn('ap-ref', '', function () { C.copyText(a.ref, this); }); rc.setAttribute('aria-label', T('Copy reference number')); rc.append(el('span', '', T('Ref: {ref}', { ref: a.ref })), ico('copy', 14)); sub.append(rc); }
       else sub.append(el('small', 'mut', T('No reference number yet')));
       tt.append(sub); head.append(ic, tt);
-      const tag = el('span', 'tag ap-pill' + (isDone(a) ? ' on' : ''), statusName(a.status)); head.append(tag);
+      const tag = el('span', 'tag ap-pill'); head.append(tag);
       c.append(head);
 
-      const idx = statusIdx(a.status);
       const tl = el('div', 'ap-tl'); tl.setAttribute('role', 'group'); tl.setAttribute('aria-label', T('Status'));
-      STATUS.forEach(([id], i) => {
-        const h = [...(a.hist || [])].reverse().find((x) => x.s === id);
-        const b = btn('ap-stage' + (i < idx ? ' past' : '') + (i === idx ? ' cur' : ''), '', () => setStatus(a, id));
-        b.setAttribute('aria-pressed', String(i === idx));
-        const dot = el('span', 'ap-dot'); if (i <= idx) dot.append(ico('check', 12));
-        b.append(dot, el('span', 'ap-sl', statusName(id)), el('small', 'ap-sd', h && i <= idx ? shortDate(h.ts) : ''));
-        tl.append(b);
+      const fill = el('span', 'ap-fill'); tl.append(fill);
+      const stages = STATUS.map(([id, name]) => {
+        const b = btn('ap-stage', '', () => setStatus(a, id, card));
+        const dot = el('span', 'ap-dot'); const sl = el('span', 'ap-sl', statusName(id)); const sd = el('small', 'ap-sd');
+        b.append(dot, sl, sd); tl.append(b);
+        return { b, dot, sd, id };
       });
       c.append(tl);
 
-      const meta = el('div', 'ap-meta'); const since = sinceOf(a);
-      if (a.date && idx > 0) meta.append(el('span', '', T('Applied {when}', { when: whenText(-since).toLowerCase() })));
-      if (!isDone(a) && idx > 0 && since !== null && since > 14) meta.append(el('span', 'tag warn', T('Waiting {n} days', { n: since })));
-      if (a.due && !isDone(a)) { const n = dayDiff(a.due); meta.append(el('span', n < 0 ? 'tag bad' : 'mut', T('Expected by {date}', { date: fmtIso(a.due) }) + ' · ' + whenText(n).toLowerCase())); }
-      if (meta.childNodes.length) c.append(meta);
-
-      const hint = el('div', 'ap-next'); hint.append(el('b', '', T('Next step')), el('span', '', hintFor(a.svc, a.status)));
-      c.append(hint);
+      const meta = el('div', 'ap-meta'); c.append(meta);
+      const hint = el('div', 'ap-next'); const hintTx = el('span', ''); hint.append(el('b', '', T('Next step')), hintTx); c.append(hint);
       if (a.note) c.append(el('p', 'mut small ap-note', a.note));
 
       const acts = el('div', 'lk-acts');
@@ -772,26 +799,92 @@
       if (site) { const l = el('a', 'btn sm', T('Official site')); l.href = C.fixUrl(site) || site; l.target = '_blank'; l.rel = 'noopener noreferrer'; acts.append(l); }
       if (!isDone(a)) { const rb = btn('btn sm', '', () => remind(a, rb)); rb.append(ico('bell', 15), el('span', '', T('Remind me to check'))); acts.append(rb); }
       acts.append(btn('btn sm', T('Edit'), () => openForm(a)), btn('btn sm danger', T('Delete'), () => showDialog({ title: T('Delete this?'), body: a.title, actions: [btn('btn', T('Cancel'), closeDialog), btn('btn danger', T('Delete'), async () => { closeDialog(); apps = apps.filter((x) => x !== a); await persist(); draw(); })] })));
+
+      const centre = (i) => { const r = stages[i].dot.getBoundingClientRect(); return r.left + r.width / 2 - tl.getBoundingClientRect().left; };
+      const placeFill = (idx) => { const x0 = centre(0); fill.style.transform = `translateX(${x0}px)`; fill.style.width = Math.max(0, centre(idx) - x0) + 'px'; };
+      // Paints only what changes: classes, dates, the line and the text under it.
+      const paint = () => {
+        const idx = statusIdx(a.status);
+        c.classList.toggle('fin', isDone(a));
+        tag.textContent = statusName(a.status); tag.classList.toggle('on', isDone(a));
+        stages.forEach(({ b, dot, sd, id }, i) => {
+          b.classList.toggle('past', i < idx); b.classList.toggle('cur', i === idx);
+          b.setAttribute('aria-pressed', String(i === idx));
+          const h = [...(a.hist || [])].reverse().find((x) => x.s === id);
+          sd.textContent = h && i <= idx ? shortDate(h.ts) : '';
+          if (i <= idx && !dot.firstChild) dot.append(ico('check', 12));
+          if (i > idx) dot.replaceChildren();
+        });
+        meta.replaceChildren();
+        const since = sinceOf(a);
+        if (a.date && idx > 0) meta.append(el('span', '', T('Applied {when}', { when: whenText(-since).toLowerCase() })));
+        if (!isDone(a) && idx > 0 && since !== null && since > 14) meta.append(el('span', 'tag warn', T('Waiting {n} days', { n: since })));
+        if (a.due && !isDone(a)) { const n = dayDiff(a.due); meta.append(el('span', n < 0 ? 'tag bad' : 'mut', T('Expected by {date}', { date: fmtIso(a.due) }) + ' · ' + whenText(n).toLowerCase())); }
+        hintTx.textContent = hintFor(a.svc, a.status);
+        placeFill(idx);
+      };
+      // The line glides from the old stage to the new one, then the tick draws in on the new stage.
+      const advance = (from, to) => {
+        const idx = to;
+        c.classList.toggle('fin', isDone(a));
+        tag.textContent = statusName(a.status); tag.classList.toggle('on', isDone(a));
+        const x0 = centre(0);
+        fill.style.transition = 'none'; fill.style.transform = `translateX(${x0}px)`; fill.style.width = Math.max(0, centre(from) - x0) + 'px'; void fill.offsetWidth; fill.style.transition = '';
+        stages.forEach(({ b, dot, sd, id }, i) => {
+          b.classList.toggle('past', i < idx); b.classList.toggle('cur', i === idx);
+          b.setAttribute('aria-pressed', String(i === idx));
+          const h = [...(a.hist || [])].reverse().find((x) => x.s === id);
+          sd.textContent = h && i <= idx ? shortDate(h.ts) : '';
+          if (i > idx) dot.replaceChildren();
+          else if (!dot.firstChild) dot.append(ico('check', 12));
+        });
+        const newStage = stages[idx].b; newStage.classList.add('just');
+        setTimeout(() => newStage.classList.remove('just'), 1100);
+        fill.style.width = Math.max(0, centre(idx) - x0) + 'px';
+        meta.replaceChildren();
+        const since = sinceOf(a);
+        if (a.date && idx > 0) meta.append(el('span', '', T('Applied {when}', { when: whenText(-since).toLowerCase() })));
+        if (!isDone(a) && idx > 0 && since !== null && since > 14) meta.append(el('span', 'tag warn', T('Waiting {n} days', { n: since })));
+        if (a.due && !isDone(a)) { const n = dayDiff(a.due); meta.append(el('span', n < 0 ? 'tag bad' : 'mut', T('Expected by {date}', { date: fmtIso(a.due) }) + ' · ' + whenText(n).toLowerCase())); }
+        hintTx.textContent = hintFor(a.svc, a.status);
+      };
       c.append(acts);
+      const card = { el: c, _paint: paint, _advance: advance };
+      c._card = card;
+      paint();
+      requestAnimationFrame(() => paint());
       return c;
     }
 
+    let tabsEl = null; let gridEl = null; let emptyEl = null;
+    const listOf = () => { const active = apps.filter((a) => !isDone(a)); const fin = apps.filter(isDone); return filter === 'active' ? active : filter === 'done' ? fin : [...active, ...fin]; };
+    // Switching All / Active / Done only swaps the list under the tabs. The page itself stays put.
+    const drawList = () => {
+      if (!gridEl) return draw();
+      for (const b of tabsEl.querySelectorAll('.ap-tab')) b.setAttribute('aria-selected', String(b.dataset.f === filter));
+      const list = listOf();
+      if (emptyEl) { emptyEl.remove(); emptyEl = null; }
+      if (!list.length) { emptyEl = empty('apps', T('Nothing here'), T('No applications in this list.')); gridEl.before(emptyEl); }
+      gridEl.replaceChildren(...list.map(appCard));
+      gridEl.classList.remove('swap'); void gridEl.offsetWidth; gridEl.classList.add('swap');
+    };
     const draw = () => {
-      holder.replaceChildren();
+      holder.replaceChildren(); tabsEl = null; gridEl = null; emptyEl = null;
       const active = apps.filter((a) => !isDone(a)); const fin = apps.filter(isDone);
       holder.append(btn('btn pri xl', T('Track an application'), () => openForm()));
       if (apps.length) {
         const tabs = el('div', 'ap-tabs'); tabs.setAttribute('role', 'tablist');
         for (const [id, name, n] of [['all', T('All'), apps.length], ['active', T('Active'), active.length], ['done', T('Done'), fin.length]]) {
-          const b = btn('ap-tab', '', () => { filter = id; draw(); }); b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', String(filter === id));
+          const b = btn('ap-tab', '', () => { if (filter === id) return; filter = id; drawList(); }); b.dataset.f = id; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', String(filter === id));
           b.append(el('span', '', name), el('i', '', String(n))); tabs.append(b);
         }
-        holder.append(tabs);
+        holder.append(tabs); tabsEl = tabs;
       }
-      const list = (filter === 'active' ? active : filter === 'done' ? fin : [...active, ...fin]);
+      const list = listOf();
       if (!apps.length) holder.append(empty('apps', T('Nothing tracked yet'), T('Add an application to keep its reference number and status in one place.')));
       else if (!list.length) holder.append(empty('apps', T('Nothing here'), T('No applications in this list.')));
       const grid = el('div', 'ap-grid'); for (const a of list) grid.append(appCard(a)); holder.append(grid);
+      gridEl = grid;
     };
 
     function openForm(a) {

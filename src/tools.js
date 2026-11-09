@@ -4,7 +4,7 @@
 import { TYPES, TYPE_IDS, normNumber, normExpiry, showNumber, maskNumber, daysLeft, fmtDate } from './locker.js';
 import { findState, STATE_NAMES } from './states.js';
 import { FIELDS, GENDER, normAll, fromExtraction } from './profile.js';
-import { makeReminder, parseFutureDate, MAX_REMINDERS, MILESTONES, pickAlerts, daysUntil, rollReminder, rollYearly } from './reminders.js';
+import { makeReminder, parseFutureDate, MAX_REMINDERS, MILESTONES, pickAlerts, sameAsDefault, daysUntil, rollReminder, rollYearly } from './reminders.js';
 import { SERVICES } from './services.js';
 import { charge, refund, grantTrial } from './billing.js';
 import { ToolError } from './errors.js';
@@ -290,8 +290,8 @@ export function createTools({ store, vault, llm, guard, config }) {
         // Same date: keep the notices already sent. A notice switched on now counts from today, so one already passed is not sent late.
         const left = daysUntil(r.due);
         const sent = { ...r.sent };
-        for (const m of MILESTONES) sent[m] = !alerts.includes(m) || (prevOn.includes(m) ? Boolean(r.sent[m]) : left < m);
-        next = { ...r, label, note: note || undefined, repeat: repeat || undefined, sent, alerts: alerts.length < MILESTONES.length ? alerts : undefined };
+        for (const m of new Set([...MILESTONES, ...prevOn, ...alerts])) sent[m] = !alerts.includes(m) || (prevOn.includes(m) ? Boolean(r.sent[m]) : left < m);
+        next = { ...r, label, note: note || undefined, repeat: repeat || undefined, sent, alerts: sameAsDefault(alerts) ? undefined : alerts };
       }
       if (!next.note) delete next.note;
       if (!next.repeat) delete next.repeat;

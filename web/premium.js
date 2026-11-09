@@ -17,7 +17,7 @@
         const p = pending; pending = null;
         if (performance.now() - p.t > 1500) continue;
         const b = n.querySelector('.bubble-me');
-        if (!b || !b.animate || matchMedia('(prefers-reduced-motion: reduce)').matches) continue;
+        if (!b || !b.animate) continue;
         const br = b.getBoundingClientRect();
         if (!br.width) continue;
         const dx = (p.r.left + p.r.width / 2) - (br.left + br.width / 2);

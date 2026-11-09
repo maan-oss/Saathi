@@ -121,6 +121,21 @@ export function createLlm(config) {
     },
 
     /**
+     * Looks at one photo and answers the person's question about it. Never cached: every photo is private.
+     */
+    async answerImage(buffer, mime, question, system) {
+      const r = await call({
+        system,
+        maxTokens: 500,
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: mime || 'image/jpeg', data: buffer.toString('base64') } },
+          { type: 'text', text: question },
+        ],
+      });
+      return { ...r, text: tidyAnswer(r.text) };
+    },
+
+    /**
      * Translates a batch of texts. items = [{ k, en, max? }]. Returns { map: {k: text}, usage }.
      * The caller validates every result (placeholders, bold markers, length) before trusting it.
      */
