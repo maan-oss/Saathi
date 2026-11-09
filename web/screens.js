@@ -213,6 +213,7 @@
   let colObs = null;
   let frameOf = null; // the page the frame on screen was built for
   let inPlace = false; // true while a page redraws its own content (a tab, a person, a filter)
+  let calmUntil = 0; // until this time, content that lands is part of a same-page swap and does not rise on its own
   function frame(title, sub) {
     const cur = stack[stack.length - 1];
     // Same page, new content: keep the header and back button where they are, and only swap the content.
@@ -240,8 +241,10 @@
       let i = 0;
       for (const m of muts) for (const n of m.addedNodes) {
         if (!(n instanceof Element) || n.classList.contains('sc-big') || n.classList.contains('rise')) continue;
+        if (performance.now() < calmUntil) continue;
         // The sliding tab line is positioned by script; a rise animation would pin its transform.
-        if (n.classList.contains('tab-line') || n.parentElement?.closest('.g-tabs, .seg')) continue;
+        // A form that swaps in place (a person, a tab) has its own motion on the wrapper, so its contents do not rise one by one.
+        if (n.classList.contains('tab-line') || n.parentElement?.closest('.g-tabs, .seg, .g-pane, .dt-wrap, .dt-people')) continue;
         n.classList.add('rise'); n.style.setProperty('--d', Math.min(i++, 12) * 40 + 'ms');
       }
     });
@@ -252,7 +255,11 @@
   }
   function openScreen(name, params = {}) {
     closeSidebar();
-    stack.push({ name, params });
+    // A page of the same kind (one service for another) takes the place of the open one, so the back arrow
+    // always returns to the page you came from, not through every service you looked at.
+    const top = stack[stack.length - 1];
+    if (top && top.name === name) top.params = params;
+    else stack.push({ name, params });
     if (stack.length === 1) { try { history.pushState({ saathi: 1 }, ''); } catch { /* fine */ } }
     render();
     screen.hidden = false; requestAnimationFrame(() => screen.classList.add('on'));
@@ -275,6 +282,10 @@
     if (params) cur.params = { ...cur.params, ...params };
     inPlace = true;
     try { render(); } finally { inPlace = false; }
+    // The new content rises in as one block (the page fades and slides up), not item by item.
+    calmUntil = performance.now() + 900;
+    const col = screen.querySelector('.sc-col');
+    if (col) { col.classList.remove('sw-in'); void col.offsetWidth; col.classList.add('sw-in'); }
   }
   function goBack() { stack.pop(); if (stack.length) render(); else hideScreen(); }
   function hideScreen() { screen.classList.remove('on'); document.body.classList.remove('screen-open'); markActive(null); setTimeout(() => { if (!stack.length) { screen.hidden = true; screen.replaceChildren(); } }, 480); }
@@ -484,10 +495,9 @@
 
   // Counts the balance up like a win on a machine: quick steps that slow down, each step flashes, then it lands.
   function countUp(node, from, to, onStep, ms = 1900) {
-    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const t0 = performance.now(); let last = null;
     const tick = (now) => {
-      const t = reduce ? 1 : Math.min(1, (now - t0) / ms);
+      const t = Math.min(1, (now - t0) / ms);
       const e = 1 - Math.pow(1 - t, 4);
       const v = t >= 1 ? to : Math.round((from + (to - from) * e) / 100) * 100;
       if (v !== last) {
@@ -1129,7 +1139,7 @@
     try { sessionStorage.removeItem('saathi.open'); } catch { /* private mode */ }
     openScreen('service', { id });
   };
-  C.ui = { STATE_LIST, frame, row, group, seg, tabLine, redraw, note, empty, btn, ico, SCREENS, openScreen, goBack, closeAll, showDialog, closeDialog, refreshMe, rupee, fmtDate, chatDo, startServiceChat, loadServices, svcMeta, SERVICES, packName };
+  C.ui = { STATE_LIST, frame, row, group, seg, tabLine, redraw, calm: (ms = 900) => { calmUntil = performance.now() + ms; }, note, empty, btn, ico, SCREENS, openScreen, goBack, closeAll, showDialog, closeDialog, refreshMe, rupee, fmtDate, chatDo, startServiceChat, loadServices, svcMeta, SERVICES, packName };
   buildSidebar();
   C.rebuild = buildSidebar;
   C.openScreen = openScreen;

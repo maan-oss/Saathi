@@ -366,7 +366,7 @@
   }
 
   function addMe(content, rec) {
-    const m = el('div', 'msg me');
+    const m = el('div', 'msg me sent');
     const b = el('div', 'bubble-me');
     if (typeof content === 'string') b.textContent = content;
     else b.append(content);
@@ -592,6 +592,8 @@
     if (shown !== null) {
       if (thumb) addMe(thumb, { who: 'me', text: shown });
       else addMe(shown ?? payload.text, { who: 'me', text: shown ?? payload.text });
+      // The message lands in the thread first; it only goes to Saathi once it is there.
+      await new Promise((r) => setTimeout(r, 420));
     }
     const tp = typing();
     const slow = setTimeout(() => { const n = el('div', 'typing-note', T('Still working on it…')); tp.querySelector('.body').append(n); }, 6000);
@@ -653,11 +655,10 @@
   const openPop = () => { clearTimeout(popTimer); pop.classList.remove('closing'); pop.hidden = false; attachBtn.setAttribute('aria-expanded', 'true'); };
   const closePop = () => {
     attachBtn.setAttribute('aria-expanded', 'false');
-    if (pop.hidden || pop.classList.contains('closing')) return;
-    pop.classList.add('closing');
-    popTimer = setTimeout(() => { if (!pop.classList.contains('closing')) return; pop.hidden = true; pop.classList.remove('closing'); }, 200);
+    if (pop.hidden) return;
+    clearTimeout(popTimer); pop.classList.remove('closing'); pop.hidden = true;
   };
-  attachBtn.onclick = (e) => { e.stopPropagation(); if (pop.hidden || pop.classList.contains('closing')) openPop(); else closePop(); };
+  attachBtn.onclick = (e) => { e.stopPropagation(); if (pop.hidden) openPop(); else closePop(); };
   document.addEventListener('click', (e) => { if (!pop.contains(e.target)) closePop(); });
   $('pickFile').onclick = () => { closePop(); $('fileInput').click(); };
   $('pickCamera').onclick = () => { closePop(); $('cameraInput').click(); };
@@ -1135,10 +1136,9 @@
 // ---- small motion helpers shared by every screen -------------------------------------------------------------------
 // 1) <details> opens and closes with a real height animation. 2) Scrolling lists fade at the edge that has more to see.
 (() => {
-  const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   document.addEventListener('click', (e) => {
     const sum = e.target.closest && e.target.closest('summary'); const d = sum && sum.parentElement;
-    if (!d || d.tagName !== 'DETAILS' || reduce() || !d.animate) return;
+    if (!d || d.tagName !== 'DETAILS' || !d.animate) return;
     e.preventDefault();
     if (d._anim) { d._anim.cancel(); d._anim = null; }
     const startH = d.offsetHeight; d.style.overflow = 'hidden';

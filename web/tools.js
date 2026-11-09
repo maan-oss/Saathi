@@ -462,10 +462,8 @@
     col.classList.add('wide-col');
     const people = el('div', 'dt-people');
     const holder = el('div', 'dt-wrap'); col.append(people, holder);
-    const [r, pr] = await Promise.all([tcall('details.get'), tcall('people.list')]);
-    if (pr.ok) drawPeople(people, pr.data.people, () => redraw({}));
-    if (!r.ok) { holder.append(empty('user', T('Could not load'), errText(r.error))); return; }
-    let data = r.data; let ready = {};
+    let data = null; let ready = {};
+    let gen = 0;
     const inputs = {};
     const liveText = (f) => { const v = inputs[f.key]?.value ?? f.value; return f.type === 'choice' ? (f.options.find((o) => o.id === v) ? optionLabel(f.options.find((o) => o.id === v)) : '') : String(v || '').trim(); };
     const loadReady = async () => {}; // the 'Ready for' list was removed from this screen
@@ -526,7 +524,22 @@
       holder.append(form);
       holder.append(note(T('Stored encrypted. Never sent to the AI. Delete it any time in Settings.'), 'lock'));
     };
-    draw(); loadReady();
+    // Loads the person in view. Switching people fades the form out and back in; the page, its header and the bar stay where they are.
+    const load = async (switching) => {
+      const my = ++gen;
+      if (switching) {
+        holder.classList.remove('rise', 'dt-enter'); holder.classList.add('dt-leave');
+        await new Promise((res) => setTimeout(res, 170));
+      }
+      const [r, pr] = await Promise.all([tcall('details.get'), tcall('people.list')]);
+      if (my !== gen) return;
+      if (pr.ok) drawPeople(people, pr.data.people, () => load(true));
+      holder.classList.remove('rise', 'dt-leave'); holder.classList.add('dt-enter');
+      if (!r.ok) { holder.replaceChildren(empty('user', T('Could not load'), errText(r.error))); return; }
+      data = r.data; for (const k of Object.keys(inputs)) delete inputs[k];
+      draw(); loadReady();
+    };
+    load(false);
   };
 
   // ---- reminders ---------------------------------------------------------------------------------------------
@@ -713,12 +726,7 @@
           g.append(h, box); holder.append(g);
         }
       }
-      const nb = el('section', 'rm-notice');
-      nb.append(el('b', '', T('How you get notified')));
-      const pills = el('div', 'rm-pills'); for (const t of [T('30 days before'), T('7 days before'), T('On the day')]) pills.append(el('span', 'rm-pill', t)); nb.append(pills);
-      holder.append(nb);
-      if (st.wa) holder.append(note(T('Reminders also arrive on your WhatsApp: 30 days before, 7 days before and on the day.'), 'wa'));
-      else if (C.cfg?.link && C.cfg?.whatsapp) { const n = note(T('Get these on WhatsApp too. Connect your phone in Devices and sync.'), 'wa'); n.classList.add('tap'); n.onclick = () => openScreen('devices'); holder.append(n); }
+      if (!st.wa && C.cfg?.link && C.cfg?.whatsapp) { const n = note(T('Get these on WhatsApp too. Connect your phone in Devices and sync.'), 'wa'); n.classList.add('tap'); n.onclick = () => openScreen('devices'); holder.append(n); }
     };
     const [a, b] = await Promise.all([tcall('reminders.list'), tcall('locker.list')]);
     if (a.ok) st = a.data; if (b.ok) docs = b.data.docs;
@@ -761,6 +769,7 @@
       if (a.status === id) return;
       const from = statusIdx(a.status);
       a.status = id; a.hist = [...(a.hist || []), { s: id, ts: Date.now() }].slice(-8);
+      U.calm(1000); // only the line and the tick move; the rest of the card does not rise again
       card?._advance(from, statusIdx(id));
       await persist(true);
     };
