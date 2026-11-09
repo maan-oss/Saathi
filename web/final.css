@@ -78,16 +78,6 @@
 @keyframes riseIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 :root[data-style] #screen.swap .sc-col > * { animation: none; }
 :root[data-style] #screen .rise { animation: riseIn .48s cubic-bezier(.2, .8, .2, 1) both !important; animation-delay: var(--d, 0ms) !important; }
-/* While data is on its way, a soft placeholder shows where the content will be. */
-.sk-wrap { display: grid; gap: 12px; padding: 4px 0; }
-.sk-wrap i {
-  display: block; height: 68px; border-radius: 24px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, .42) 0%, rgba(255, 255, 255, .82) 50%, rgba(255, 255, 255, .42) 100%) 0 0 / 220% 100%;
-  animation: skShim 1.3s linear infinite;
-}
-.sk-wrap i:nth-child(2) { height: 124px; }
-.sk-wrap i:nth-child(3) { height: 52px; width: 62%; }
-@keyframes skShim { to { background-position: -220% 0; } }
 /* Top of a page: a close (X) on the right for a page you opened, a back arrow on the left for one you went deeper into. */
 :root[data-style] .sc-head .sc-x-r { margin-left: auto; order: 3; }
 :root[data-style] .sc-head .sc-small { order: 2; flex: 1; }
@@ -307,13 +297,6 @@
 @keyframes pageIn { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
 :root[data-style] #screen.on { animation: pageIn .42s cubic-bezier(.2, .8, .2, 1) both !important; }
 :root[data-style] #screen.swap .sc-col > * { animation: none !important; }
-
-/* Loading: the placeholders appear top to bottom, together, and shimmer in step. */
-@keyframes skIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-.sk-wrap i { animation: skIn .5s cubic-bezier(.2, .8, .2, 1) both, skShim 1.3s linear infinite; animation-delay: calc(var(--k, 0) * 110ms), 0s; }
-.sk-wrap i:nth-child(1) { --k: 0; }
-.sk-wrap i:nth-child(2) { --k: 1; }
-.sk-wrap i:nth-child(3) { --k: 2; }
 
 /* ---- Round 3: photos. Waiting above the text box, a photo borderless in the thread, and a large view that blurs the rest ---- */
 :root[data-style] .att-tray[hidden] { display: none !important; }

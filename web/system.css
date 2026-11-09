@@ -1,0 +1,112 @@
+/* ==========================================================================
+   System: the last word on tabs, buttons, loaders and the motion around them.
+   Loaded after every other stylesheet. Older rules for these parts still exist
+   underneath, but everything here wins, so change them here, not in those files.
+   The selectors use data-style="sky" to match the one look the app runs in.
+   ========================================================================== */
+
+:root[data-style="sky"] {
+  --sys-ease: cubic-bezier(.2, .8, .2, 1);
+  --sys-press: scale(.97);
+}
+
+/* ---- Tabs: a soft track, one white pill that glides under the chosen tab, no underline ---- */
+:root[data-style="sky"] .seg,
+:root[data-style="sky"] .g-tabs {
+  position: relative !important; display: flex !important; gap: 2px !important; align-items: stretch !important;
+  padding: 4px !important; border: 0 !important; border-radius: 999px !important;
+  background: rgba(29, 29, 31, .09) !important; box-shadow: none !important;
+  overflow-x: auto; scrollbar-width: none;
+}
+:root[data-style="sky"] .seg::-webkit-scrollbar,
+:root[data-style="sky"] .g-tabs::-webkit-scrollbar { display: none; }
+:root[data-style="sky"] .seg button,
+:root[data-style="sky"] .g-tab {
+  position: relative; z-index: 1; flex: 1 1 0; min-width: max-content; min-height: 42px;
+  margin: 0 !important; padding: 9px 16px !important; border: 0 !important; border-radius: 999px !important;
+  background: transparent !important; box-shadow: none !important; color: #3a3f4d !important;
+  font: 550 15px/1.2 var(--sans); text-align: center;
+  transition: color .22s ease, background-color .22s ease !important;
+}
+:root[data-style="sky"] .seg button::after,
+:root[data-style="sky"] .g-tab::after { content: none !important; display: none !important; }
+:root[data-style="sky"] .g-tab small { display: none; }
+:root[data-style="sky"] .seg button[aria-pressed="true"],
+:root[data-style="sky"] .g-tab[aria-selected="true"] { color: #1d1d1f !important; font-weight: 650 !important; }
+/* The white pill. tabLine() in screens.js moves it with translateX and width; it sits behind the labels. */
+:root[data-style="sky"] .tab-line {
+  position: absolute !important; top: 4px !important; bottom: 4px !important; left: 0 !important;
+  height: auto !important; width: 0; border-radius: 999px !important; background: #fff !important;
+  box-shadow: 0 1px 2px rgba(10, 20, 40, .10), 0 4px 14px rgba(10, 20, 40, .14) !important;
+  z-index: 0; pointer-events: none !important; animation: none !important;
+  transform: translateX(0); transition: transform .42s var(--sys-ease), width .42s var(--sys-ease), opacity .2s ease !important;
+}
+:root[data-style="sky"] :is(.seg button, .g-tab):focus-visible { outline: 2px solid #1d1d1f; outline-offset: -3px; }
+@media (hover: hover) {
+  :root[data-style="sky"] .seg button:not([aria-pressed="true"]):hover,
+  :root[data-style="sky"] .g-tab:not([aria-selected="true"]):hover { background: rgba(29, 29, 31, .07) !important; color: #1d1d1f !important; }
+}
+
+/* ---- Buttons: one family. White pills by default, one black pill for the main action ---- */
+:root[data-style="sky"] .btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 46px; padding: 0 20px; border: 0 !important; border-radius: 999px !important;
+  background: #fff !important; color: #1d1d1f !important; font: 600 15px/1.2 var(--sans); text-decoration: none;
+  box-shadow: 0 1px 2px rgba(10, 20, 40, .08), 0 4px 12px rgba(10, 20, 40, .10) !important; cursor: pointer;
+  transition: background-color .2s ease, color .2s ease, box-shadow .22s ease, transform .18s var(--sys-ease), opacity .2s ease !important;
+}
+:root[data-style="sky"] .btn.pri,
+:root[data-style="sky"] .btn.xl,
+:root[data-style="sky"] .lk-acts .btn.pri,
+:root[data-style="sky"] .rm-acts .btn.pri {
+  background: #1d1d1f !important; color: #fff !important; box-shadow: 0 6px 18px rgba(10, 20, 40, .24) !important;
+}
+:root[data-style="sky"] .btn.xl { min-height: 56px; font-size: 16.5px; }
+:root[data-style="sky"] .btn.sm { min-height: 38px; padding: 0 14px; font-size: 14px; }
+:root[data-style="sky"] .btn.ghost { background: transparent !important; box-shadow: none !important; color: #1d1d1f !important; }
+:root[data-style="sky"] .btn.danger { color: #b3261e !important; }
+:root[data-style="sky"] .btn:active { transform: var(--sys-press) !important; }
+:root[data-style="sky"] .btn.pri:active,
+:root[data-style="sky"] .btn.xl:active { background: #000 !important; }
+:root[data-style="sky"] .btn:focus-visible { outline: 2px solid #1d1d1f; outline-offset: 3px; }
+:root[data-style="sky"] .btn:disabled,
+:root[data-style="sky"] .btn[aria-disabled="true"] { opacity: .45 !important; transform: none !important; box-shadow: none !important; cursor: default; }
+@media (hover: hover) {
+  :root[data-style="sky"] .btn:not(.pri):not(.xl):not(.ghost):not(.danger):hover { box-shadow: 0 8px 20px rgba(10, 20, 40, .16) !important; transform: translateY(-1px) !important; }
+  :root[data-style="sky"] .btn.pri:hover,
+  :root[data-style="sky"] .btn.xl:hover { background: #33333a !important; box-shadow: 0 10px 24px rgba(10, 20, 40, .28) !important; transform: translateY(-1px) !important; }
+  :root[data-style="sky"] .btn.ghost:hover { background: rgba(255, 255, 255, .3) !important; }
+  :root[data-style="sky"] .btn.danger:hover { background: #fdecea !important; color: #b3261e !important; }
+}
+
+/* Round buttons in the header (close, back): one glass circle with a dark icon. */
+:root[data-style="sky"] :is(.sc-head, .top) .icon-btn,
+:root[data-style="sky"] .sc-head .sc-back {
+  width: 46px; height: 46px; padding: 0; border: 0 !important; border-radius: 50% !important;
+  background: rgba(255, 255, 255, .55) !important; color: #1d1d1f !important; box-shadow: 0 2px 10px rgba(10, 30, 70, .12) !important;
+  transition: background-color .2s ease, transform .16s var(--sys-ease) !important;
+}
+@media (hover: hover) {
+  :root[data-style="sky"] :is(.sc-head, .top) .icon-btn:hover { background: rgba(255, 255, 255, .9) !important; }
+}
+:root[data-style="sky"] :is(.sc-head, .top) .icon-btn:active { transform: scale(.92) !important; }
+
+/* ---- Loading: three quiet dots, no full-page placeholder. Pages show their content as it arrives. ---- */
+.spin {
+  display: flex; align-items: center; justify-content: center; gap: 7px; width: auto; height: 24px;
+}
+.spin i,
+.spin::before,
+.spin::after {
+  content: ""; display: block; width: 8px; height: 8px; border: 0; border-radius: 50%;
+  background: #1d1d1f; opacity: .25; animation: sysDot 1.1s ease-in-out infinite;
+}
+.spin i { animation-delay: .16s; }
+.spin::after { animation-delay: .32s; }
+@keyframes sysDot {
+  0%, 60%, 100% { opacity: .25; transform: translateY(0) scale(.85); }
+  30% { opacity: 1; transform: translateY(-4px) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spin i, .spin::before, .spin::after { animation: none; opacity: .6; }
+}

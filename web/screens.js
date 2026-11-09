@@ -211,7 +211,6 @@
   const SCREENS = {};
   // A screen has a back button, a small title that appears once you scroll, and a big title at the top of the page.
   let colObs = null;
-  const skeleton = () => { const s = el('div', 'sk-wrap'); s.setAttribute('aria-hidden', 'true'); s.append(el('i'), el('i'), el('i')); return s; };
   let frameOf = null; // the page the frame on screen was built for
   let inPlace = false; // true while a page redraws its own content (a tab, a person, a filter)
   function frame(title, sub) {
@@ -240,7 +239,7 @@
     colObs = new MutationObserver((muts) => {
       let i = 0;
       for (const m of muts) for (const n of m.addedNodes) {
-        if (!(n instanceof Element) || n.classList.contains('sk-wrap') || n.classList.contains('sc-big') || n.classList.contains('rise')) continue;
+        if (!(n instanceof Element) || n.classList.contains('sc-big') || n.classList.contains('rise')) continue;
         // The sliding tab line is positioned by script; a rise animation would pin its transform.
         if (n.classList.contains('tab-line') || n.parentElement?.closest('.g-tabs, .seg')) continue;
         n.classList.add('rise'); n.style.setProperty('--d', Math.min(i++, 12) * 40 + 'ms');
@@ -264,11 +263,9 @@
     if (!cur) return;
     markActive(cur.name === 'service' ? 'svc_' + cur.params.id : ['topup', 'packs', 'activity'].includes(cur.name) ? 'wallet' : ['backup', 'language'].includes(cur.name) ? 'settings' : cur.name);
     if (!inPlace) screen.scrollTop = 0;
+    // Nothing stands in for the page while it loads: content rises in as it arrives.
     const ret = SCREENS[cur.name](cur.params);
-    if (ret && typeof ret.then === 'function') {
-      const col = screen.querySelector('.sc-col');
-      if (col) { const sk = skeleton(); col.append(sk); const done = () => sk.remove(); ret.then(done, done); }
-    }
+    if (ret && typeof ret.catch === 'function') ret.catch(() => { /* the page keeps what it has */ });
     if (!inPlace) { screen.classList.remove('swap'); void screen.offsetWidth; screen.classList.add('swap'); }
   }
   // Same page, different content (a tab, a person, a filter). The page stays put and the back arrow still goes to the page before it.
