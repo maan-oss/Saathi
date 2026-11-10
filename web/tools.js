@@ -785,12 +785,12 @@
       const c = el('article', 'ap-card');
       const head = el('div', 'ap-head'); const ic = el('span', 'lk-ic'); ic.append(ico((svcById(a.svc) || [0, 0, 'doc'])[2], 22));
       const tt = el('div', 'lk-t'); tt.append(el('b', '', a.title || T('Application')));
+      // The reference sits on its own full-width line under the title.
       const sub = el('div', 'ap-sub');
       if (a.ref) { const rc = btn('ap-ref', '', function () { C.copyText(a.ref, this); }); rc.setAttribute('aria-label', T('Copy reference number')); rc.append(el('span', '', T('Ref: {ref}', { ref: a.ref })), ico('copy', 14)); sub.append(rc); }
       else sub.append(el('small', 'mut', T('No reference number yet')));
-      tt.append(sub); head.append(ic, tt);
-      const tag = el('span', 'tag ap-pill'); head.append(tag);
-      c.append(head);
+      head.append(ic, tt);
+      c.append(head, sub);
 
       const tl = el('div', 'ap-tl'); tl.setAttribute('role', 'group'); tl.setAttribute('aria-label', T('Status'));
       const fill = el('span', 'ap-fill'); tl.append(fill);
@@ -818,7 +818,6 @@
       const paint = () => {
         const idx = statusIdx(a.status);
         c.classList.toggle('fin', isDone(a));
-        tag.textContent = statusName(a.status); tag.classList.toggle('on', isDone(a));
         stages.forEach(({ b, dot, sd, id }, i) => {
           b.classList.toggle('past', i < idx); b.classList.toggle('cur', i === idx);
           b.setAttribute('aria-pressed', String(i === idx));
@@ -830,7 +829,6 @@
         meta.replaceChildren();
         const since = sinceOf(a);
         if (a.date && idx > 0) meta.append(el('span', '', T('Applied {when}', { when: whenText(-since).toLowerCase() })));
-        if (!isDone(a) && idx > 0 && since !== null && since > 14) meta.append(el('span', 'tag warn', T('Waiting {n} days', { n: since })));
         if (a.due && !isDone(a)) { const n = dayDiff(a.due); meta.append(el('span', n < 0 ? 'tag bad' : 'mut', T('Expected by {date}', { date: fmtIso(a.due) }) + ' · ' + whenText(n).toLowerCase())); }
         hintTx.textContent = hintFor(a.svc, a.status);
         placeFill(idx);
@@ -839,7 +837,6 @@
       const advance = (from, to) => {
         const idx = to;
         c.classList.toggle('fin', isDone(a));
-        tag.textContent = statusName(a.status); tag.classList.toggle('on', isDone(a));
         const x0 = centre(0);
         fill.style.transition = 'none'; fill.style.transform = `translateX(${x0}px)`; fill.style.width = Math.max(0, centre(from) - x0) + 'px'; void fill.offsetWidth; fill.style.transition = '';
         stages.forEach(({ b, dot, sd, id }, i) => {
@@ -856,7 +853,6 @@
         meta.replaceChildren();
         const since = sinceOf(a);
         if (a.date && idx > 0) meta.append(el('span', '', T('Applied {when}', { when: whenText(-since).toLowerCase() })));
-        if (!isDone(a) && idx > 0 && since !== null && since > 14) meta.append(el('span', 'tag warn', T('Waiting {n} days', { n: since })));
         if (a.due && !isDone(a)) { const n = dayDiff(a.due); meta.append(el('span', n < 0 ? 'tag bad' : 'mut', T('Expected by {date}', { date: fmtIso(a.due) }) + ' · ' + whenText(n).toLowerCase())); }
         hintTx.textContent = hintFor(a.svc, a.status);
       };

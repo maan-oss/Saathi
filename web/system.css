@@ -300,11 +300,11 @@
 /* The message field keeps a fixed corner radius as it grows, so a long message stays a rounded box instead of an oval that cuts the text. */
 :root[data-style="sky"] .composer { --r-pill: 34px; }
 
-/* Guides and tools: each row is a pill when pressed or hovered, inset from the card edge, with thin dividers that stop short of the ends. */
+/* Guides and tools: a row covers its whole line of the card when pressed or hovered. The card clips its corners, so the top and bottom rows reach the card edge too. Thin dividers stop short of the ends. */
 :root[data-style="sky"] .hk-card.hk-flush > .hk-svc,
 :root[data-style="sky"] .hk-card.hk-flush > .hk-row {
-  position: relative; width: auto; margin: 0 8px; border-top: 0 !important; border-radius: 999px !important;
-  padding-left: 14px !important; padding-right: 14px !important;
+  position: relative; width: auto; margin: 0; border-top: 0 !important; border-radius: 0 !important;
+  padding-left: 20px !important; padding-right: 18px !important;
 }
 :root[data-style="sky"] .hk-card.hk-flush > .hk-svc + .hk-svc::before,
 :root[data-style="sky"] .hk-card.hk-flush > .hk-row + .hk-row::before {
@@ -321,11 +321,6 @@
 :root[data-style] .ap-tabs { flex-wrap: nowrap; gap: 6px; }
 :root[data-style] .ap-tab { min-width: 0; flex: 1 1 0; padding-left: 8px !important; padding-right: 8px !important; }
 @media (max-width: 360px) { :root[data-style] .ap-sl { font-size: 11.5px; } }
-/* A reference number is never cut short: it wraps inside its pill. */
-.ap-ref span { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; min-width: 0; }
-/* Phone width: the status tag sits under the title, so the reference number has the full width of the text column. */
-@media (max-width: 420px) {
-  .ap-card .ap-head { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: start; gap: 6px 12px; }
-  .ap-card .ap-head .ap-pill { grid-column: 2; justify-self: start; }
-  :root[data-style] .ap-card .ap-ref { border-radius: 14px; }
-}
+/* The reference number is one line under the title, in full, never cut short. */
+:root[data-style] .ap-card .ap-ref { border-radius: 999px; white-space: nowrap; max-width: 100%; }
+:root[data-style] .ap-card .ap-ref span { white-space: nowrap; overflow: visible; text-overflow: clip; min-width: 0; }
