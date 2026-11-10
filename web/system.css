@@ -346,3 +346,9 @@
 /* The menu opens above the field and lines up with its right edge, so it stays on screen at 320px. */
 :root[data-style] .composer .attach-wrap .pop { left: auto !important; right: 8px !important; bottom: calc(100% + 12px); min-width: 248px; max-width: calc(100% - 16px); }
 :root[data-style] .composer #micBtn { margin: 0 !important; }
+
+/* Field hints end with "…" when they are longer than the field, instead of being cut off mid-word. */
+:root[data-style] input,
+:root[data-style] textarea { text-overflow: ellipsis; }
+:root[data-style] input::placeholder,
+:root[data-style] textarea::placeholder { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
