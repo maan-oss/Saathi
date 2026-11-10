@@ -72,12 +72,14 @@
             <button type="button" role="menuitem" id="pickFile" data-t="Choose photo or PDF">Choose photo or PDF</button>
           </div>
         </div>
-        <button class="icon-btn round" id="micBtn" type="button" aria-label="Speak instead of typing" data-ta="Speak instead of typing" hidden>
-          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 19L12 22M19 10L19 12A7 7 0 0 1 5 12L5 10M12 2h0a3 3 0 0 1 3 3v7a3 3 0 0 1 -3 3h0a3 3 0 0 1 -3 -3v-7a3 3 0 0 1 3 -3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <button class="send" id="sendBtn" type="submit" aria-label="Send" data-ta="Send" disabled>
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 19V6M6 11l6-6 6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-        </button>
+        <div class="comp-slot">
+          <button class="icon-btn round" id="micBtn" type="button" aria-label="Speak instead of typing" data-ta="Speak instead of typing" hidden>
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 19L12 22M19 10L19 12A7 7 0 0 1 5 12L5 10M12 2h0a3 3 0 0 1 3 3v7a3 3 0 0 1 -3 3h0a3 3 0 0 1 -3 -3v-7a3 3 0 0 1 3 -3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="send" id="sendBtn" type="submit" aria-label="Send" data-ta="Send" disabled>
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 19V6M6 11l6-6 6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          </button>
+        </div>
       </form>
     </div>
     <input type="file" id="fileInput" accept="image/*,application/pdf" hidden>

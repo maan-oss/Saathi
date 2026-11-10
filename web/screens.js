@@ -96,7 +96,11 @@
     return me;
   }
   // Ask the chat to do something: close any screen and the menu, then send it as if typed.
-  function chatDo(payload, shown) { closeAll(); closeSidebar(); C.send(payload, shown); }
+  function chatDo(payload, shown) {
+    // Saathi is still answering the last message: say so, rather than drop this one without a word.
+    if (C.isBusy?.()) { C.toast?.(T('Saathi is still answering. Try again in a moment.')); return; }
+    closeAll(); closeSidebar(); if (C.showTab) C.showTab('chat'); C.send(payload, shown);
+  }
 
   // ---- services (names are marked here so they get translated) ------------------------------------
   const STATE_LIST = ['Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'];
@@ -253,8 +257,9 @@
     screen.append(head, body);
     return col;
   }
+  let hideTimer = 0, backTimer = 0;
   function openScreen(name, params = {}) {
-    closeSidebar();
+    closeSidebar(); clearTimeout(hideTimer); clearTimeout(backTimer); screen.classList.remove('leaving'); document.body.classList.remove('screen-back');
     // A page of the same kind (one service for another) takes the place of the open one, so the back arrow
     // always returns to the page you came from, not through every service you looked at.
     const top = stack[stack.length - 1];
@@ -292,7 +297,23 @@
     if (col) { col.classList.remove('sw-in'); void col.offsetWidth; col.classList.add('sw-in'); }
   }
   function goBack() { stack.pop(); if (stack.length) render(); else hideScreen(); }
-  function hideScreen() { screen.classList.remove('on'); document.body.classList.remove('screen-open'); markActive(null); setTimeout(() => { if (!stack.length) { screen.hidden = true; screen.replaceChildren(); } }, 480); }
+  // Closing: the page plays its own exit (the 'leaving' keyframes in system.css), and the page underneath rises in as it goes.
+  // Removing 'on' alone would drop the page's animation at once, so the exit has to be a class of its own.
+  function hideScreen() {
+    clearTimeout(hideTimer); clearTimeout(backTimer);
+    screen.classList.remove('on'); screen.classList.add('leaving'); markActive(null);
+    document.body.classList.remove('screen-open'); document.body.classList.add('screen-back');
+    hideTimer = setTimeout(() => {
+      if (stack.length) return; // a page was opened again while this one was leaving
+      screen.classList.remove('leaving'); screen.hidden = true; screen.replaceChildren();
+    }, 280);
+    // The page underneath has finished rising once its .38s animation is over. Then its tab classes are cleared, so nothing plays twice.
+    backTimer = setTimeout(() => {
+      if (stack.length) return;
+      document.body.classList.remove('screen-back');
+      document.querySelectorAll('#chat, .dock').forEach((x) => x.classList.remove('in-r', 'in-l'));
+    }, 440);
+  }
   function closeAll() { if (!stack.length) return; stack.length = 0; hideScreen(); }
   window.addEventListener('popstate', () => { if (stack.length) { stack.length = 0; hideScreen(); } });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (dialogOpen) dismissDialog(); else if (stack.length) goBack(); else closeSidebar(); } });

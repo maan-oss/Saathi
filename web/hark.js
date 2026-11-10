@@ -12,7 +12,7 @@
   top.append(legacy);
 
   const plus = el('button', 'hk-round'); plus.type = 'button';
-  for (const k of ['plus', 'search', 'x']) { const s = el('span', 'hk-i ' + k); s.append(ico(k === 'x' ? 'close' : k, 22)); plus.append(s); }
+  for (const k of ['search', 'x']) { const s = el('span', 'hk-i ' + k); s.append(ico(k === 'x' ? 'close' : k, 22)); plus.append(s); }
   const seg = el('div', 'hk-seg'); seg.setAttribute('role', 'tablist');
   const tbtn = {};
   for (const k of TABS) { const b = el('button', 'hk-tab'); b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.k = k; b.onclick = () => showTab(k); seg.append(b); tbtn[k] = b; }
@@ -29,11 +29,12 @@
     av.setAttribute('aria-label', T('Profile'));
     plusMode(); fitTabs();
   }
+  // The round button at the top left is search on both tabs (search covers chats and guides), and an X while search is open.
   function plusMode() {
-    plus.dataset.m = searching ? 'x' : cur === 'chat' ? 'search' : 'plus';
-    plus.setAttribute('aria-label', searching ? T('Close') : cur === 'chat' ? T('Search') : T('New chat'));
+    plus.dataset.m = searching ? 'x' : 'search';
+    plus.setAttribute('aria-label', searching ? T('Close') : T('Search'));
   }
-  plus.onclick = () => { if (searching) closeSearch(); else if (cur === 'chat') openSearch(); else C.newChat(); };
+  plus.onclick = () => { if (searching) closeSearch(); else openSearch(); };
 
   let dir = 1;
   function showTab(k) {

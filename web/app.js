@@ -655,10 +655,12 @@
   const openPop = () => { clearTimeout(popTimer); pop.classList.remove('closing'); pop.hidden = false; attachBtn.setAttribute('aria-expanded', 'true'); };
   const closePop = () => {
     attachBtn.setAttribute('aria-expanded', 'false');
-    if (pop.hidden) return;
-    clearTimeout(popTimer); pop.classList.remove('closing'); pop.hidden = true;
+    if (pop.hidden || pop.classList.contains('closing')) return;
+    // The menu plays its exit (the .closing animation, 200ms), then hides. Keep this duration in step with final.css.
+    pop.classList.add('closing');
+    popTimer = setTimeout(() => { pop.classList.remove('closing'); pop.hidden = true; }, 200);
   };
-  attachBtn.onclick = (e) => { e.stopPropagation(); if (pop.hidden) openPop(); else closePop(); };
+  attachBtn.onclick = (e) => { e.stopPropagation(); if (pop.hidden || pop.classList.contains('closing')) openPop(); else closePop(); };
   document.addEventListener('click', (e) => { if (!pop.contains(e.target)) closePop(); });
   $('pickFile').onclick = () => { closePop(); $('fileInput').click(); };
   $('pickCamera').onclick = () => { closePop(); $('cameraInput').click(); };
@@ -1123,7 +1125,7 @@
 
   // What the screens (sidebar, settings, wallet, onboarding...) use.
   const core = window.SaathiCore = {
-    $, el, svg, api, dropdown, toast, store, tab, HIST_KEY, sid, rupee, send, copyText, welcome, boot, setWallet, applyTheme, applyStyle, applyScale, richText, renderReply, fixUrl,
+    $, el, svg, api, dropdown, toast, store, tab, HIST_KEY, sid, rupee, send, isBusy: () => busy, copyText, welcome, boot, setWallet, applyTheme, applyStyle, applyScale, richText, renderReply, fixUrl,
     T, N, uiLang, loadUI, applyStatic, openChat, newChat, deleteChat, clearChats, openServiceChat, randomHex, mergeChats,
     get wallet() { return walletNow; },
     get prices() { return pricesNow; },

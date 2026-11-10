@@ -352,3 +352,132 @@
 :root[data-style] textarea { text-overflow: ellipsis; }
 :root[data-style] input::placeholder,
 :root[data-style] textarea::placeholder { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ==========================================================================
+   Pass: the chat box, menus, search, pills, motion and dark mode.
+   The rules above are kept as they were; these are the final word on each
+   listed behaviour, so they come last and win on purpose.
+   ========================================================================== */
+
+/* ---- 1. The chat box is still. It does not lift, shift or change width when you focus, type or send. ----
+   Earlier: hark.css lifted it on focus, changed the dock's bottom padding, and collapsed the mic and send to zero width.  */
+:root[data-style] .shell .app > .dock { transition: none !important; }
+:root[data-style] .shell .app[data-tab="chat"] > .dock {
+  padding-top: 6px !important; padding-bottom: max(18px, env(safe-area-inset-bottom)) !important;
+}
+:root[data-style] .composer-wrap .composer,
+:root[data-style] .app[data-tab="chat"] .composer,
+:root[data-style] .app[data-tab="chat"] .composer:focus-within {
+  transform: none !important; animation: none !important;
+  transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease !important;
+}
+:root[data-style] .composer textarea { transition: none !important; }
+/* Mic and send share one fixed 42px slot. They fade and scale in place, so the text box never changes width. */
+:root[data-style] .composer .comp-slot {
+  position: relative !important; display: block !important; flex: none !important; order: 3 !important;
+  width: 42px !important; height: 42px !important; min-width: 42px !important; margin: 0 !important;
+}
+:root[data-style] .composer .comp-slot > button {
+  position: absolute !important; top: 0 !important; left: 0 !important; right: auto !important; bottom: auto !important;
+  width: 42px !important; height: 42px !important; min-width: 42px !important; margin: 0 !important; padding: 0 !important;
+  border: 0 !important; transition: opacity .18s ease, transform .3s var(--sys-ease) !important;
+}
+:root[data-style] .composer:has(textarea:placeholder-shown) .send,
+:root[data-style] .composer:not(:has(textarea:placeholder-shown)) #micBtn {
+  opacity: 0 !important; transform: scale(.6) !important; pointer-events: none !important;
+}
+:root[data-style] .composer:has(textarea:placeholder-shown) #micBtn,
+:root[data-style] .composer:not(:has(textarea:placeholder-shown)) .send {
+  opacity: 1 !important; transform: none !important; pointer-events: auto !important;
+}
+:root[data-style] .composer:not(:has(textarea:placeholder-shown)) .send:disabled { opacity: .45 !important; }
+
+/* ---- 2. Moving between Chat and Guides: the page slides in from the side it came from, in both directions.
+   The empty chat used to be exempt, so Guides → Chat showed nothing. The composer only fades. ---- */
+:root[data-style] .shell .app > .chat.in-r,
+:root[data-style] .shell .app[data-empty] > .chat.in-r { animation: hkInR .42s var(--hk-ease) both !important; }
+:root[data-style] .shell .app > .chat.in-l,
+:root[data-style] .shell .app[data-empty] > .chat.in-l { animation: hkInL .42s var(--hk-ease) both !important; }
+:root[data-style] .shell .app > .dock.in-r,
+:root[data-style] .shell .app > .dock.in-l,
+:root[data-style] .shell .app[data-empty] > .dock.in-r,
+:root[data-style] .shell .app[data-empty] > .dock.in-l { animation: sysFade .3s ease both !important; }
+@keyframes sysFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---- 3. Closing a page: it slides down and fades out (screens.css), then the page underneath rises back in
+   (body.screen-back, added by screens.js once the page has gone). ---- */
+@keyframes sysBack { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+:root[data-style] body.screen-back .shell .app > .chat,
+:root[data-style] body.screen-back .shell .app[data-empty] > .chat { animation: sysBack .38s var(--sys-ease) both !important; }
+:root[data-style] body.screen-back .shell .app > .dock,
+:root[data-style] body.screen-back .shell .app[data-empty] > .dock { animation: sysFade .3s ease both !important; }
+:root[data-style] .screen { transition: opacity .26s ease, transform .3s var(--sys-ease) !important; }
+
+/* ---- 4. The attach menu opens and closes. Open: it rises from the + button. Close: it sinks back and fades. ---- */
+@keyframes sysPopIn { from { opacity: 0; transform: translateY(10px) scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes sysPopOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(10px) scale(.94); } }
+:root[data-style] .attach-wrap .pop:not(.closing) { animation: sysPopIn .24s var(--sys-ease) both !important; transform-origin: bottom right; }
+:root[data-style] .attach-wrap .pop.closing { animation: sysPopOut .2s ease-in both !important; pointer-events: none; }
+:root[data-style] .attach-wrap .pop {
+  background: transparent !important; border: 0 !important; box-shadow: none !important; padding: 0 !important;
+  min-width: 248px;
+}
+:root[data-style] .attach-wrap .pop:not([hidden]) { display: flex; flex-direction: column; gap: 8px; }
+
+/* ---- 5. White pills with dark text, one family: the attach menu, Scan's two buttons and every other pair. ---- */
+:root[data-style] .attach-wrap .pop button,
+:root[data-style] .attach-wrap .pop button:hover,
+:root[data-style] .attach-wrap .pop button:focus-visible,
+:root[data-style] .two > .btn,
+:root[data-style] .two > .btn:hover,
+:root[data-style] .two > .btn.pri,
+:root[data-style] .two > .btn.xl {
+  display: flex !important; align-items: center; justify-content: flex-start; gap: 10px;
+  width: 100%; min-height: 48px; margin: 0 !important; padding: 0 20px !important;
+  border: 0 !important; border-radius: 999px !important;
+  background: #fff !important; color: #1d1d1f !important; font: 600 15px/1.2 var(--sans) !important; text-align: left;
+  box-shadow: 0 1px 2px rgba(10, 20, 40, .10), 0 6px 18px rgba(10, 20, 40, .16) !important;
+  animation: none !important; opacity: 1 !important;
+  transition: background-color .18s ease, transform .18s var(--sys-ease), box-shadow .2s ease !important;
+}
+:root[data-style] .attach-wrap .pop button::before { background: #1d1d1f !important; }
+@media (hover: hover) {
+  :root[data-style] .attach-wrap .pop button:hover,
+  :root[data-style] .two > .btn:hover { background: #f1f3f8 !important; transform: translateY(-1px); }
+}
+:root[data-style] .two { display: flex !important; flex-wrap: wrap; justify-content: center; gap: 10px !important; }
+:root[data-style] .two > .btn { flex: 0 1 auto !important; width: auto !important; min-width: 0; justify-content: center; text-align: center; }
+
+/* ---- 6. Search: typed text is dark on the white field in every theme. The clear cross sits at the field's right edge. ---- */
+:root[data-style] .hk-sfield input,
+:root[data-style] .top.hk-top .hk-sfield input {
+  color: #1d1d1f !important; -webkit-text-fill-color: #1d1d1f !important; caret-color: #1d1d1f;
+  flex: 1 1 auto !important; width: auto !important; min-width: 0 !important; text-align: left !important;
+}
+:root[data-style] .hk-sfield input::placeholder { color: #6e6d6a !important; opacity: 1; text-align: left; }
+:root[data-style] .hk-sbar input::placeholder { text-align: left !important; }
+:root[data-style] .hk-sfield { gap: 8px !important; padding: 0 6px 0 16px !important; }
+:root[data-style] .hk-sclear { margin: 0 !important; width: 32px !important; height: 32px !important; }
+:root[data-style] .hk-sbar { justify-content: stretch !important; }
+
+/* ---- 7. Dark (night) theme: every heading, label and line of text is light. The selected choice is a white pill with dark text. ---- */
+:root[data-style="sky"][data-sky="night"] {
+  --hk-ink: #f4f6fb; --hk-mut: #aab6cc;
+}
+:root[data-style="sky"][data-sky="night"] .hk-ask { color: #1d1d1f; }
+:root[data-style="sky"][data-sky="night"] :is(.seg, .g-tabs) { background: rgba(255, 255, 255, .12) !important; }
+:root[data-style="sky"][data-sky="night"] :is(.seg button, .g-tab) { color: #c9d4e8 !important; }
+:root[data-style="sky"][data-sky="night"] :is(.seg button, .g-tab):hover { color: #fff !important; background: rgba(255, 255, 255, .08) !important; }
+:root[data-style="sky"][data-sky="night"] :is(.seg button[aria-pressed="true"], .g-tab[aria-selected="true"]) { color: #111 !important; }
+:root[data-style="sky"][data-sky="night"] :is(.seg button[aria-pressed="true"], .g-tab[aria-selected="true"]):hover { color: #111 !important; background: #fff !important; }
+:root[data-style="sky"][data-sky="night"] .g-tab[aria-selected="true"] *,
+:root[data-style="sky"][data-sky="night"] .seg button[aria-pressed="true"] * { color: #111 !important; }
+/* The guide's Yes / No and option buttons are white pills with dark text at night too, like the other pills. */
+:root[data-style="sky"][data-sky="night"] .fd-o { background: #fff !important; color: #1d1d1f !important; border-color: transparent !important; box-shadow: 0 1px 2px rgba(0, 0, 0, .2) !important; }
+:root[data-style="sky"][data-sky="night"] .fd-o:hover { background: #f1f3f7 !important; color: #1d1d1f !important; }
+/* Primary buttons ("New chat", "Connect", "Save") are white pills with dark text at night, so they stand out from the dark sky. */
+:root[data-style="sky"][data-sky="night"] .btn.pri { background: #fff !important; color: #1d1d1f !important; box-shadow: 0 1px 2px rgba(0, 0, 0, .2) !important; }
+:root[data-style="sky"][data-sky="night"] .btn.pri:hover { background: #f1f3f7 !important; color: #1d1d1f !important; }
+/* Closing a page: it sinks and fades (screens.js adds .leaving as it goes). Opening keeps its own entrance (final.css). */
+@keyframes sysPageOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(28px); } }
+:root[data-style] #screen.leaving { animation: sysPageOut .26s var(--sys-ease) both !important; pointer-events: none !important; }
