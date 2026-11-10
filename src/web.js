@@ -54,6 +54,7 @@ const STATIC = {
   '/sw.js': ['sw.js', 'text/javascript; charset=utf-8'],
   '/favicon.ico': ['icon-192.png', 'image/png'],
   '/logo.svg': ['logo.svg', 'image/svg+xml'],
+  '/tab-icon.svg': ['tab-icon.svg', 'image/svg+xml'],
   '/icon.svg': ['icon.svg', 'image/svg+xml'],
   '/icon-192.png': ['icon-192.png', 'image/png'],
   '/icon-512.png': ['icon-512.png', 'image/png'],

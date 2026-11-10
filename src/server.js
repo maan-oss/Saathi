@@ -265,7 +265,7 @@ const NOT_FOUND_HTML = `<!doctype html>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>Page not found · Saathi</title>
-<link rel="icon" href="/logo.svg" type="image/svg+xml">
+<link rel="icon" href="/tab-icon.svg" type="image/svg+xml">
 <style>
 :root{color-scheme:light dark;--bg:#FAF9F5;--fg:#262624;--mute:#6b6a64;--btn:#262624;--btnfg:#FAF9F5}
 @media (prefers-color-scheme:dark){:root{--bg:#262624;--fg:#FAF9F5;--mute:#b7b5ad;--btn:#FAF9F5;--btnfg:#262624}}
@@ -304,7 +304,7 @@ async function handleRequest(req, res) {
   const url = new URL(req.url, 'http://localhost');
 
   // The web app (page, files and /app/api/*). Everything else below is WhatsApp, payments and the operator's pages.
-  if (url.pathname === '/' || url.pathname === '/app' || url.pathname.startsWith('/app/') || url.pathname.startsWith('/fonts/') || /^\/(app\.js|screens\.js|tools\.js|guides\.js|hark\.js|hark\.css|premium\.js|premium\.css|final\.css|system\.css|guides\.css|polish\.css|welcome\.css|screens\.css|sky\.js|og\.png|robots\.txt|style\.css|manifest\.webmanifest|sw\.js|logo\.svg|favicon\.ico|icon\.svg|icon-192\.png|icon-512\.png|apple-touch-icon\.png)$/.test(url.pathname)) {
+  if (url.pathname === '/' || url.pathname === '/app' || url.pathname.startsWith('/app/') || url.pathname.startsWith('/fonts/') || /^\/(app\.js|screens\.js|tools\.js|guides\.js|hark\.js|hark\.css|premium\.js|premium\.css|final\.css|system\.css|guides\.css|polish\.css|welcome\.css|screens\.css|sky\.js|og\.png|robots\.txt|style\.css|manifest\.webmanifest|sw\.js|logo\.svg|tab-icon\.svg|favicon\.ico|icon\.svg|icon-192\.png|icon-512\.png|apple-touch-icon\.png)$/.test(url.pathname)) {
     return void web.handle(req, res, url).then((done) => {
       if (!done && !res.writableEnded) notFound(req, res);
     }).catch((e) => fail(res, e));
