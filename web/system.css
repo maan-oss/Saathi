@@ -324,3 +324,25 @@
 /* The reference number is one line under the title, in full, never cut short. */
 :root[data-style] .ap-card .ap-ref { border-radius: 999px; white-space: nowrap; max-width: 100%; }
 :root[data-style] .ap-card .ap-ref span { white-space: nowrap; overflow: visible; text-overflow: clip; min-width: 0; }
+
+/* ---- One chat box. The whole bar is the field, and the + sits inside it, just before the microphone, with a clear gap. ---- */
+:root[data-style] .composer-wrap { display: flex; align-items: flex-end; gap: 0; }
+:root[data-style] .composer-wrap .composer { flex: 1 1 auto; width: 100%; min-width: 0; }
+:root[data-style] .app[data-tab="chat"] .composer { gap: 6px !important; }
+:root[data-style] .composer { position: relative; }
+:root[data-style] .composer .attach-wrap { position: static; flex: none; display: flex; align-self: center; order: 2 !important; margin: 0 8px 0 0 !important; }
+:root[data-style] .composer textarea { order: 1 !important; }
+:root[data-style] .composer #micBtn { order: 3 !important; }
+:root[data-style] .composer .attach-wrap .attach,
+:root[data-style] .composer .attach-wrap .attach:hover,
+:root[data-style] .composer .attach-wrap .attach:focus-visible,
+:root[data-style] .composer .attach-wrap .attach:active {
+  width: 42px !important; height: 42px !important; min-width: 42px !important; margin: 0 !important;
+  background: transparent !important; color: var(--fld-ink) !important; box-shadow: none !important; transform: none !important;
+}
+@media (hover: hover) {
+  :root[data-style] .composer .attach-wrap .attach:hover { background: color-mix(in srgb, var(--fld-ink) 10%, transparent) !important; }
+}
+/* The menu opens above the field and lines up with its right edge, so it stays on screen at 320px. */
+:root[data-style] .composer .attach-wrap .pop { left: auto !important; right: 8px !important; bottom: calc(100% + 12px); min-width: 248px; max-width: calc(100% - 16px); }
+:root[data-style] .composer #micBtn { margin: 0 !important; }

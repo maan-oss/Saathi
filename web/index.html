@@ -55,15 +55,6 @@
       <button class="att-x" id="attX" type="button" aria-label="Remove" data-ta="Remove"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M18 6L6 18M6 6L18 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     </div>
     <div class="composer-wrap">
-      <div class="attach-wrap">
-        <button class="icon-btn round attach" id="attachBtn" type="button" aria-label="Attach a photo or PDF" data-ta="Attach a photo or PDF" aria-haspopup="true" aria-expanded="false">
-          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 12L19 12M12 5L12 19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="pop" id="attachPop" hidden role="menu">
-          <button type="button" role="menuitem" id="pickCamera" data-t="Take a photo">Take a photo</button>
-          <button type="button" role="menuitem" id="pickFile" data-t="Choose photo or PDF">Choose photo or PDF</button>
-        </div>
-      </div>
       <form class="composer" id="form" autocomplete="off">
         <div class="rec" id="rec" hidden>
           <button class="icon-btn round rec-x" id="recCancel" type="button" aria-label="Cancel" data-ta="Cancel"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M18 6L6 18M6 6L18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -71,6 +62,15 @@
           <button class="rec-lang" id="dictLang" type="button" hidden></button>
         </div>
         <textarea id="input" rows="1" placeholder="Ask anything" data-tp="Ask anything" aria-label="Message" data-ta="Message" maxlength="2000" enterkeyhint="send"></textarea>
+        <div class="attach-wrap">
+          <button class="icon-btn round attach" id="attachBtn" type="button" aria-label="Attach a photo or PDF" data-ta="Attach a photo or PDF" aria-haspopup="true" aria-expanded="false">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 12L19 12M12 5L12 19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="pop" id="attachPop" hidden role="menu">
+            <button type="button" role="menuitem" id="pickCamera" data-t="Take a photo">Take a photo</button>
+            <button type="button" role="menuitem" id="pickFile" data-t="Choose photo or PDF">Choose photo or PDF</button>
+          </div>
+        </div>
         <button class="icon-btn round" id="micBtn" type="button" aria-label="Speak instead of typing" data-ta="Speak instead of typing" hidden>
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 19L12 22M19 10L19 12A7 7 0 0 1 5 12L5 10M12 2h0a3 3 0 0 1 3 3v7a3 3 0 0 1 -3 3h0a3 3 0 0 1 -3 -3v-7a3 3 0 0 1 3 -3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
