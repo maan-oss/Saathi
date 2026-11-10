@@ -244,7 +244,7 @@
       if (!r.ok) {
         finishStage(false);
         if (r.error === 'paywall') { paywall(r.extra); }
-        const msg = r.error === 'unclear' ? T('That photo is not clear enough to read.') : r.error === 'nofields' ? T('I could not find any details on it.') : r.error === 'busy' || r.error === 'off' ? T('Scanning is busy right now. Please try again in a little while.') : r.error === 'too_big' ? T('That file is too big. Use one under 5 MB.') : r.error === 'failed' ? T('Something went wrong reading it. You were not charged.') : errText(r.error);
+        const msg = r.error === 'unclear' ? T('That photo is not clear enough to read.') : r.error === 'nofields' ? T('I could not find any details on it.') : r.error === 'off' ? T('Photo reading is not switched on right now.') : r.error === 'busy' ? T('Scanning is busy right now. Please try again in a little while.') : r.error === 'too_big' ? T('That file is too big. Use one under 5 MB.') : r.error === 'failed' ? T('Something went wrong reading it. You were not charged.') : errText(r.error);
         const card = el('div', 'scan-res bad'); card.append(el('h3', '', T('Could not read it')), el('p', 'mut', msg));
         const tips = r.extra?.issues?.length ? el('p', 'mut small', r.extra.issues.join(', ')) : null; if (tips) card.append(tips);
         card.append(el('p', 'mut small', T('Tips: flat surface, no glare, all corners visible.')), btn('btn pri', T('Try again'), idle));
