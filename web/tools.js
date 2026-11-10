@@ -201,9 +201,7 @@
     const bCam = btn('btn pri xl', '', () => cam.click()); bCam.append(ico('camera', 20), el('span', '', T('Take a photo')));
     const bFile = btn('btn xl', '', () => file.click()); bFile.append(ico('doc', 20), el('span', '', T('Choose photo or PDF')));
     acts.append(bCam, bFile);
-    const p = C.prices;
-    const cost = el('p', 'mut small center', p ? T('Free with a pack. Otherwise {price} a scan.', { price: rupee(p.scanPaise) }) : '');
-    col.append(stage, out, acts, cost, file, cam);
+    col.append(stage, out, acts, file, cam);
 
     let url = null; let timer = null; let running = false;
     const idle = () => {
