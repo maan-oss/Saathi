@@ -626,6 +626,10 @@
 
 /* Rows and cards: one surface, one hover. */
 :root[data-style] :is(.row-i, .hk-card, .hk-tile, .hk-wide, .tool-card, .svc-card, .g-card) { color: var(--ds-ink) !important; }
+/* The dark tile (e.g. Top up) is the solid accent, with the opposite ink, in both themes. */
+:root[data-style] .hk-wide.dark, :root[data-style] .hk-wide.dark:hover:not(:disabled) { background: var(--ds-solid) !important; color: var(--ds-solid-ink) !important; }
+:root[data-style] .hk-wide.dark:hover:not(:disabled) { opacity: .9; }
+:root[data-style] .hk-wide.dark * { color: inherit !important; }
 :root[data-style] :is(button.row-i, div.row-i) { background: var(--ds-surface) !important; }
 :root[data-style] button.row-i:hover:not(:disabled) { background: var(--ds-surface-hover) !important; }
 :root[data-style] button.row-i.danger { color: var(--ds-danger) !important; }
