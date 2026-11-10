@@ -113,7 +113,10 @@
         const g = el('section', 'grp'); const h = el('div', 'grp-h'); h.append(el('h2', 'grp-t', T('Needs attention')));
         if (att.length) h.append(el('small', 'mut', String(att.length)));
         g.append(h);
-        if (!loaded) { const sk = el('div', 'hub-skel'); g.append(sk); }
+        if (!loaded) {
+          // three placeholder rows, top to bottom; they are made in one pass, so their shimmer runs in step
+          for (let i = 0; i < 3; i++) { const sk = el('div', 'hub-skel'); sk.style.setProperty('--i', String(i)); g.append(sk); }
+        }
         else if (!att.length) {
           const ok = el('div', 'hub-clear'); const ic = el('span', 'hub-clear-ic'); ic.append(ico('check', 18));
           const tx = el('div'); tx.append(el('b', '', T('Nothing needs you right now')), el('small', '', T('Dates, documents and applications are all on track.')));
@@ -929,16 +932,22 @@
     const file = el('input'); file.type = 'file'; file.accept = 'image/*'; file.hidden = true;
     const stage = el('div', 'ph-stage'); const info = el('p', 'mut small center');
     const pick = btn('btn pri xl', '', () => file.click()); pick.append(ico('photo', 20), el('span', '', T('Choose a photo')));
-    const sizeSeg = seg([['20', '20 KB'], ['50', '50 KB'], ['100', '100 KB'], ['200', '200 KB'], ['500', '500 KB']], '100', (v) => { kb = Number(v); });
-    const dimSel = C.dropdown({ label: T('Size in pixels'), options: [['keep', T('Keep the size')], ['413x531', T('Passport photo, 3.5 × 4.5 cm')], ['512x512', T('Square, 512 × 512')], ['custom', T('Custom size')]], value: 'keep' });
+    // Most people resize for one of a few forms: a passport-size photo or a signature. Pick that and the size and limit are set for you.
+    const KINDS = { photo: { kb: 50, dim: '413x531' }, sign: { kb: 20, dim: '140x60' }, other: { kb: 100, dim: 'keep' } };
+    const sizeSeg = seg([['20', '20 KB'], ['50', '50 KB'], ['100', '100 KB'], ['200', '200 KB']], '50', (v) => { kb = Number(v); });
+    const dimSel = C.dropdown({ label: T('Size in pixels'), options: [['keep', T('Keep the size')], ['413x531', T('Passport photo, 3.5 × 4.5 cm')], ['140x60', T('Signature, 140 × 60 px')], ['512x512', T('Square, 512 × 512')], ['custom', T('Custom size')]], value: '413x531' });
+    const kindSeg = seg([['photo', T('Photo')], ['sign', T('Signature')], ['other', T('Other')]], 'photo', (k) => {
+      const preset = KINDS[k]; const kbIdx = { 20: 0, 50: 1, 100: 2 }[preset.kb];
+      sizeSeg.querySelectorAll('button')[kbIdx].click(); dimSel.value = preset.dim; custom.hidden = true; kb = preset.kb;
+    });
     const wI = textInput('', '', 'numeric'); wI.placeholder = T('Width px'); const hI = textInput('', '', 'numeric'); hI.placeholder = T('Height px');
     const custom = el('div', 'two'); custom.append(wI, hI); custom.hidden = true;
     dimSel.onchange = () => { custom.hidden = dimSel.value !== 'custom'; };
     const out = el('div', 'ph-out');
     const go = btn('btn pri xl', T('Resize'), null); go.disabled = true;
-    let kb = 100; let img = null; let name = 'photo'; let outUrl = null;
-    col.append(stage, pick, file, field(T('Keep it under'), sizeSeg), field(T('Size in pixels'), dimSel), custom, go, out, info);
-    col.append(note(T('Check the size and format the official form asks for. Different forms ask for different sizes.'), 'help'));
+    let kb = 50; let img = null; let name = 'photo'; let outUrl = null;
+    col.append(stage, pick, file, field(T('What is it for?'), kindSeg), field(T('Keep it under'), sizeSeg), field(T('Size in pixels'), dimSel), custom, go, out, info);
+    col.append(note(T('Forms differ. Check the size and file limit your form asks for. A passport-size photo is usually 3.5 × 4.5 cm, and a signature is often 140 × 60 px.'), 'help'));
     file.onchange = async () => {
       const f = file.files[0]; file.value = ''; if (!f) return;
       try { img = await createImageBitmap(f); } catch { return toast(T('Could not open that photo. Try a JPEG or PNG.')); }

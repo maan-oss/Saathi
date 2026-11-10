@@ -404,7 +404,8 @@ textarea.field-i{min-height:84px;resize:vertical;line-height:1.5}
 .hub-wrap{display:flex;flex-direction:column;gap:22px}
 .hub-search{position:static;background:var(--bg2)}
 .hub-search input::-webkit-search-cancel-button{appearance:none}
-.hub-skel{height:64px;border-radius:var(--r);background:linear-gradient(90deg,var(--bg2),var(--line),var(--bg2));background-size:200% 100%;animation:hubsk 1.2s linear infinite}
+.hub-skel{height:64px;border-radius:var(--r);background:linear-gradient(90deg,var(--bg2),var(--line),var(--bg2));background-size:200% 100%;margin-bottom:10px;animation:hubsk 1.2s linear infinite,hubIn .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:0s,calc(var(--i,0) * 90ms)}
+@keyframes hubIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @keyframes hubsk{to{background-position:-200% 0}}
 .hub-clear{display:flex;align-items:center;gap:14px;padding:16px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg2)}
 .hub-clear>div{display:flex;flex-direction:column;gap:2px}.hub-clear b{font:600 15px var(--sans)}.hub-clear small{color:var(--mut);font-size:13.5px}

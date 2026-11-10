@@ -314,3 +314,18 @@
 :root[data-style="sky"] .hk-card.hk-flush > .hk-row:hover { background: rgba(31, 30, 29, .06) !important; box-shadow: none !important; }
 :root[data-style="sky"] .hk-card.hk-flush > .hk-svc:active,
 :root[data-style="sky"] .hk-card.hk-flush > .hk-row:active { background: rgba(31, 30, 29, .11) !important; }
+
+/* ---- Applications at phone width: the card column may shrink, so a card never runs past the screen edge. The filter tabs stay on one row. ---- */
+.ap-grid { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 860px) { .ap-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+:root[data-style] .ap-tabs { flex-wrap: nowrap; gap: 6px; }
+:root[data-style] .ap-tab { min-width: 0; flex: 1 1 0; padding-left: 8px !important; padding-right: 8px !important; }
+@media (max-width: 360px) { :root[data-style] .ap-sl { font-size: 11.5px; } }
+/* A reference number is never cut short: it wraps inside its pill. */
+.ap-ref span { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; min-width: 0; }
+/* Phone width: the status tag sits under the title, so the reference number has the full width of the text column. */
+@media (max-width: 420px) {
+  .ap-card .ap-head { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: start; gap: 6px 12px; }
+  .ap-card .ap-head .ap-pill { grid-column: 2; justify-self: start; }
+  :root[data-style] .ap-card .ap-ref { border-radius: 14px; }
+}
