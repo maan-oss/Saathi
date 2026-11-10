@@ -29,7 +29,7 @@ function brandingFor(pack) {
   return {
     'branding_settings[display_name]': 'Saathi',
     'branding_settings[background_color]': '#EEF5FC', // a pale sky tint, from the app's sky theme
-    'branding_settings[button_color]': '#1F1E1D', // the logo's ink
+    'branding_settings[button_color]': '#2459E0', // the app's blue, from its send button, dark enough for white text
     'branding_settings[border_style]': 'pill', // matches the app's rounded bubbles and buttons
     'branding_settings[font_family]': 'be_vietnam_pro',
     'custom_text[submit][message]': pack ? PACK_MESSAGE : TOPUP_MESSAGE,
