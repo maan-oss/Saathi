@@ -273,7 +273,11 @@
     // Nothing stands in for the page while it loads: content rises in as it arrives.
     const ret = SCREENS[cur.name](cur.params);
     if (ret && typeof ret.catch === 'function') ret.catch(() => { /* the page keeps what it has */ });
-    if (!inPlace) { screen.classList.remove('swap'); void screen.offsetWidth; screen.classList.add('swap'); }
+    if (!inPlace) {
+      screen.classList.remove('swap'); void screen.offsetWidth; screen.classList.add('swap');
+      // Moving from one page to another: the page fades and slides up again. It is already open, so its own animation would not run on its own.
+      if (screen.classList.contains('on')) { screen.classList.remove('on'); void screen.offsetWidth; screen.classList.add('on'); }
+    }
   }
   // Same page, different content (a tab, a person, a filter). The page stays put and the back arrow still goes to the page before it.
   function redraw(params) {

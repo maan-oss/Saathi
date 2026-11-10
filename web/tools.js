@@ -206,7 +206,7 @@
     let url = null; let timer = null; let running = false;
     const idle = () => {
       clearInterval(timer); if (url) { URL.revokeObjectURL(url); url = null; }
-      stage.className = 'scan-stage'; view.replaceChildren(); out.replaceChildren(); acts.hidden = false; cost.hidden = false;
+      stage.className = 'scan-stage'; view.replaceChildren(); out.replaceChildren(); acts.hidden = false;
       const c = el('div', 'scan-idle'); const ic = el('span', 'scan-idle-ic'); ic.append(ico('scan', 34));
       c.append(ic, el('b', '', T('Place your document flat')), el('small', '', T('Good light, all four corners in view')));
       view.append(c);
@@ -216,7 +216,7 @@
       view.replaceChildren();
       if (isPdf) { const c = el('div', 'scan-idle'); const ic = el('span', 'scan-idle-ic'); ic.append(ico('doc', 34)); c.append(ic, el('b', '', T('PDF document'))); view.append(c); }
       else { url = URL.createObjectURL(blob); const im = el('img'); im.src = url; im.alt = ''; view.append(im); }
-      stage.className = 'scan-stage scanning'; acts.hidden = true; cost.hidden = true; out.replaceChildren();
+      stage.className = 'scan-stage scanning'; acts.hidden = true; out.replaceChildren();
       let i = 0; setStage(0); timer = setInterval(() => setStage(++i), 950);
     }
     const finishStage = (ok) => { clearInterval(timer); stage.classList.remove('scanning'); stage.classList.add(ok ? 'done' : 'failed'); hudTx.textContent = ok ? T('Done') : T('Could not read it'); hudFill.style.setProperty('--w', '100%'); };
