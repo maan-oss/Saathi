@@ -544,9 +544,6 @@ html.no-fv[data-style] input:focus, html.no-fv[data-style] textarea:focus, html.
   background: transparent !important; border: 0 !important; box-shadow: none !important; color: var(--ds-ink) !important;
   transform: none !important;
 }
-:root[data-style] .composer .attach-wrap .attach:hover,
-:root[data-style] .app[data-empty] .composer .attach-wrap .attach:hover,
-:root[data-style] .composer #micBtn:hover { background: var(--ds-track) !important; box-shadow: none !important; transform: none !important; }
 :root[data-style] .composer .attach svg, :root[data-style] .composer #micBtn svg { width: 20px !important; height: 20px !important; }
 :root[data-style] .composer .send,
 :root[data-style] .composer .send:not(:disabled) {
@@ -692,3 +689,22 @@ html.no-fv[data-style] input:focus, html.no-fv[data-style] textarea:focus, html.
 :root[data-style] .composer .comp-slot { width: 42px !important; min-width: 42px !important; height: 42px !important; margin: 0 !important; }
 /* The send is centred on the pill's round end: 13px in from the top, bottom and right, which is the radius of a 68px pill less the 42px button. */
 :root[data-style] .composer { padding: 13px 13px 13px 10px !important; min-height: 68px !important; }
+
+/* ---- 10. One pill, not separate discs. The top bar's Chat / Guides track is a pill like the others. The plus and the mic are bare glyphs
+   inside the composer in every state (rest, hover, focus, open), so the composer reads as a single object with the send at its end. ---- */
+:root[data-style] .top.hk-top .hk-seg { border-radius: 999px !important; }
+:root[data-style] .composer .attach-wrap button.attach,
+:root[data-style] .composer .attach-wrap button.attach:hover,
+:root[data-style] .composer .attach-wrap button.attach:focus,
+:root[data-style] .composer .attach-wrap button.attach:focus-visible,
+:root[data-style] .composer .attach-wrap button.attach:active,
+:root[data-style] .composer .attach-wrap button.attach[aria-expanded="true"],
+:root[data-style] .composer button#micBtn,
+:root[data-style] .composer button#micBtn:hover,
+:root[data-style] .composer button#micBtn:focus,
+:root[data-style] .composer button#micBtn:focus-visible,
+:root[data-style] .composer button#micBtn:active {
+  background: transparent !important; box-shadow: none !important;
+}
+:root[data-style] .composer .attach-wrap button.attach,
+:root[data-style] .composer button#micBtn { transition: none !important; }
