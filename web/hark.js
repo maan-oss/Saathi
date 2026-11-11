@@ -182,7 +182,7 @@
 // ---- a soft halo where you press. It is the feedback on every tap, instead of a black line. ---------------
 (() => {
   const SEL = 'button, [role="button"], a[href], label.hk-sfield, .row, .hk-svc, .hk-q, .chip, .gtile, .tool-card, .svc-card, .hub-cc, .hk-row, .hk-wide, .dd-o, .lang, .fd-o';
-  const NO_HALO = '.ap-card, .ap-tl, .rm-item, .rm-new, .tool-card, .svc-card, .gtile, .hub-cc, .hk-svc, .hk-wide, .hk-tile, .hk-row';
+  const NO_HALO = '.ap-card, .ap-tl, .rm-item, .rm-new, .tool-card, .svc-card, .gtile, .hub-cc, .hk-svc, .hk-wide, .hk-tile, .hk-row, .att-x';
   const calm = { matches: false };
   document.addEventListener('pointerdown', (e) => {
     if (e.button !== 0 || calm.matches || !(e.target instanceof Element)) return;

@@ -749,6 +749,9 @@ html.no-fv[data-style] input:focus, html.no-fv[data-style] textarea:focus, html.
 /* The attachment tray fades and sinks out; app.js keeps it for the 200ms this takes, then hides it. */
 :root[data-style] .att-tray.closing { animation: attOut .2s cubic-bezier(.4, 0, 1, 1) both; pointer-events: none; }
 @keyframes attOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(8px) scale(.98); } }
+/* The tray's X has no press ripple. Its glyph turns once as the tray closes, so only the X moves. */
+:root[data-style] .att-tray.closing .att-x svg { animation: attSpin .2s cubic-bezier(.3, .7, .2, 1) both; }
+@keyframes attSpin { to { transform: rotate(360deg); } }
 
 /* Name and preset chips: the hover fills with the surface tone and keeps the ink colour, so the name stays readable in dark mode. */
 :root[data-style] .dt-person:not(.on):hover, :root[data-style] .gchip:not(.on):hover { background: var(--ds-surface-hover) !important; color: var(--ds-ink) !important; }
