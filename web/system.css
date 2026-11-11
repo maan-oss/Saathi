@@ -744,3 +744,17 @@ html.no-fv[data-style] input:focus, html.no-fv[data-style] textarea:focus, html.
 :root[data-style] .composer .attach-wrap .pop button:hover,
 :root[data-style] .composer .attach-wrap .pop button:focus-visible { background: var(--pop-hov) !important; color: var(--pop-ink) !important; }
 :root[data-style] .composer .attach-wrap .pop button::before { background: var(--pop-ink) !important; }
+
+/* ---- 12. Things that close with an X ease out instead of vanishing. Name chips stay readable on hover. Scan corners sit inside the frame. ---- */
+/* The attachment tray fades and sinks out; app.js keeps it for the 200ms this takes, then hides it. */
+:root[data-style] .att-tray.closing { animation: attOut .2s cubic-bezier(.4, 0, 1, 1) both; pointer-events: none; }
+@keyframes attOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(8px) scale(.98); } }
+
+/* Name and preset chips: the hover fills with the surface tone and keeps the ink colour, so the name stays readable in dark mode. */
+:root[data-style] .dt-person:not(.on):hover, :root[data-style] .gchip:not(.on):hover { background: var(--ds-surface-hover) !important; color: var(--ds-ink) !important; }
+
+/* Scan corners: inset by the same 14px on every side, so they sit inside the frame and centre in its corners. The inner curve is the frame's 35px radius less the inset. */
+:root[data-style] .scan-stage .scan-c.tl { top: 14px !important; left: 14px !important; border-top-left-radius: 21px !important; }
+:root[data-style] .scan-stage .scan-c.tr { top: 14px !important; right: 14px !important; border-top-right-radius: 21px !important; }
+:root[data-style] .scan-stage .scan-c.bl { bottom: 14px !important; left: 14px !important; border-bottom-left-radius: 21px !important; }
+:root[data-style] .scan-stage .scan-c.br { bottom: 14px !important; right: 14px !important; border-bottom-right-radius: 21px !important; }

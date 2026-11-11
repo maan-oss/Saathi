@@ -693,10 +693,18 @@
   // The file waits above the text box. It uploads in the background and is sent only when the person presses send.
   const attTray = $('attTray'); const attThumb = $('attThumb');
   const uploadError = (e) => (e?.status === 415 ? T('That kind of file is not supported.') : e?.status === 429 ? T('Slow down a little, then try again.') : T('The upload failed. Check your connection and try again.'));
+  // The tray eases in when a file arrives (CSS) and eases out when it goes: it stays until the exit has played.
+  let trayTimer = 0;
   function renderTray() {
+    if (!pendingAtt) {
+      if (!attTray.hidden && !trayTimer) {
+        attTray.classList.add('closing');
+        trayTimer = setTimeout(() => { trayTimer = 0; attTray.hidden = true; attTray.classList.remove('closing'); attThumb.replaceChildren(); grow(); }, 200);
+      }
+      return;
+    }
+    clearTimeout(trayTimer); trayTimer = 0; attTray.classList.remove('closing'); attTray.hidden = false;
     attThumb.replaceChildren();
-    attTray.hidden = !pendingAtt;
-    if (!pendingAtt) return;
     if (pendingAtt.url) { const im = document.createElement('img'); im.src = pendingAtt.url; im.alt = ''; attThumb.append(im); }
     else attThumb.append(svg(ICON.file, 22));
   }
