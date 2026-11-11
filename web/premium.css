@@ -187,9 +187,7 @@ input[type="date"]{cursor:pointer}
 .hk-halo{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none;z-index:3}
 .hk-halo i{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:radial-gradient(circle,transparent 0 44%,var(--hk-halo) 58%,transparent 72%);transform:scale(0);animation:hkHalo .8s cubic-bezier(.2,.7,.2,1) forwards}
 .top.hk-top .hk-halo i{background:radial-gradient(circle,transparent 0 44%,rgba(255,255,255,.55) 58%,transparent 72%)}
-@keyframes hkHalo{0%{transform:scale(0);opacity:.9}55%{opacity:.8}100%{transform:scale(var(--s,30));opacity:0}}
-
-:is(button,[role="button"],a[href],.row,.hk-svc,.hk-q,.chip):focus-visible{outline:none;box-shadow:0 0 0 3px var(--hk-halo-ring)}
+@keyframes hkHalo{0%{transform:scale(0);opacity:.9}55%{opacity:.8}100%{transform:scale(var(--s,30));opacity:0}} button:focus-visible, [role="button"]:focus-visible, a[href]:focus-visible, .row:focus-visible, .hk-svc:focus-visible, .hk-q:focus-visible, .chip:focus-visible {outline:none;box-shadow:0 0 0 3px var(--hk-halo-ring)}
 input:focus-visible:not(#input),textarea:focus-visible:not(#input){outline:none;box-shadow:0 0 0 3px var(--hk-halo-ring)}
 .hk-svc:active,.hk-q:active,.chip:active,.btn:active,.hk-wide:active,.gtile:active,.tool-card:active,.svc-card:active,.hub-cc:active,.hk-row:active{transform:scale(.975)}
 .btn:has(>svg){display:inline-flex;align-items:center;justify-content:center;gap:8px}

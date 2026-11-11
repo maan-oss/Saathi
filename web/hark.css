@@ -288,18 +288,18 @@ input:focus,input:focus-visible,textarea:focus,textarea:focus-visible,select:foc
 
 /* ---- one interaction system for the sky app: the last word on hover, press and speed ---- */
 /* cards and rows: hover adds one grey tint, press adds a little more; nothing lifts or changes colour */
-:root[data-style="sky"] :is(.tool-card,.gtile,.hub-cc,.fd-o,.svc-card):hover{transform:none;box-shadow:var(--hk-hover),var(--shadow-sm);border-color:var(--glass-line)}
-:root[data-style="sky"] :is(.tool-card,.gtile,.hub-cc,.fd-o,.svc-card):active{box-shadow:var(--hk-press),var(--shadow-sm)}
-:root[data-style="sky"] :is(.hk-tile,.hk-svc,.hk-row,.hk-q,.hk-wide.light):hover{box-shadow:var(--hk-hover)}
-:root[data-style="sky"] :is(.hk-tile,.hk-svc,.hk-row,.hk-q,.hk-wide.light):active{box-shadow:var(--hk-press)}
+:root[data-style="sky"] .tool-card:hover, nothing lifts or changes colour */
+:root[data-style="sky"] .gtile:hover, nothing lifts or changes colour */
+:root[data-style="sky"] .hub-cc:hover, nothing lifts or changes colour */
+:root[data-style="sky"] .fd-o:hover, nothing lifts or changes colour */
+:root[data-style="sky"] .svc-card:hover {transform:none;box-shadow:var(--hk-hover),var(--shadow-sm);border-color:var(--glass-line)} :root[data-style="sky"] .tool-card:active, :root[data-style="sky"] .gtile:active, :root[data-style="sky"] .hub-cc:active, :root[data-style="sky"] .fd-o:active, :root[data-style="sky"] .svc-card:active {box-shadow:var(--hk-press),var(--shadow-sm)} :root[data-style="sky"] .hk-tile:hover, :root[data-style="sky"] .hk-svc:hover, :root[data-style="sky"] .hk-row:hover, :root[data-style="sky"] .hk-q:hover, :root[data-style="sky"] .hk-wide.light:hover {box-shadow:var(--hk-hover)} :root[data-style="sky"] .hk-tile:active, :root[data-style="sky"] .hk-svc:active, :root[data-style="sky"] .hk-row:active, :root[data-style="sky"] .hk-q:active, :root[data-style="sky"] .hk-wide.light:active {box-shadow:var(--hk-press)}
 /* solid buttons: black goes one grey lighter on hover; white buttons take the same tint as the cards */
-:root[data-style="sky"] :is(.btn.pri,.btn.xl,.btn.ink,.hk-wide.dark,.hk-av):hover{background:#2c2c2e;opacity:1;filter:none;transform:none;box-shadow:none}
-:root[data-style="sky"] :is(.btn.pri,.btn.xl,.btn.ink,.hk-wide.dark,.hk-av):active{background:#000}
-:root[data-style="sky"] :is(.btn,.chip):not(.pri):not(.xl):not(.ink):not(.ghost):not(.danger):hover{background:#f1f3f7;transform:none}
-:root[data-style="sky"] .hk-round:hover{background:#fff}
-:root[data-style="sky"][data-sky="night"] :is(.btn.pri,.btn.xl,.btn.ink,.hk-wide.dark):hover{background:#e6e6eb;color:#111}
-/* every change moves at the same speed */
-:root[data-style="sky"] :is(.tool-card,.gtile,.hub-cc,.fd-o,.svc-card,.hk-tile,.hk-svc,.hk-row,.hk-q,.hk-wide,.hk-round,.hk-av,.hk-tab,.hk-ask,.btn,.chip){transition:background-color var(--hk-fast) ease,box-shadow var(--hk-fast) ease,color var(--hk-fast) ease,border-color var(--hk-fast) ease,opacity var(--hk-fast) ease,transform var(--hk-fast) var(--hk-ease)}
+:root[data-style="sky"] .btn.pri:hover, white buttons take the same tint as the cards */
+:root[data-style="sky"] .btn.xl:hover, white buttons take the same tint as the cards */
+:root[data-style="sky"] .btn.ink:hover, white buttons take the same tint as the cards */
+:root[data-style="sky"] .hk-wide.dark:hover, white buttons take the same tint as the cards */
+:root[data-style="sky"] .hk-av:hover {background:#2c2c2e;opacity:1;filter:none;transform:none;box-shadow:none} :root[data-style="sky"] .btn.pri:active, :root[data-style="sky"] .btn.xl:active, :root[data-style="sky"] .btn.ink:active, :root[data-style="sky"] .hk-wide.dark:active, :root[data-style="sky"] .hk-av:active {background:#000} :root[data-style="sky"] .btn:not(.pri):not(.xl):not(.ink):not(.ghost):not(.danger):hover, :root[data-style="sky"] .chip:not(.pri):not(.xl):not(.ink):not(.ghost):not(.danger):hover {background:#f1f3f7;transform:none}
+:root[data-style="sky"] .hk-round:hover{background:#fff} :root[data-style="sky"][data-sky="night"] .btn.pri:hover, :root[data-style="sky"][data-sky="night"] .btn.xl:hover, :root[data-style="sky"][data-sky="night"] .btn.ink:hover, :root[data-style="sky"][data-sky="night"] .hk-wide.dark:hover {background:#e6e6eb;color:#111} /* every change moves at the same speed */ :root[data-style="sky"] .tool-card, :root[data-style="sky"] .gtile, :root[data-style="sky"] .hub-cc, :root[data-style="sky"] .fd-o, :root[data-style="sky"] .svc-card, :root[data-style="sky"] .hk-tile, :root[data-style="sky"] .hk-svc, :root[data-style="sky"] .hk-row, :root[data-style="sky"] .hk-q, :root[data-style="sky"] .hk-wide, :root[data-style="sky"] .hk-round, :root[data-style="sky"] .hk-av, :root[data-style="sky"] .hk-tab, :root[data-style="sky"] .hk-ask, :root[data-style="sky"] .btn, :root[data-style="sky"] .chip {transition:background-color var(--hk-fast) ease,box-shadow var(--hk-fast) ease,color var(--hk-fast) ease,border-color var(--hk-fast) ease,opacity var(--hk-fast) ease,transform var(--hk-fast) var(--hk-ease)}
 
 /* Waiting for a reply: three dots and, after a while, one quiet line. No bubble behind them. */
 :root .msg.botrow.thinking .bot{background:none!important;box-shadow:none!important;border:0!important;padding:4px 2px!important;max-width:100%}
@@ -363,8 +363,7 @@ input:focus,input:focus-visible,textarea:focus,textarea:focus-visible,select:foc
 :root .composer .rec-dot{flex:none;width:10px;height:10px;margin:0 2px 0 4px;border-radius:50%;background:var(--cmp-rec);animation:bl 1s infinite}
 :root .composer #recTime{flex:none;color:var(--ink);font-variant-numeric:tabular-nums}
 :root .composer .rec-msg{flex:1 1 auto;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--ink);opacity:1}
-:root .composer .rec-lang{flex:none}
-:root .composer:has(#rec:not([hidden])) :is(textarea,.attach-wrap,#micBtn){display:none!important}
+:root .composer .rec-lang{flex:none} :root .composer:has(#rec:not([hidden])) textarea, :root .composer:has(#rec:not([hidden])) .attach-wrap, :root .composer:has(#rec:not([hidden])) #micBtn {display:none!important}
 :root .composer:has(#rec:not([hidden])) .send,:root .composer:has(#rec:not([hidden])) .send:not(:disabled){opacity:1!important;transform:none!important;width:42px!important;pointer-events:auto;background:var(--cmp-rec)!important;color:#fff!important}
 
 /* For you rows: rounded hover and press, never a square box */

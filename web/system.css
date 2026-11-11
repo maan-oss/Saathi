@@ -40,12 +40,7 @@
   box-shadow: 0 1px 2px rgba(10, 20, 40, .10), 0 4px 14px rgba(10, 20, 40, .14) !important;
   z-index: 0; pointer-events: none !important; animation: none !important;
   transform: translateX(0); transition: transform .42s var(--sys-ease), width .42s var(--sys-ease), opacity .2s ease !important;
-}
-:root[data-style="sky"] :is(.seg button, .g-tab):focus-visible { outline: 2px solid #1d1d1f; outline-offset: -3px; }
-@media (hover: hover) {
-  :root[data-style="sky"] .seg button:not([aria-pressed="true"]):hover,
-  :root[data-style="sky"] .g-tab:not([aria-selected="true"]):hover { background: rgba(29, 29, 31, .07) !important; color: #1d1d1f !important; }
-}
+} :root[data-style="sky"] .seg button:focus-visible, :root[data-style="sky"] .g-tab:focus-visible { outline: 2px solid #1d1d1f; outline-offset: -3px; }
 
 /* ---- Buttons: one family. White pills by default, one black pill for the main action ---- */
 :root[data-style="sky"] .btn {
@@ -77,19 +72,13 @@
   :root[data-style="sky"] .btn.xl:hover { background: #33333a !important; box-shadow: 0 10px 24px rgba(10, 20, 40, .28) !important; transform: translateY(-1px) !important; }
   :root[data-style="sky"] .btn.ghost:hover { background: rgba(255, 255, 255, .3) !important; }
   :root[data-style="sky"] .btn.danger:hover { background: #fdecea !important; color: #b3261e !important; }
-}
-
-/* Round buttons in the header (close, back): one glass circle with a dark icon. */
-:root[data-style="sky"] :is(.sc-head, .top) .icon-btn,
-:root[data-style="sky"] .sc-head .sc-back {
+} /* Round buttons in the header (close, back): one glass circle with a dark icon. */ :root[data-style="sky"] .sc-head .icon-btn, :root[data-style="sky"] .top .icon-btn, :root[data-style="sky"] .sc-head .sc-back {
   width: 46px; height: 46px; padding: 0; border: 0 !important; border-radius: 50% !important;
   background: rgba(255, 255, 255, .55) !important; color: #1d1d1f !important; box-shadow: 0 2px 10px rgba(10, 30, 70, .12) !important;
   transition: background-color .2s ease, transform .16s var(--sys-ease) !important;
 }
-@media (hover: hover) {
-  :root[data-style="sky"] :is(.sc-head, .top) .icon-btn:hover { background: rgba(255, 255, 255, .9) !important; }
-}
-:root[data-style="sky"] :is(.sc-head, .top) .icon-btn:active { transform: scale(.92) !important; }
+@media (hover: hover) { :root[data-style="sky"] .sc-head .icon-btn:hover, :root[data-style="sky"] .top .icon-btn:hover { background: rgba(255, 255, 255, .9) !important; }
+} :root[data-style="sky"] .sc-head .icon-btn:active, :root[data-style="sky"] .top .icon-btn:active { transform: scale(.92) !important; }
 
 /* ---- Loading: three quiet dots, no full-page placeholder. Pages show their content as it arrives. ---- */
 .spin {
@@ -291,11 +280,7 @@
 }
 
 /* The attach button sits beside the field, outside the form, so it steps aside too: the voice bar gets the full row. */
-:root[data-style="sky"] .composer-wrap:has(#rec:not([hidden])) .attach-wrap { display: none !important; }
-
-/* ---- Photos from the phone, round 2 ---- */
-/* A dark button turns black when pressed. Its label has to turn light with it, or it disappears. */
-:root[data-style="sky"] :is(.btn.pri, .btn.xl, .btn.ink):active { background: #000 !important; color: #fff !important; }
+:root[data-style="sky"] .composer-wrap:has(#rec:not([hidden])) .attach-wrap { display: none !important; } /* ---- Photos from the phone, round 2 ---- */ /* A dark button turns black when pressed. Its label has to turn light with it, or it disappears. */ :root[data-style="sky"] .btn.pri:active, :root[data-style="sky"] .btn.xl:active, :root[data-style="sky"] .btn.ink:active { background: #000 !important; color: #fff !important; }
 
 /* The message field keeps a fixed corner radius as it grows, so a long message stays a rounded box instead of an oval that cuts the text. */
 :root[data-style="sky"] .composer { --r-pill: 34px; }
@@ -464,12 +449,7 @@
 :root[data-style="sky"][data-sky="night"] {
   --hk-ink: #f4f6fb; --hk-mut: #aab6cc;
 }
-:root[data-style="sky"][data-sky="night"] .hk-ask { color: #1d1d1f; }
-:root[data-style="sky"][data-sky="night"] :is(.seg, .g-tabs) { background: rgba(255, 255, 255, .12) !important; }
-:root[data-style="sky"][data-sky="night"] :is(.seg button, .g-tab) { color: #c9d4e8 !important; }
-:root[data-style="sky"][data-sky="night"] :is(.seg button, .g-tab):hover { color: #fff !important; background: rgba(255, 255, 255, .08) !important; }
-:root[data-style="sky"][data-sky="night"] :is(.seg button[aria-pressed="true"], .g-tab[aria-selected="true"]) { color: #111 !important; }
-:root[data-style="sky"][data-sky="night"] :is(.seg button[aria-pressed="true"], .g-tab[aria-selected="true"]):hover { color: #111 !important; background: #fff !important; }
+:root[data-style="sky"][data-sky="night"] .hk-ask { color: #1d1d1f; } :root[data-style="sky"][data-sky="night"] .seg, :root[data-style="sky"][data-sky="night"] .g-tabs { background: rgba(255, 255, 255, .12) !important; } :root[data-style="sky"][data-sky="night"] .seg button, :root[data-style="sky"][data-sky="night"] .g-tab { color: #c9d4e8 !important; } :root[data-style="sky"][data-sky="night"] .seg button:hover, :root[data-style="sky"][data-sky="night"] .g-tab:hover { color: #fff !important; background: rgba(255, 255, 255, .08) !important; } :root[data-style="sky"][data-sky="night"] .seg button[aria-pressed="true"], :root[data-style="sky"][data-sky="night"] .g-tab[aria-selected="true"] { color: #111 !important; } :root[data-style="sky"][data-sky="night"] .seg button[aria-pressed="true"]:hover, :root[data-style="sky"][data-sky="night"] .g-tab[aria-selected="true"]:hover { color: #111 !important; background: #fff !important; }
 :root[data-style="sky"][data-sky="night"] .g-tab[aria-selected="true"] *,
 :root[data-style="sky"][data-sky="night"] .seg button[aria-pressed="true"] * { color: #111 !important; }
 /* The guide's Yes / No and option buttons are white pills with dark text at night too, like the other pills. */
@@ -514,12 +494,9 @@
 }
 
 /* Selected text, and keyboard focus, are always visible. */
-:root[data-style] *::selection { background: var(--ds-sel); color: inherit; }
-:root[data-style] :is(button, a, select, summary, [role="button"], [role="tab"], [role="option"], [tabindex]):focus-visible {
+:root[data-style] *::selection { background: var(--ds-sel); color: inherit; } :root[data-style] button:focus-visible, :root[data-style] a:focus-visible, :root[data-style] select:focus-visible, :root[data-style] summary:focus-visible, :root[data-style] [role="button"]:focus-visible, :root[data-style] [role="tab"]:focus-visible, :root[data-style] [role="option"]:focus-visible, :root[data-style] [tabindex]:focus-visible {
   outline: 2px solid var(--ds-focus) !important; outline-offset: 2px !important; box-shadow: none !important;
-}
-:root[data-style] :is(input, textarea, .composer):focus-visible { outline: none !important; }
-:root[data-style] :is(button, input, textarea, select):disabled { opacity: .45 !important; cursor: default !important; }
+} :root[data-style] input:focus-visible, :root[data-style] textarea:focus-visible, :root[data-style] .composer:focus-visible { outline: none !important; } :root[data-style] button:disabled, :root[data-style] input:disabled, :root[data-style] textarea:disabled, :root[data-style] select:disabled { opacity: .45 !important; cursor: default !important; }
 
 /* The composer: [ text ] [ + ] [ mic or send ], with the + right beside the mic. */
 :root[data-style] .composer {
@@ -549,13 +526,9 @@
   transform: none !important;
 }
 :root[data-style] .composer .send:hover:not(:disabled) { background: var(--ds-solid) !important; opacity: .88; transform: none !important; box-shadow: none !important; }
-:root[data-style] .composer .send svg { width: 14px !important; height: 14px !important; }
-
-/* Top bar: round glass buttons, the avatar as the solid accent, and one nav group. */
-:root[data-style] :is(.hk-round, .icon-btn.sc-back, .icon-btn.round.close, .rec-x) {
+:root[data-style] .composer .send svg { width: 14px !important; height: 14px !important; } /* Top bar: round glass buttons, the avatar as the solid accent, and one nav group. */ :root[data-style] .hk-round, :root[data-style] .icon-btn.sc-back, :root[data-style] .icon-btn.round.close, :root[data-style] .rec-x {
   background: var(--ds-glass) !important; color: var(--ds-ink) !important; border: 1px solid var(--ds-line) !important; box-shadow: none !important;
-}
-:root[data-style] :is(.hk-round, .icon-btn.sc-back):hover { background: var(--ds-glass-hover) !important; }
+} :root[data-style] .hk-round:hover, :root[data-style] .icon-btn.sc-back:hover { background: var(--ds-glass-hover) !important; }
 :root[data-style] .hk-round svg, :root[data-style] .icon-btn.sc-back svg { color: var(--ds-ink) !important; stroke: var(--ds-ink) !important; }
 :root[data-style] .hk-av { background: var(--ds-solid) !important; color: var(--ds-solid-ink) !important; border: 0 !important; box-shadow: none !important; }
 :root[data-style] .hk-av svg, :root[data-style] .hk-av svg * { color: var(--ds-solid-ink) !important; stroke: var(--ds-solid-ink) !important; }
@@ -563,16 +536,9 @@
 :root[data-style] .top.hk-top .hk-seg .hk-tab { background: transparent !important; color: var(--ds-ink) !important; box-shadow: none !important; border: 0 !important; opacity: 1 !important; transform: none !important; }
 :root[data-style] .top.hk-top .hk-seg .hk-tab:hover:not(.on) { background: var(--ds-glass-hover) !important; color: var(--ds-ink) !important; opacity: 1 !important; }
 :root[data-style] .top.hk-top .hk-seg .hk-tab.on { background: var(--ds-pill) !important; color: var(--ds-pill-ink) !important; box-shadow: var(--ds-shadow) !important; opacity: 1 !important; }
-:root[data-style] .top.hk-top .hk-seg .hk-tab::after { display: none !important; }
-
-/* Segmented controls and tabs: a track, with the chosen item as a white pill. */
-:root[data-style] :is(.seg, .g-tabs) { background: var(--ds-track) !important; border: 0 !important; box-shadow: none !important; }
-:root[data-style] :is(.seg button, .g-tab) { background: transparent !important; color: var(--ds-ink-2) !important; box-shadow: none !important; border: 0 !important; }
-:root[data-style] :is(.seg button, .g-tab):hover:not([aria-pressed="true"]):not([aria-selected="true"]) { color: var(--ds-ink) !important; background: var(--ds-glass) !important; }
-:root[data-style] :is(.seg button[aria-pressed="true"], .seg button.on, .g-tab[aria-selected="true"]) {
+:root[data-style] .top.hk-top .hk-seg .hk-tab::after { display: none !important; } /* Segmented controls and tabs: a track, with the chosen item as a white pill. */ :root[data-style] .seg, :root[data-style] .g-tabs { background: var(--ds-track) !important; border: 0 !important; box-shadow: none !important; } :root[data-style] .seg button, :root[data-style] .g-tab { background: transparent !important; color: var(--ds-ink-2) !important; box-shadow: none !important; border: 0 !important; } :root[data-style] .seg button:hover:not([aria-pressed="true"]):not([aria-selected="true"]), :root[data-style] .g-tab:hover:not([aria-pressed="true"]):not([aria-selected="true"]) { color: var(--ds-ink) !important; background: var(--ds-glass) !important; } :root[data-style] .seg button[aria-pressed="true"], :root[data-style] .seg button.on, :root[data-style] .g-tab[aria-selected="true"] {
   background: var(--ds-pill) !important; color: var(--ds-pill-ink) !important; box-shadow: var(--ds-shadow) !important;
-}
-:root[data-style] :is(.seg button[aria-pressed="true"], .g-tab[aria-selected="true"]) * { color: inherit !important; }
+} :root[data-style] .seg button[aria-pressed="true"] *, :root[data-style] .g-tab[aria-selected="true"] * { color: inherit !important; }
 
 /* Buttons: primary is solid ink, the rest are glass. Options and menus are white pills. */
 :root[data-style] .btn {
@@ -585,29 +551,21 @@
 }
 :root[data-style] .btn.pri:hover:not(:disabled) { opacity: .9; }
 :root[data-style] .btn.ghost { background: transparent !important; border-color: var(--ds-line-strong) !important; }
-:root[data-style] .btn.danger { color: var(--ds-danger) !important; }
-:root[data-style] :is(.two > .btn, .attach-wrap .pop button, .fd-o) {
+:root[data-style] .btn.danger { color: var(--ds-danger) !important; } :root[data-style] .two > .btn, :root[data-style] .attach-wrap .pop button, :root[data-style] .fd-o {
   background: var(--ds-pill) !important; color: var(--ds-pill-ink) !important; border: 0 !important; box-shadow: var(--ds-shadow) !important;
-}
-:root[data-style] :is(.two > .btn, .attach-wrap .pop button, .fd-o):hover:not(:disabled) { background: var(--ds-pill-hover) !important; color: var(--ds-pill-ink) !important; }
-:root[data-style] :is(.two > .btn, .attach-wrap .pop button, .fd-o) * { color: inherit !important; }
+} :root[data-style] .two > .btn:hover:not(:disabled), :root[data-style] .attach-wrap .pop button:hover:not(:disabled), :root[data-style] .fd-o:hover:not(:disabled) { background: var(--ds-pill-hover) !important; color: var(--ds-pill-ink) !important; } :root[data-style] .two > .btn *, :root[data-style] .attach-wrap .pop button *, :root[data-style] .fd-o * { color: inherit !important; }
 
 /* Chips and tags. */
 :root[data-style] .chip { background: var(--ds-glass) !important; color: var(--ds-ink) !important; border: 1px solid var(--ds-line) !important; box-shadow: none !important; }
 :root[data-style] .chip:hover:not(:disabled) { background: var(--ds-glass-hover) !important; }
-:root[data-style] .chip.chosen, :root[data-style] .chip.on { background: var(--ds-solid) !important; color: var(--ds-solid-ink) !important; border-color: transparent !important; }
-
-/* Fields: one surface per theme, ink text, muted placeholder. */
-:root[data-style] :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea):not(.composer textarea) {
+:root[data-style] .chip.chosen, :root[data-style] .chip.on { background: var(--ds-solid) !important; color: var(--ds-solid-ink) !important; border-color: transparent !important; } /* Fields: one surface per theme, ink text, muted placeholder. */ :root[data-style] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.composer textarea), :root[data-style] textarea:not(.composer textarea) {
   background: var(--ds-field) !important; color: var(--ds-ink) !important; border: 1px solid var(--ds-line) !important; box-shadow: none !important;
-}
-:root[data-style] :is(input, textarea)::placeholder { color: var(--ds-mut) !important; opacity: 1 !important; }
+} :root[data-style] input::placeholder, :root[data-style] textarea::placeholder { color: var(--ds-mut) !important; opacity: 1 !important; }
 /* Search: one pill, with the input sitting inside it (no second box). */
 :root[data-style] .search-w { background: var(--ds-field) !important; border: 1px solid var(--ds-line) !important; color: var(--ds-mut) !important; box-shadow: none !important; }
 :root[data-style] .search-w:focus-within { border-color: var(--ds-line-strong) !important; }
 :root[data-style] .search-w input { background: transparent !important; border: 0 !important; box-shadow: none !important; color: var(--ds-ink) !important; }
-:root[data-style] .search-w svg { color: var(--ds-mut) !important; stroke: currentColor !important; }
-:root[data-style] :is(input, textarea):focus { border-color: var(--ds-line-strong) !important; }
+:root[data-style] .search-w svg { color: var(--ds-mut) !important; stroke: currentColor !important; } :root[data-style] input:focus, :root[data-style] textarea:focus { border-color: var(--ds-line-strong) !important; }
 :root[data-style] .hk-sfield { background: var(--ds-field) !important; border: 1px solid var(--ds-line) !important; box-shadow: none !important; color: var(--ds-ink) !important; }
 :root[data-style] .hk-sfield input { background: transparent !important; border: 0 !important; color: var(--ds-ink) !important; }
 :root[data-style] .hk-sfield input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
@@ -622,20 +580,15 @@
 :root[data-style] .dd-o { color: var(--ds-ink) !important; background: transparent !important; }
 :root[data-style] .dd-o:hover, :root[data-style] .dd-o.act { background: var(--ds-surface-hover) !important; color: var(--ds-ink) !important; }
 :root[data-style] .dd-o.on { background: var(--ds-surface-hover) !important; font-weight: 650 !important; }
-:root[data-style] .dd-none { color: var(--ds-mut) !important; }
-
-/* Rows and cards: one surface, one hover. */
-:root[data-style] :is(.row-i, .hk-card, .hk-tile, .hk-wide, .tool-card, .svc-card, .g-card) { color: var(--ds-ink) !important; }
+:root[data-style] .dd-none { color: var(--ds-mut) !important; } /* Rows and cards: one surface, one hover. */ :root[data-style] .row-i, :root[data-style] .hk-card, :root[data-style] .hk-tile, :root[data-style] .hk-wide, :root[data-style] .tool-card, :root[data-style] .svc-card, :root[data-style] .g-card { color: var(--ds-ink) !important; }
 /* The dark tile (e.g. Top up) is the solid accent, with the opposite ink, in both themes. */
 :root[data-style] .hk-wide.dark, :root[data-style] .hk-wide.dark:hover:not(:disabled) { background: var(--ds-solid) !important; color: var(--ds-solid-ink) !important; }
 :root[data-style] .hk-wide.dark:hover:not(:disabled) { opacity: .9; }
-:root[data-style] .hk-wide.dark * { color: inherit !important; }
-:root[data-style] :is(button.row-i, div.row-i) { background: var(--ds-surface) !important; }
+:root[data-style] .hk-wide.dark * { color: inherit !important; } :root[data-style] button.row-i, :root[data-style] div.row-i { background: var(--ds-surface) !important; }
 :root[data-style] button.row-i:hover:not(:disabled) { background: var(--ds-surface-hover) !important; }
 :root[data-style] button.row-i.danger { color: var(--ds-danger) !important; }
 :root[data-style] button.hk-svc { color: var(--ds-ink) !important; background: transparent !important; }
-:root[data-style] button.hk-svc:hover:not(:disabled) { background: var(--ds-surface-hover) !important; }
-:root[data-style] .hk-card.hk-flush > :is(.hk-svc, .hk-row):hover:not(:disabled), :root[data-style] .hk-row:hover:not(:disabled) { background: var(--ds-surface-hover) !important; box-shadow: none !important; }
+:root[data-style] button.hk-svc:hover:not(:disabled) { background: var(--ds-surface-hover) !important; } :root[data-style] .hk-card.hk-flush > .hk-svc:hover:not(:disabled), :root[data-style] .hk-card.hk-flush > .hk-row:hover:not(:disabled), :root[data-style] .hk-row:hover:not(:disabled) { background: var(--ds-surface-hover) !important; box-shadow: none !important; }
 
 /* Toast: the inverse of the page. */
 :root[data-style] #toast { background: var(--ds-solid) !important; color: var(--ds-solid-ink) !important; border: 0 !important; box-shadow: var(--ds-shadow) !important; }
