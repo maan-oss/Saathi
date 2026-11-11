@@ -85,7 +85,7 @@
     let details = dt.ok ? dt.data : { fields: [], filled: 0, total: 0 };
     let allProg = ex.ok ? { ...(ex.data.guides || {}) } : {};
     const P = allProg[id] || (allProg[id] = { route: '', ans: {}, steps: [], docs: [], fee: {}, at: 0 });
-    P.ans ||= {}; P.steps ||= []; P.docs ||= []; P.fee ||= {};
+    P.ans = P.ans || {}; P.steps = P.steps || []; P.docs = P.docs || []; P.fee = P.fee || {};
     let saveT = null;
     const save = () => { P.at = Date.now(); clearTimeout(saveT); saveT = setTimeout(() => tcall('extras.set', { guides: allProg }), 500); };
     let route = null; // { id, kind, intro, steps } or { kind:'info', text }

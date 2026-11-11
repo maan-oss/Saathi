@@ -3,8 +3,8 @@
    on purpose; the older layers stay so nothing else breaks. */
 
 /* 1. Press feedback: no bounce. A quiet dim tells you the tap landed. */
-:where(button,[role="button"],a):active:not(:disabled){transform:none!important}
-:where(button,[role="button"]):not(:disabled):active{opacity:.78}
+button:active:not(:disabled),[role="button"]:active:not(:disabled),a:active:not(:disabled){transform:none!important}
+button:not(:disabled):active,[role="button"]:not(:disabled):active{opacity:.78}
 .hk-round:active,.hk-av:active,.hk-tab:active{transform:none!important}
 .hk-round,.hk-av{transition:background .2s ease,opacity .12s ease!important}
 
@@ -33,8 +33,8 @@
 #pickCamera::before{--pi:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M8.6 4.5h6.8l1.6 2.2H20a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.7a2 2 0 0 1 2-2h2.6zM12 9.3a3.7 3.7 0 1 0 0 7.4 3.7 3.7 0 0 0 0-7.4z'/%3E%3C/svg%3E")}
 #pickFile::before{--pi:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 3.5h14A2.5 2.5 0 0 1 21.5 6v12a2.5 2.5 0 0 1-2.5 2.5H5A2.5 2.5 0 0 1 2.5 18V6A2.5 2.5 0 0 1 5 3.5zM4.4 16.4l4.6-4.6 3.4 3.4 2.2-2.2 5.4 5.4V18a.9.9 0 0 1-.9.9H5.3a.9.9 0 0 1-.9-.9zM15.9 6.9a1.8 1.8 0 1 0 0 3.6 1.8 1.8 0 0 0 0-3.6z'/%3E%3C/svg%3E")}
 .attach-wrap .pop button:nth-child(2){animation-delay:.07s}
-.attach-wrap .pop button:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)!important}
-.attach-wrap .pop .pi{flex:none;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--ink) 9%,transparent);color:var(--ink)}
+.attach-wrap .pop button:hover{background:rgb(var(--ink-rgb) / calc(7% * var(--ink-a, 1)))!important}
+.attach-wrap .pop .pi{flex:none;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:rgb(var(--ink-rgb) / calc(9% * var(--ink-a, 1)));color:var(--ink)}
 .attach-wrap .pop .pi svg{display:block}
 @keyframes pvPop{from{opacity:0;transform:translateY(12px) scale(.9)}to{opacity:1;transform:none}}
 @keyframes pvItem{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -51,8 +51,8 @@
 @keyframes pvDot{0%,70%,100%{transform:translateY(0);opacity:.35}35%{transform:translateY(-5px);opacity:1}}
 
 /* 8. Replies: plain typeset text with the Saathi mark, not a white box. Cards that hold a form or a price keep theirs. */
-:root[data-style="sky"] .msg.botrow .bot:not(:has(.sheet,.pack,.g-card,.vault,.err,.tkt,.cost)){background:none!important;box-shadow:none!important;border:0!important;border-radius:0!important;padding:6px 2px 2px!important;--ink:#1d1d1f;color:#1d1d1f}
-:root[data-style="sky"][data-sky="night"] .msg.botrow .bot:not(:has(.sheet,.pack,.g-card,.vault,.err,.tkt,.cost)){--ink:#f2f5fb;color:#f2f5fb}
+:root[data-style="sky"] .msg.botrow .bot:not([data-h~="cardB"]){background:none!important;box-shadow:none!important;border:0!important;border-radius:0!important;padding:6px 2px 2px!important;--ink: #1d1d1f; --ink-rgb: 29 29 31; --ink-a: 1;color:#1d1d1f}
+:root[data-style="sky"][data-sky="night"] .msg.botrow .bot:not([data-h~="cardB"]){--ink: #f2f5fb; --ink-rgb: 242 245 251; --ink-a: 1;color:#f2f5fb}
 :root[data-style="sky"] .msg.botrow .bot .body{font:400 16px/1.6 var(--sans);letter-spacing:-.005em;color:inherit}
 :root[data-style="sky"][data-sky="night"] .msg.botrow .bot .body{color:#f2f5fb}
 :root[data-style="sky"] .msg.botrow .bot .body p{margin:0 0 .6em}
@@ -62,32 +62,32 @@
 .hk-card.hk-flush>.hk-svc .hk-circ{margin-right:2px}
 
 /* 10. Calendar sheet: the date fields open a calendar that matches the app. It writes the same value as the field. */
-.dp{position:fixed;inset:0;z-index:90;display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .24s ease}
+.dp{position:fixed;top:0;right:0;bottom:0;left:0;z-index:90;display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .24s ease}
 .dp[hidden]{display:none}
 .dp.on{opacity:1}
-.dp-scrim{position:absolute;inset:0;background:rgba(12,16,22,.42);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.dp-scrim{position:absolute;top:0;right:0;bottom:0;left:0;background:rgba(12,16,22,.42);-webkit-backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
 .dp-card{position:relative;width:min(100%,420px);max-height:88vh;overflow:auto;box-sizing:border-box;background:var(--bg);color:var(--ink);border-radius:28px 28px 0 0;padding:10px 18px calc(16px + env(safe-area-inset-bottom,0px));box-shadow:0 -18px 50px rgba(0,0,0,.22);transform:translateY(48px);transition:transform .42s cubic-bezier(.2,.9,.25,1.05)}
 .dp.on .dp-card{transform:none}
 @media (min-width:640px){.dp{align-items:center}.dp-card{border-radius:28px;transform:translateY(18px) scale(.97);padding-bottom:18px}.dp.on .dp-card{transform:none}}
 .dp-grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 12px}
 .dp-head{display:flex;align-items:center;gap:8px}
 .dp-title{flex:1;min-height:44px;border:0;background:none;color:var(--ink);font:600 17px/1.2 var(--sans);text-align:center;border-radius:14px;cursor:pointer;padding:0 8px}
-.dp-title:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}
-.dp-nav{width:42px;height:42px;flex:none;border:0;border-radius:50%;background:color-mix(in srgb,var(--ink) 7%,transparent);color:var(--ink);display:grid;place-items:center;cursor:pointer;transition:opacity .15s ease}
+.dp-title:hover{background:rgb(var(--ink-rgb) / calc(6% * var(--ink-a, 1)))}
+.dp-nav{width:42px;height:42px;flex:none;border:0;border-radius:50%;background:rgb(var(--ink-rgb) / calc(7% * var(--ink-a, 1)));color:var(--ink);display:grid;place-items:center;cursor:pointer;transition:opacity .15s ease}
 .dp-nav:disabled{opacity:.3;cursor:default}
 .dp-wk,.dp-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
 .dp-wk{margin-top:12px}
 .dp-wk span{text-align:center;font:600 12px/1 var(--sans);color:var(--mut);padding:6px 0;text-transform:uppercase;letter-spacing:.04em}
 .dp-grid{margin-top:4px}
 .dp-day{aspect-ratio:1;width:100%;min-width:0;border:0;border-radius:50%;background:none;color:var(--ink);font:500 15px/1 var(--sans);font-variant-numeric:tabular-nums;display:grid;place-items:center;cursor:pointer;transition:background .15s ease,transform .12s ease,color .15s ease}
-.dp-day:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
+.dp-day:hover{background:rgb(var(--ink-rgb) / calc(8% * var(--ink-a, 1)))}
 .dp-day:active{transform:scale(.92)}
-.dp-day.today{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ink) 55%,transparent)}
+.dp-day.today{box-shadow:inset 0 0 0 1.5px rgb(var(--ink-rgb) / calc(55% * var(--ink-a, 1)))}
 .dp-day.sel{background:var(--ink);color:var(--bg);box-shadow:none}
 .dp-day:disabled{opacity:.28;cursor:default;background:none}
 .dp-years{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;max-height:50vh;overflow:auto;margin-top:14px;padding:2px 2px 6px;overscroll-behavior:contain}
 .dp-years[hidden]{display:none}
-.dp-yr{border:0;border-radius:14px;padding:12px 0;background:color-mix(in srgb,var(--ink) 6%,transparent);color:var(--ink);font:600 15px/1 var(--sans);font-variant-numeric:tabular-nums;cursor:pointer}
+.dp-yr{border:0;border-radius:14px;padding:12px 0;background:rgb(var(--ink-rgb) / calc(6% * var(--ink-a, 1)));color:var(--ink);font:600 15px/1 var(--sans);font-variant-numeric:tabular-nums;cursor:pointer}
 .dp-yr.sel{background:var(--ink);color:var(--bg)}
 .dp-foot{display:flex;align-items:center;gap:6px;margin-top:16px}
 .dp-link{min-height:44px;border:0;background:none;color:var(--ink);font:600 15px/1 var(--sans);padding:0 12px;border-radius:14px;cursor:pointer}
@@ -103,7 +103,8 @@ input[type="date"]{cursor:pointer}
 .dt-person{font:inherit;font-size:14px;line-height:1.2;min-height:40px;padding:8px 14px;border-radius:999px;border:1px solid var(--line,#d9d6cc);background:transparent;color:var(--ink);cursor:pointer;max-width:100%;overflow-wrap:anywhere}
 .dt-person.on{background:var(--ink);color:var(--bg);border-color:transparent;cursor:default}
 .dt-person.add{border-style:dashed}
-.dt-person:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.dt-person:focus-visible {outline:2px solid var(--ink);outline-offset:2px}
+html.no-fv .dt-person:focus {outline:2px solid var(--ink);outline-offset:2px}
 .dt-add{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
 .dt-add .field-i{flex:1 1 180px;min-width:0}
 .dt-people-rm{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px}
@@ -112,13 +113,15 @@ input[type="date"]{cursor:pointer}
 .rm-alerts{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 12px}
 .rm-alert{min-height:40px}
 .rm-alert[aria-pressed="true"],.rm-alert.on{background:var(--ink);color:var(--bg);border-color:transparent}
-.rm-alert:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.rm-alert:focus-visible {outline:2px solid var(--ink);outline-offset:2px}
+html.no-fv .rm-alert:focus {outline:2px solid var(--ink);outline-offset:2px}
 
 /* 13. For you: the next steps under the greeting on an empty chat (sky style) */
 :root[data-style="sky"] .app .foryou{display:flex!important;flex-direction:column;gap:10px;width:var(--hub-col);max-width:none;margin:0 auto;padding:0 0 16px}
 .foryou .fy-h{font-size:13px;line-height:1.2;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);font-weight:600;padding:0 4px}
 .foryou .fy-card{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:12px 14px;border-radius:var(--r-card,18px);border:1px solid var(--glass-line,var(--line));background:var(--glass,var(--bg));color:var(--ink);font:inherit;text-align:left;cursor:pointer;box-shadow:var(--shadow-sm,none)}
-.foryou .fy-card:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.foryou .fy-card:focus-visible {outline:2px solid var(--ink);outline-offset:2px}
+html.no-fv .foryou .fy-card:focus {outline:2px solid var(--ink);outline-offset:2px}
 .foryou .fy-v{flex:none;min-width:64px;padding:5px 10px;border-radius:999px;background:var(--ink);color:var(--bg);font-size:12px;font-weight:600;text-align:center}
 .foryou .fy-t{flex:1;min-width:0;font-size:15px;line-height:1.35;overflow-wrap:anywhere}
 .hello .hello-trust{color:rgba(255,255,255,.94);opacity:1;text-shadow:0 1px 14px rgba(20,50,100,.3)}
@@ -141,7 +144,8 @@ input[type="date"]{cursor:pointer}
 :root[data-style="sky"] .hk-sfield input[type="search"]::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
 .hk-sclear{flex:none;width:32px;height:32px;padding:0;border:0;border-radius:50%;display:grid;place-items:center;background:rgba(31,30,29,.1);color:#1d1d1f;cursor:pointer;opacity:0;transform:scale(.4);pointer-events:none;transition:opacity .2s ease,transform .4s var(--hk-spring),background .2s ease}
 .hk-sclear:hover{background:rgba(31,30,29,.18)}
-.hk-sclear:focus-visible{outline:2px solid #1d1d1f;outline-offset:2px}
+.hk-sclear:focus-visible {outline:2px solid #1d1d1f;outline-offset:2px}
+html.no-fv .hk-sclear:focus {outline:2px solid #1d1d1f;outline-offset:2px}
 .hk-sfield.has .hk-sclear{opacity:1;transform:none;pointer-events:auto}
 :root[data-style] .app[data-search] .foryou{display:none!important}
 
@@ -153,23 +157,23 @@ input[type="date"]{cursor:pointer}
 
 @media (min-width:640px){
   .dp{align-items:stretch;justify-content:stretch}
-  .dp-scrim{background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none}
+  .dp-scrim{background:transparent;-webkit-backdrop-filter:none;-webkit-backdrop-filter:none;backdrop-filter:none}
   .dp-card{position:fixed;left:0;top:0;width:340px;max-height:none;box-sizing:border-box;border-radius:22px;padding:12px 14px 14px;transform-origin:top left;transform:translateY(-6px) scale(.97);box-shadow:0 22px 60px rgba(12,20,40,.24),0 2px 10px rgba(12,20,40,.12)}
   .dp.on .dp-card{transform:none}
   .dp-grab{display:none}
 }
 /* The hub's dock takes the full screen width, so the shared column is measured from the screen, not from a padded box. */
-:root[data-style="sky"] .app[data-tab="chat"]:has(.hello) .dock{padding-left:0!important;padding-right:0!important}
+:root[data-style="sky"] .app[data-tab="chat"][data-h~="hello"] .dock{padding-left:0!important;padding-right:0!important}
 :root[data-style="sky"] .app[data-tab="chat"] .composer-wrap{margin:0 auto}
 /* The hub is one group: greeting, composer and For you sit together, centred in the space under the top bar. */
-:root[data-style="sky"] .app[data-tab="chat"]:has(.hello)>main.chat{flex:0 0 auto!important;margin-top:auto;overflow-y:auto!important}
-:root[data-style="sky"] .app:has(.hello)>.foryou{margin-bottom:auto}
+:root[data-style="sky"] .app[data-tab="chat"][data-h~="hello"]>main.chat{flex:0 0 auto!important;margin-top:auto;overflow-y:auto!important}
+:root[data-style="sky"] .app[data-h~="hello"]>.foryou{margin-bottom:auto}
 
 /* ---- 15. One feel across the app ------------------------------------------------------------------------
    A soft halo replaces the black line under a selected tab and marks every press. Search takes the top bar in
    place of the tabs. Guides shows only its own list (no For-you cards underneath). */
-:root{--hk-halo:rgba(31,30,29,.2);--hk-halo-ring:rgba(31,30,29,.18)}
-:root[data-sky="night"]{--hk-halo:rgba(255,255,255,.2);--hk-halo-ring:rgba(255,255,255,.26)}
+:root{--hk-halo: rgba(31,30,29,.2); --hk-halo-rgb: 31 30 29; --hk-halo-a: 0.2;--hk-halo-ring: rgba(31,30,29,.18); --hk-halo-ring-rgb: 31 30 29; --hk-halo-ring-a: 0.18}
+:root[data-sky="night"]{--hk-halo: rgba(255,255,255,.2); --hk-halo-rgb: 255 255 255; --hk-halo-a: 0.2;--hk-halo-ring: rgba(255,255,255,.26); --hk-halo-ring-rgb: 255 255 255; --hk-halo-ring-a: 0.26}
 :root[data-style] .app[data-tab="guides"]>.foryou,:root[data-style] .app[data-tab="guides"]>.hk-float{display:none!important}
 
 :root[data-style="sky"] .top.hk-top .hk-seg{gap:6px;transition:opacity .28s ease,transform .38s var(--hk-ease,ease)}
@@ -184,10 +188,12 @@ input[type="date"]{cursor:pointer}
 .app[data-search] .top.hk-top .hk-seg{opacity:0;transform:scale(.92);pointer-events:none}
 .hk-sfield:focus-within{box-shadow:0 0 0 4px var(--hk-halo-ring)}
 
-.hk-halo{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none;z-index:3}
+.hk-halo{position:absolute;top:0;right:0;bottom:0;left:0;border-radius:inherit;overflow:hidden;pointer-events:none;z-index:3}
 .hk-halo i{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:radial-gradient(circle,transparent 0 44%,var(--hk-halo) 58%,transparent 72%);transform:scale(0);animation:hkHalo .8s cubic-bezier(.2,.7,.2,1) forwards}
 .top.hk-top .hk-halo i{background:radial-gradient(circle,transparent 0 44%,rgba(255,255,255,.55) 58%,transparent 72%)}
 @keyframes hkHalo{0%{transform:scale(0);opacity:.9}55%{opacity:.8}100%{transform:scale(var(--s,30));opacity:0}} button:focus-visible, [role="button"]:focus-visible, a[href]:focus-visible, .row:focus-visible, .hk-svc:focus-visible, .hk-q:focus-visible, .chip:focus-visible {outline:none;box-shadow:0 0 0 3px var(--hk-halo-ring)}
-input:focus-visible:not(#input),textarea:focus-visible:not(#input){outline:none;box-shadow:0 0 0 3px var(--hk-halo-ring)}
+html.no-fv button:focus, html.no-fv [role="button"]:focus, html.no-fv a[href]:focus, html.no-fv .row:focus, html.no-fv .hk-svc:focus, html.no-fv .hk-q:focus, html.no-fv .chip:focus {outline:none;box-shadow:0 0 0 3px var(--hk-halo-ring)}
+input:focus-visible:not(#input), textarea:focus-visible:not(#input) {outline:none;box-shadow:0 0 0 3px var(--hk-halo-ring)}
+html.no-fv input:focus:not(#input), html.no-fv textarea:focus:not(#input) {outline:none;box-shadow:0 0 0 3px var(--hk-halo-ring)}
 .hk-svc:active,.hk-q:active,.chip:active,.btn:active,.hk-wide:active,.gtile:active,.tool-card:active,.svc-card:active,.hub-cc:active,.hk-row:active{transform:scale(.975)}
-.btn:has(>svg){display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn[data-h~="svg"]{display:inline-flex;align-items:center;justify-content:center;gap:8px}

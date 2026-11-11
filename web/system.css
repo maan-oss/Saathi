@@ -41,6 +41,7 @@
   z-index: 0; pointer-events: none !important; animation: none !important;
   transform: translateX(0); transition: transform .42s var(--sys-ease), width .42s var(--sys-ease), opacity .2s ease !important;
 } :root[data-style="sky"] .seg button:focus-visible, :root[data-style="sky"] .g-tab:focus-visible { outline: 2px solid #1d1d1f; outline-offset: -3px; }
+html.no-fv[data-style="sky"] .seg button:focus, html.no-fv[data-style="sky"] .g-tab:focus { outline: 2px solid #1d1d1f; outline-offset: -3px; }
 
 /* ---- Buttons: one family. White pills by default, one black pill for the main action ---- */
 :root[data-style="sky"] .btn {
@@ -64,6 +65,7 @@
 :root[data-style="sky"] .btn.pri:active,
 :root[data-style="sky"] .btn.xl:active { background: #000 !important; }
 :root[data-style="sky"] .btn:focus-visible { outline: 2px solid #1d1d1f; outline-offset: 3px; }
+html.no-fv[data-style="sky"] .btn:focus { outline: 2px solid #1d1d1f; outline-offset: 3px; }
 :root[data-style="sky"] .btn:disabled,
 :root[data-style="sky"] .btn[aria-disabled="true"] { opacity: .45 !important; transform: none !important; box-shadow: none !important; cursor: default; }
 @media (hover: hover) {
@@ -103,19 +105,23 @@
 /* ---- Chat bar: the + and the field share one surface, and the menu is solid. Each surface sets its own text colour, so a
    dark phone never leaves dark text on a dark menu. The colours come from the explicit tokens in final.css. ---- */
 :root[data-style="sky"] {
-  --chat-send: #2f6bff; --chat-send-hov: #2459e0; --chat-send-ink: #ffffff;
+  --chat-send: #2f6bff; --chat-send-rgb: 47 107 255; --chat-send-a: 1; --chat-send-hov: #2459e0; --chat-send-hov-rgb: 36 89 224; --chat-send-hov-a: 1; --chat-send-ink: #ffffff; --chat-send-ink-rgb: 255 255 255; --chat-send-ink-a: 1;
 }
-:root[data-style="sky"][data-sky="night"] { --chat-send: #6f8cff; --chat-send-hov: #8aa1ff; --chat-send-ink: #0b1433; }
+:root[data-style="sky"][data-sky="night"] { --chat-send: #6f8cff; --chat-send-rgb: 111 140 255; --chat-send-a: 1; --chat-send-hov: #8aa1ff; --chat-send-hov-rgb: 138 161 255; --chat-send-hov-a: 1; --chat-send-ink: #0b1433; --chat-send-ink-rgb: 11 20 51; --chat-send-ink-a: 1; }
 
 :root[data-style="sky"] .composer {
   background: var(--fld) !important; color: var(--fld-ink) !important;
 }
 :root[data-style="sky"] .composer textarea { color: var(--fld-ink) !important; }
-:root[data-style="sky"] .composer textarea::placeholder { color: color-mix(in srgb, var(--fld-ink) 55%, transparent); }
+:root[data-style="sky"] .composer textarea::placeholder { color: rgb(var(--fld-ink-rgb) / calc(55% * var(--fld-ink-a, 1))); }
 
-:root[data-style="sky"] .attach-wrap .attach,
-:root[data-style="sky"] .attach-wrap .attach:hover,
+:root[data-style="sky"] .attach-wrap .attach, :root[data-style="sky"] .attach-wrap .attach:hover {
+  background: var(--fld) !important; color: var(--fld-ink) !important; box-shadow: var(--fld-sh) !important;
+}
 :root[data-style="sky"] .attach-wrap .attach:focus-visible {
+  background: var(--fld) !important; color: var(--fld-ink) !important; box-shadow: var(--fld-sh) !important;
+}
+html.no-fv[data-style="sky"] .attach-wrap .attach:focus {
   background: var(--fld) !important; color: var(--fld-ink) !important; box-shadow: var(--fld-sh) !important;
 }
 
@@ -131,8 +137,8 @@
 
 :root[data-style="sky"] .composer .send,
 :root[data-style="sky"] .composer .send:not(:disabled),
-:root[data-style="sky"] .composer-wrap .composer:has(#rec:not([hidden])) .send,
-:root[data-style="sky"] .composer-wrap .composer:has(#rec:not([hidden])) .send:not(:disabled) {
+:root[data-style="sky"] .composer-wrap .composer[data-h~="recC"] .send,
+:root[data-style="sky"] .composer-wrap .composer[data-h~="recC"] .send:not(:disabled) {
   background: var(--chat-send) !important; color: var(--chat-send-ink) !important;
 }
 @media (hover: hover) {
@@ -166,19 +172,20 @@
 :root[data-style="sky"] .dd-c { color: var(--fld-ink); opacity: .6; }
 
 /* ---- Toggles: no sliders and no knobs. A switch is a pill that fills when it is on, with a tick in a ring. ---- */
-:root[data-style="sky"] { --tg-on: #1d1d1f; --tg-on-ink: #ffffff; }
-:root[data-style="sky"][data-sky="night"] { --tg-on: #f4f6fb; --tg-on-ink: #0b1433; }
+:root[data-style="sky"] { --tg-on: #1d1d1f; --tg-on-rgb: 29 29 31; --tg-on-a: 1; --tg-on-ink: #ffffff; --tg-on-ink-rgb: 255 255 255; --tg-on-ink-a: 1; }
+:root[data-style="sky"][data-sky="night"] { --tg-on: #f4f6fb; --tg-on-rgb: 244 246 251; --tg-on-a: 1; --tg-on-ink: #0b1433; --tg-on-ink-rgb: 11 20 51; --tg-on-ink-a: 1; }
 :root[data-style="sky"] .rm-alerts { display: flex; flex-wrap: wrap; gap: 8px; }
 :root[data-style="sky"] .rm-sw {
   position: relative; display: inline-flex; align-items: center; gap: 9px; min-height: 44px; padding: 8px 16px 8px 10px;
   border-radius: 999px; border: 1px solid var(--pop-line); background: var(--fld); color: var(--fld-ink); box-shadow: var(--fld-sh);
-  font: 500 15px/1.2 var(--sans); cursor: pointer; user-select: none;
+  font: 500 15px/1.2 var(--sans); cursor: pointer; -webkit-user-select:none;user-select:none;
   transition: background-color .2s ease, color .2s ease, border-color .2s ease, transform .16s var(--sys-ease);
 }
 :root[data-style="sky"] .rm-sw:active { transform: var(--sys-press); }
-:root[data-style="sky"] .rm-sw:has(input:checked) { background: var(--tg-on); color: var(--tg-on-ink); border-color: transparent; }
+:root[data-style="sky"] .rm-sw[data-h~="on"] { background: var(--tg-on); color: var(--tg-on-ink); border-color: transparent; }
 :root[data-style="sky"] .rm-sw input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
 :root[data-style="sky"] .rm-sw input:focus-visible ~ .rm-sw-tr { outline: 2px solid currentColor; outline-offset: 2px; }
+html.no-fv[data-style="sky"] .rm-sw input:focus ~ .rm-sw-tr { outline: 2px solid currentColor; outline-offset: 2px; }
 :root[data-style="sky"] .rm-sw-tr {
   position: relative; flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
   box-shadow: inset 0 0 0 1.5px currentColor; opacity: .55; transition: background-color .2s ease, box-shadow .2s ease, opacity .2s ease;
@@ -188,8 +195,8 @@
   border-radius: 0; background: none; box-shadow: none; transform: rotate(45deg) scale(0);
   transition: transform .22s var(--sys-ease);
 }
-:root[data-style="sky"] .rm-sw:has(input:checked) .rm-sw-tr { opacity: 1; box-shadow: none; background: var(--tg-on-ink); color: var(--tg-on); }
-:root[data-style="sky"] .rm-sw:has(input:checked) .rm-sw-tr i { transform: rotate(45deg) scale(1); }
+:root[data-style="sky"] .rm-sw[data-h~="on"] .rm-sw-tr { opacity: 1; box-shadow: none; background: var(--tg-on-ink); color: var(--tg-on); }
+:root[data-style="sky"] .rm-sw[data-h~="on"] .rm-sw-tr i { transform: rotate(45deg) scale(1); }
 :root[data-style="sky"] .rm-sw-l { font-size: 15px; }
 :root[data-style="sky"] .rm-sw .rm-sw-l { white-space: nowrap; }
 
@@ -233,7 +240,7 @@
 :root[data-style="sky"] *, :root[data-style="sky"] *::before, :root[data-style="sky"] *::after { -webkit-tap-highlight-color: transparent; }
 
 /* ---- Photos in the thread: no bubble, no border. The photo keeps its own rounded shape and is never cut by the bubble. ---- */
-:root[data-style="sky"] .msg.me .bubble-me:has(> .me-att) {
+:root[data-style="sky"] .msg.me .bubble-me[data-h~="att"] {
   background: none !important; border: 0 !important; box-shadow: none !important; padding: 0 !important;
   border-radius: 0 !important; overflow: visible !important; max-width: 100%;
 }
@@ -243,6 +250,7 @@
   border-radius: 22px !important; overflow: hidden; box-shadow: 0 6px 18px rgba(10, 20, 40, .16) !important;
 }
 :root[data-style="sky"] .msg.me .me-att .me-photo:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+html.no-fv[data-style="sky"] .msg.me .me-att .me-photo:focus { outline: 2px solid #fff; outline-offset: 3px; }
 :root[data-style="sky"] .msg.me .me-att .me-photo img {
   display: block; width: 100%; height: auto; max-width: 100%; max-height: 320px; object-fit: cover;
   border: 0; border-radius: 0 !important; box-shadow: none; outline: 0;
@@ -271,8 +279,8 @@
 }
 
 /* While dictating, the words are the feedback: the wave and timer step aside and the newest words stay in view. */
-:root[data-style="sky"] .composer .rec:has(#dictLang:not([hidden])) .rec-wave,
-:root[data-style="sky"] .composer .rec:has(#dictLang:not([hidden])) #recTime { display: none; }
+:root[data-style="sky"] .composer .rec[data-h~="dict"] .rec-wave,
+:root[data-style="sky"] .composer .rec[data-h~="dict"] #recTime { display: none; }
 :root[data-style="sky"] .composer .rec-lang { font-size: 12.5px; padding: 5px 10px; }
 :root[data-style="sky"] .composer .rec-msg.words {
   display: flex; justify-content: flex-end; white-space: nowrap;
@@ -280,7 +288,7 @@
 }
 
 /* The attach button sits beside the field, outside the form, so it steps aside too: the voice bar gets the full row. */
-:root[data-style="sky"] .composer-wrap:has(#rec:not([hidden])) .attach-wrap { display: none !important; } /* ---- Photos from the phone, round 2 ---- */ /* A dark button turns black when pressed. Its label has to turn light with it, or it disappears. */ :root[data-style="sky"] .btn.pri:active, :root[data-style="sky"] .btn.xl:active, :root[data-style="sky"] .btn.ink:active { background: #000 !important; color: #fff !important; }
+:root[data-style="sky"] .composer-wrap[data-h~="recW"] .attach-wrap { display: none !important; } /* ---- Photos from the phone, round 2 ---- */ /* A dark button turns black when pressed. Its label has to turn light with it, or it disappears. */ :root[data-style="sky"] .btn.pri:active, :root[data-style="sky"] .btn.xl:active, :root[data-style="sky"] .btn.ink:active { background: #000 !important; color: #fff !important; }
 
 /* The message field keeps a fixed corner radius as it grows, so a long message stays a rounded box instead of an oval that cuts the text. */
 :root[data-style="sky"] .composer { --r-pill: 34px; }
@@ -318,15 +326,20 @@
 :root[data-style] .composer .attach-wrap { position: static; flex: none; display: flex; align-self: center; order: 2 !important; margin: 0 8px 0 0 !important; }
 :root[data-style] .composer textarea { order: 1 !important; }
 :root[data-style] .composer #micBtn { order: 3 !important; }
-:root[data-style] .composer .attach-wrap .attach,
-:root[data-style] .composer .attach-wrap .attach:hover,
-:root[data-style] .composer .attach-wrap .attach:focus-visible,
-:root[data-style] .composer .attach-wrap .attach:active {
+:root[data-style] .composer .attach-wrap .attach, :root[data-style] .composer .attach-wrap .attach:hover, :root[data-style] .composer .attach-wrap .attach:active {
+  width: 42px !important; height: 42px !important; min-width: 42px !important; margin: 0 !important;
+  background: transparent !important; color: var(--fld-ink) !important; box-shadow: none !important; transform: none !important;
+}
+:root[data-style] .composer .attach-wrap .attach:focus-visible {
+  width: 42px !important; height: 42px !important; min-width: 42px !important; margin: 0 !important;
+  background: transparent !important; color: var(--fld-ink) !important; box-shadow: none !important; transform: none !important;
+}
+html.no-fv[data-style] .composer .attach-wrap .attach:focus {
   width: 42px !important; height: 42px !important; min-width: 42px !important; margin: 0 !important;
   background: transparent !important; color: var(--fld-ink) !important; box-shadow: none !important; transform: none !important;
 }
 @media (hover: hover) {
-  :root[data-style] .composer .attach-wrap .attach:hover { background: color-mix(in srgb, var(--fld-ink) 10%, transparent) !important; }
+  :root[data-style] .composer .attach-wrap .attach:hover { background: rgb(var(--fld-ink-rgb) / calc(10% * var(--fld-ink-a, 1))) !important; }
 }
 /* The menu opens above the field and lines up with its right edge, so it stays on screen at 320px. */
 :root[data-style] .composer .attach-wrap .pop { left: auto !important; right: 8px !important; bottom: calc(100% + 12px); min-width: 248px; max-width: calc(100% - 16px); }
@@ -367,15 +380,15 @@
   width: 42px !important; height: 42px !important; min-width: 42px !important; margin: 0 !important; padding: 0 !important;
   border: 0 !important; transition: opacity .18s ease, transform .3s var(--sys-ease) !important;
 }
-:root[data-style] .composer:has(textarea:placeholder-shown) .send,
-:root[data-style] .composer:not(:has(textarea:placeholder-shown)) #micBtn {
+:root[data-style] .composer[data-h~="empty"] .send,
+:root[data-style] .composer:not([data-h~="empty"]) #micBtn {
   opacity: 0 !important; transform: scale(.6) !important; pointer-events: none !important;
 }
-:root[data-style] .composer:has(textarea:placeholder-shown) #micBtn,
-:root[data-style] .composer:not(:has(textarea:placeholder-shown)) .send {
+:root[data-style] .composer[data-h~="empty"] #micBtn,
+:root[data-style] .composer:not([data-h~="empty"]) .send {
   opacity: 1 !important; transform: none !important; pointer-events: auto !important;
 }
-:root[data-style] .composer:not(:has(textarea:placeholder-shown)) .send:disabled { opacity: .45 !important; }
+:root[data-style] .composer:not([data-h~="empty"]) .send:disabled { opacity: .45 !important; }
 
 /* ---- 2. Moving between Chat and Guides: the page slides in from the side it came from, in both directions.
    The empty chat used to be exempt, so Guides → Chat showed nothing. The composer only fades. ---- */
@@ -410,13 +423,25 @@
 :root[data-style] .attach-wrap .pop:not([hidden]) { display: flex; flex-direction: column; gap: 8px; }
 
 /* ---- 5. White pills with dark text, one family: the attach menu, Scan's two buttons and every other pair. ---- */
-:root[data-style] .attach-wrap .pop button,
-:root[data-style] .attach-wrap .pop button:hover,
-:root[data-style] .attach-wrap .pop button:focus-visible,
-:root[data-style] .two > .btn,
-:root[data-style] .two > .btn:hover,
-:root[data-style] .two > .btn.pri,
-:root[data-style] .two > .btn.xl {
+:root[data-style] .attach-wrap .pop button, :root[data-style] .attach-wrap .pop button:hover, :root[data-style] .two > .btn, :root[data-style] .two > .btn:hover, :root[data-style] .two > .btn.pri, :root[data-style] .two > .btn.xl {
+  display: flex !important; align-items: center; justify-content: flex-start; gap: 10px;
+  width: 100%; min-height: 48px; margin: 0 !important; padding: 0 20px !important;
+  border: 0 !important; border-radius: 999px !important;
+  background: #fff !important; color: #1d1d1f !important; font: 600 15px/1.2 var(--sans) !important; text-align: left;
+  box-shadow: 0 1px 2px rgba(10, 20, 40, .10), 0 6px 18px rgba(10, 20, 40, .16) !important;
+  animation: none !important; opacity: 1 !important;
+  transition: background-color .18s ease, transform .18s var(--sys-ease), box-shadow .2s ease !important;
+}
+:root[data-style] .attach-wrap .pop button:focus-visible {
+  display: flex !important; align-items: center; justify-content: flex-start; gap: 10px;
+  width: 100%; min-height: 48px; margin: 0 !important; padding: 0 20px !important;
+  border: 0 !important; border-radius: 999px !important;
+  background: #fff !important; color: #1d1d1f !important; font: 600 15px/1.2 var(--sans) !important; text-align: left;
+  box-shadow: 0 1px 2px rgba(10, 20, 40, .10), 0 6px 18px rgba(10, 20, 40, .16) !important;
+  animation: none !important; opacity: 1 !important;
+  transition: background-color .18s ease, transform .18s var(--sys-ease), box-shadow .2s ease !important;
+}
+html.no-fv[data-style] .attach-wrap .pop button:focus {
   display: flex !important; align-items: center; justify-content: flex-start; gap: 10px;
   width: 100%; min-height: 48px; margin: 0 !important; padding: 0 20px !important;
   border: 0 !important; border-radius: 999px !important;
@@ -447,7 +472,7 @@
 
 /* ---- 7. Dark (night) theme: every heading, label and line of text is light. The selected choice is a white pill with dark text. ---- */
 :root[data-style="sky"][data-sky="night"] {
-  --hk-ink: #f4f6fb; --hk-mut: #aab6cc;
+  --hk-ink: #f4f6fb; --hk-ink-rgb: 244 246 251; --hk-ink-a: 1; --hk-mut: #aab6cc; --hk-mut-rgb: 170 182 204; --hk-mut-a: 1;
 }
 :root[data-style="sky"][data-sky="night"] .hk-ask { color: #1d1d1f; } :root[data-style="sky"][data-sky="night"] .seg, :root[data-style="sky"][data-sky="night"] .g-tabs { background: rgba(255, 255, 255, .12) !important; } :root[data-style="sky"][data-sky="night"] .seg button, :root[data-style="sky"][data-sky="night"] .g-tab { color: #c9d4e8 !important; } :root[data-style="sky"][data-sky="night"] .seg button:hover, :root[data-style="sky"][data-sky="night"] .g-tab:hover { color: #fff !important; background: rgba(255, 255, 255, .08) !important; } :root[data-style="sky"][data-sky="night"] .seg button[aria-pressed="true"], :root[data-style="sky"][data-sky="night"] .g-tab[aria-selected="true"] { color: #111 !important; } :root[data-style="sky"][data-sky="night"] .seg button[aria-pressed="true"]:hover, :root[data-style="sky"][data-sky="night"] .g-tab[aria-selected="true"]:hover { color: #111 !important; background: #fff !important; }
 :root[data-style="sky"][data-sky="night"] .g-tab[aria-selected="true"] *,
@@ -469,34 +494,38 @@
    No blues or purples anywhere in the chrome.
    ===================================================================== */
 :root[data-style="sky"] {
-  --ds-ink: #1d1d1f; --ds-ink-2: #3c4150; --ds-mut: #5a6070;
-  --ds-surface: #f3f5f9; --ds-surface-hover: #e4e9f1;
-  --ds-field: #ffffff; --ds-pop: #ffffff;
-  --ds-pill: #ffffff; --ds-pill-ink: #1d1d1f; --ds-pill-hover: #eef2f8;
-  --ds-track: #e3e8f0;
-  --ds-glass: rgba(255, 255, 255, .72); --ds-glass-hover: rgba(255, 255, 255, .92);
-  --ds-line: rgba(29, 29, 31, .12); --ds-line-strong: rgba(29, 29, 31, .26);
-  --ds-solid: #1d1d1f; --ds-solid-ink: #ffffff;
-  --ds-sel: rgba(29, 29, 31, .18); --ds-focus: #1d1d1f; --ds-danger: #b3261e;
+  --ds-ink: #1d1d1f; --ds-ink-rgb: 29 29 31; --ds-ink-a: 1; --ds-ink-2: #3c4150; --ds-ink-2-rgb: 60 65 80; --ds-ink-2-a: 1; --ds-mut: #5a6070; --ds-mut-rgb: 90 96 112; --ds-mut-a: 1;
+  --ds-surface: #f3f5f9; --ds-surface-rgb: 243 245 249; --ds-surface-a: 1; --ds-surface-hover: #e4e9f1; --ds-surface-hover-rgb: 228 233 241; --ds-surface-hover-a: 1;
+  --ds-field: #ffffff; --ds-field-rgb: 255 255 255; --ds-field-a: 1; --ds-pop: #ffffff; --ds-pop-rgb: 255 255 255; --ds-pop-a: 1;
+  --ds-pill: #ffffff; --ds-pill-rgb: 255 255 255; --ds-pill-a: 1; --ds-pill-ink: #1d1d1f; --ds-pill-ink-rgb: 29 29 31; --ds-pill-ink-a: 1; --ds-pill-hover: #eef2f8; --ds-pill-hover-rgb: 238 242 248; --ds-pill-hover-a: 1;
+  --ds-track: #e3e8f0; --ds-track-rgb: 227 232 240; --ds-track-a: 1;
+  --ds-glass: rgba(255, 255, 255, .72); --ds-glass-rgb: 255 255 255; --ds-glass-a: 0.72; --ds-glass-hover: rgba(255, 255, 255, .92); --ds-glass-hover-rgb: 255 255 255; --ds-glass-hover-a: 0.92;
+  --ds-line: rgba(29, 29, 31, .12); --ds-line-rgb: 29 29 31; --ds-line-a: 0.12; --ds-line-strong: rgba(29, 29, 31, .26); --ds-line-strong-rgb: 29 29 31; --ds-line-strong-a: 0.26;
+  --ds-solid: #1d1d1f; --ds-solid-rgb: 29 29 31; --ds-solid-a: 1; --ds-solid-ink: #ffffff; --ds-solid-ink-rgb: 255 255 255; --ds-solid-ink-a: 1;
+  --ds-sel: rgba(29, 29, 31, .18); --ds-sel-rgb: 29 29 31; --ds-sel-a: 0.18; --ds-focus: #1d1d1f; --ds-focus-rgb: 29 29 31; --ds-focus-a: 1; --ds-danger: #b3261e; --ds-danger-rgb: 179 38 30; --ds-danger-a: 1;
   --ds-shadow: 0 1px 3px rgba(10, 20, 50, .14);
 }
 :root[data-style="sky"][data-sky="night"] {
-  --ds-ink: #f4f6fb; --ds-ink-2: #c9d4e8; --ds-mut: #aab6cc;
-  --ds-surface: #17264d; --ds-surface-hover: #22376a;
-  --ds-field: #1b2b59; --ds-pop: #14224a;
-  --ds-pill: #ffffff; --ds-pill-ink: #1d1d1f; --ds-pill-hover: #eef2f8;
-  --ds-track: rgba(255, 255, 255, .10);
-  --ds-glass: rgba(255, 255, 255, .12); --ds-glass-hover: rgba(255, 255, 255, .2);
-  --ds-line: rgba(255, 255, 255, .14); --ds-line-strong: rgba(255, 255, 255, .3);
-  --ds-solid: #ffffff; --ds-solid-ink: #1d1d1f;
-  --ds-sel: rgba(255, 255, 255, .26); --ds-focus: #ffffff; --ds-danger: #ff8a80;
+  --ds-ink: #f4f6fb; --ds-ink-rgb: 244 246 251; --ds-ink-a: 1; --ds-ink-2: #c9d4e8; --ds-ink-2-rgb: 201 212 232; --ds-ink-2-a: 1; --ds-mut: #aab6cc; --ds-mut-rgb: 170 182 204; --ds-mut-a: 1;
+  --ds-surface: #17264d; --ds-surface-rgb: 23 38 77; --ds-surface-a: 1; --ds-surface-hover: #22376a; --ds-surface-hover-rgb: 34 55 106; --ds-surface-hover-a: 1;
+  --ds-field: #1b2b59; --ds-field-rgb: 27 43 89; --ds-field-a: 1; --ds-pop: #14224a; --ds-pop-rgb: 20 34 74; --ds-pop-a: 1;
+  --ds-pill: #ffffff; --ds-pill-rgb: 255 255 255; --ds-pill-a: 1; --ds-pill-ink: #1d1d1f; --ds-pill-ink-rgb: 29 29 31; --ds-pill-ink-a: 1; --ds-pill-hover: #eef2f8; --ds-pill-hover-rgb: 238 242 248; --ds-pill-hover-a: 1;
+  --ds-track: rgba(255, 255, 255, .10); --ds-track-rgb: 255 255 255; --ds-track-a: 0.1;
+  --ds-glass: rgba(255, 255, 255, .12); --ds-glass-rgb: 255 255 255; --ds-glass-a: 0.12; --ds-glass-hover: rgba(255, 255, 255, .2); --ds-glass-hover-rgb: 255 255 255; --ds-glass-hover-a: 0.2;
+  --ds-line: rgba(255, 255, 255, .14); --ds-line-rgb: 255 255 255; --ds-line-a: 0.14; --ds-line-strong: rgba(255, 255, 255, .3); --ds-line-strong-rgb: 255 255 255; --ds-line-strong-a: 0.3;
+  --ds-solid: #ffffff; --ds-solid-rgb: 255 255 255; --ds-solid-a: 1; --ds-solid-ink: #1d1d1f; --ds-solid-ink-rgb: 29 29 31; --ds-solid-ink-a: 1;
+  --ds-sel: rgba(255, 255, 255, .26); --ds-sel-rgb: 255 255 255; --ds-sel-a: 0.26; --ds-focus: #ffffff; --ds-focus-rgb: 255 255 255; --ds-focus-a: 1; --ds-danger: #ff8a80; --ds-danger-rgb: 255 138 128; --ds-danger-a: 1;
   --ds-shadow: 0 1px 3px rgba(0, 0, 0, .35);
 }
 
 /* Selected text, and keyboard focus, are always visible. */
 :root[data-style] *::selection { background: var(--ds-sel); color: inherit; } :root[data-style] button:focus-visible, :root[data-style] a:focus-visible, :root[data-style] select:focus-visible, :root[data-style] summary:focus-visible, :root[data-style] [role="button"]:focus-visible, :root[data-style] [role="tab"]:focus-visible, :root[data-style] [role="option"]:focus-visible, :root[data-style] [tabindex]:focus-visible {
   outline: 2px solid var(--ds-focus) !important; outline-offset: 2px !important; box-shadow: none !important;
-} :root[data-style] input:focus-visible, :root[data-style] textarea:focus-visible, :root[data-style] .composer:focus-visible { outline: none !important; } :root[data-style] button:disabled, :root[data-style] input:disabled, :root[data-style] textarea:disabled, :root[data-style] select:disabled { opacity: .45 !important; cursor: default !important; }
+}
+html.no-fv[data-style] button:focus, html.no-fv[data-style] a:focus, html.no-fv[data-style] select:focus, html.no-fv[data-style] summary:focus, html.no-fv[data-style] [role="button"]:focus, html.no-fv[data-style] [role="tab"]:focus, html.no-fv[data-style] [role="option"]:focus, html.no-fv[data-style] [tabindex]:focus {
+  outline: 2px solid var(--ds-focus) !important; outline-offset: 2px !important; box-shadow: none !important;
+} :root[data-style] input:focus-visible, :root[data-style] textarea:focus-visible, :root[data-style] .composer:focus-visible { outline: none !important; }
+html.no-fv[data-style] input:focus, html.no-fv[data-style] textarea:focus, html.no-fv[data-style] .composer:focus { outline: none !important; } :root[data-style] button:disabled, :root[data-style] input:disabled, :root[data-style] textarea:disabled, :root[data-style] select:disabled { opacity: .45 !important; cursor: default !important; }
 
 /* The composer: [ text ] [ + ] [ mic or send ], with the + right beside the mic. */
 :root[data-style] .composer {
@@ -593,3 +622,9 @@
 /* Toast: the inverse of the page. */
 :root[data-style] #toast { background: var(--ds-solid) !important; color: var(--ds-solid-ink) !important; border: 0 !important; box-shadow: var(--ds-shadow) !important; }
 :root[data-style] #toast * { color: inherit !important; }
+
+/* Older browsers without aspect-ratio: same box size from padding or height. */
+@supports not (aspect-ratio: 1) {
+  .dp-day { height: 42px; }
+  .scan-stage { height: 0; padding-bottom: 75%; }
+}

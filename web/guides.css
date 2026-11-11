@@ -14,7 +14,7 @@
 .btn.ghost{background:transparent;border-color:transparent;color:var(--mut)}
 .btn.ghost:hover{background:var(--tint);color:var(--ink)}
 .gr-ring{position:relative;flex:none;width:64px;height:64px;display:grid;place-items:center}
-.gr-ring svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.gr-ring svg{position:absolute;top:0;right:0;bottom:0;left:0;transform:rotate(-90deg)}
 .gr-ring circle{fill:none;stroke-width:3.4}
 .gr-bg{stroke:var(--line)}
 .gr-fg{stroke:var(--ink);stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:calc(100 - var(--p,0)*100);transition:stroke-dashoffset .7s var(--ease,cubic-bezier(.2,.8,.2,1))}
@@ -28,7 +28,7 @@
 .g-tab:hover{color:var(--ink)}
 .g-tab:active{transform:scale(.97)}
 .g-tab[aria-selected=true]{background:var(--ink);color:var(--bg)}
-.g-tab[aria-selected=true] small{background:color-mix(in srgb,var(--bg) 22%,transparent);color:var(--bg)}
+.g-tab[aria-selected=true] small{background:rgb(var(--bg-rgb) / calc(22% * var(--bg-a, 1)));color:var(--bg)}
 
 /* panes */
 .g-pane{display:flex;flex-direction:column;gap:14px}
@@ -97,7 +97,7 @@
 .dcl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
 .dcl-i{display:flex;gap:14px;align-items:flex-start;padding:16px;border:1px solid var(--line);border-radius:18px;background:var(--bg);transition:background-color .2s;animation:gin .34s var(--ease,ease) both;animation-delay:calc(var(--i,0)*30ms)}
 .dcl-i.done{background:var(--bg2)}
-.dcl-i.done .dcl-m>b{color:var(--mut);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--mut) 60%,transparent)}
+.dcl-i.done .dcl-m>b{color:var(--mut);text-decoration:line-through;text-decoration-color:rgb(var(--mut-rgb) / calc(60% * var(--mut-a, 1)))}
 .dcl-m{min-width:0;flex:1;display:flex;flex-direction:column;gap:5px}
 .dcl-m>b{font:600 16px/1.35 var(--sans)}
 .dcl-h{color:var(--mut);font-size:14px;line-height:1.5}

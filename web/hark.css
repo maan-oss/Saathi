@@ -4,7 +4,7 @@
 .screen{left:0!important}
 /* Until hark.js has built the Sky shell (it sets data-hk on #app), the old static markup stays hidden: no Classic flash on open or reload. */
 #app:not([data-hk]){visibility:hidden}
-:root{--hk-ink:#1d1d1f;--hk-mut:#5d6675;--hk-card:#F1F4F8;--hk-tile:#FFFFFF;--hk-ease:cubic-bezier(.22,.9,.28,1);
+:root{--hk-ink: #1d1d1f; --hk-ink-rgb: 29 29 31; --hk-ink-a: 1;--hk-mut: #5d6675; --hk-mut-rgb: 93 102 117; --hk-mut-a: 1;--hk-card: #F1F4F8; --hk-card-rgb: 241 244 248; --hk-card-a: 1;--hk-tile: #FFFFFF; --hk-tile-rgb: 255 255 255; --hk-tile-a: 1;--hk-ease:cubic-bezier(.22,.9,.28,1);
   --hk-hover:inset 0 0 0 999px rgba(20,32,60,.06);--hk-press:inset 0 0 0 999px rgba(20,32,60,.12);
   --hk-fast:.16s;--hk-mid:.28s;--hk-slow:.45s}
 .hk-top{display:flex!important;align-items:center;gap:10px;justify-content:space-between;max-width:640px;width:100%;margin:0 auto;padding:max(12px,env(safe-area-inset-top)) 14px 8px!important;background:transparent!important;border:0!important;position:relative;z-index:3}
@@ -30,7 +30,7 @@
 :root[data-style="sky"] .app[data-tab="chat"] .hello{padding:12vh 0 3vh}
 
 /* the whole screen is the scroller, so the wheel and trackpad work everywhere; the content keeps a 640px column in the middle */
-.hk-pane{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;width:100%;max-width:none;margin:0;padding:6px max(14px,calc((100% - 612px) / 2)) 110px;display:flex;flex-direction:column;gap:14px;color:var(--hk-ink);--ink:var(--hk-ink);--mut:var(--hk-mut);scrollbar-width:thin}
+.hk-pane{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;width:100%;max-width:none;margin:0;padding:6px max(14px,calc((100% - 612px) / 2)) 110px;display:flex;flex-direction:column;gap:14px;color:var(--hk-ink);--ink: var(--hk-ink); --ink-rgb: var(--hk-ink-rgb); --ink-a: var(--hk-ink-a, 1);--mut: var(--hk-mut); --mut-rgb: var(--hk-mut-rgb); --mut-a: var(--hk-mut-a, 1);scrollbar-width:thin}
 .hk-pane.fresh>*{animation:hkrise .55s var(--hk-ease) both;animation-delay:var(--d,0ms)}
 .hk-pane.in-r{animation:hkInR .42s var(--hk-ease) both}.hk-pane.in-l{animation:hkInL .42s var(--hk-ease) both}
 .app>.chat.in-r,.app>.dock.in-r{animation:hkInR .42s var(--hk-ease) both}.app>.chat.in-l,.app>.dock.in-l{animation:hkInL .42s var(--hk-ease) both}
@@ -72,9 +72,9 @@
 .hk-float svg{color:var(--hk-ink)}
 
 /* chat bubbles: white for Saathi, soft neutral grey for you. Links are ink with an underline, never blue. */
-:root[data-style="sky"] .msg.botrow .bot{background:rgba(255,255,255,.96);color:#1d1d1f;border-radius:30px;padding:14px 20px;--ink:#1d1d1f;--mut:#5d6675;--line:rgba(0,0,0,.1);box-shadow:0 1px 0 rgba(255,255,255,.4)}
+:root[data-style="sky"] .msg.botrow .bot{background:rgba(255,255,255,.96);color:#1d1d1f;border-radius:30px;padding:14px 20px;--ink: #1d1d1f; --ink-rgb: 29 29 31; --ink-a: 1;--mut: #5d6675; --mut-rgb: 93 102 117; --mut-a: 1;--line: rgba(0,0,0,.1); --line-rgb: 0 0 0; --line-a: 0.1;box-shadow:0 1px 0 rgba(255,255,255,.4)}
 :root[data-style="sky"] .msg.botrow .bot a{color:#1d1d1f;text-decoration:underline;text-decoration-color:rgba(29,29,31,.35);text-underline-offset:3px}
-:root[data-style="sky"] .msg.botrow .bot:has(.err,.sheet,.pack,.g-card,.vault){background:transparent;padding:0;box-shadow:none}
+:root[data-style="sky"] .msg.botrow .bot[data-h~="cardA"]{background:transparent;padding:0;box-shadow:none}
 :root[data-style="sky"] body .msg.me .bubble-me{background:#E6E9EF!important;color:#1d1d1f!important;border:0!important;border-radius:30px!important;padding:13px 20px}
 :root[data-style="sky"] .bubble-me a{color:inherit;text-decoration:underline;text-decoration-color:rgba(29,29,31,.35);text-underline-offset:3px}
 .msg.me{animation:hkpop .4s var(--hk-ease) both;transform-origin:bottom right}.msg.botrow{animation:hkrise .5s var(--hk-ease) both}
@@ -85,7 +85,7 @@
 .hk-spacer{height:90px}
 .hk-search-pill{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));width:min(360px,calc(100% - 32px));margin-left:calc(min(360px,100% - 32px)/-2);height:56px;display:flex;align-items:center;gap:12px;padding:0 22px;border:0;border-radius:999px!important;background:rgba(255,255,255,.94);box-shadow:0 8px 28px rgba(30,60,110,.2);color:var(--hk-mut);font:500 16px var(--sans);cursor:pointer;z-index:5}
 .hk-search-pill svg{color:var(--hk-ink)}
-.hk-sw{position:absolute;inset:0;display:flex;flex-direction:column;animation:hkrise .4s var(--hk-ease) both}
+.hk-sw{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;flex-direction:column;animation:hkrise .4s var(--hk-ease) both}
 .hk-sb{flex:1;min-height:0;overflow-y:auto;padding:calc(env(safe-area-inset-top) + 70px) 16px 12px;display:flex;flex-direction:column;max-width:640px;width:100%;margin:0 auto}
 .hk-hint{margin:auto;text-align:center;color:#4a5568;font-size:17px}
 .hk-sbar{display:flex;gap:10px;align-items:center;padding:8px 14px max(16px,env(safe-area-inset-bottom));max-width:640px;width:100%;margin:0 auto}
@@ -96,7 +96,7 @@
 :root[data-style="sky"][data-sky="night"] .top.hk-top .hk-tab.on{color:#111}
 :root[data-style="sky"][data-sky="night"] .top.hk-top .hk-round{background:rgba(255,255,255,.18)}
 :root[data-style="sky"][data-sky="night"] .top.hk-top .hk-round,:root[data-style="sky"][data-sky="night"] .top.hk-top .hk-round *{color:#fff;stroke:#fff}
-:root[data-style="sky"][data-sky="night"] .hk-card{--hk-ink:#f2f5fb;--hk-mut:#aebbd2;color:#f2f5fb}
+:root[data-style="sky"][data-sky="night"] .hk-card{--hk-ink: #f2f5fb; --hk-ink-rgb: 242 245 251; --hk-ink-a: 1;--hk-mut: #aebbd2; --hk-mut-rgb: 174 187 210; --hk-mut-a: 1;color:#f2f5fb}
 :root[data-style="sky"][data-sky="night"] .hk-wide.light,:root[data-style="sky"][data-sky="night"] .hk-circ{color:#1d1d1f}
 :root[data-style="sky"][data-sky="night"] .hk-v,:root[data-style="sky"][data-sky="night"] .hk-wide.dark{background:#fff;color:#111}
 :root[data-style="sky"][data-sky="night"] .hk-wide.light{background:rgba(255,255,255,.92)}
@@ -122,13 +122,13 @@ body.screen-open .app{visibility:hidden}
 :root[data-style="sky"] .app[data-tab="chat"] .hello{padding:5vh 0 2vh;gap:6px}
 :root[data-style="sky"] .app[data-tab="chat"] .hello h1{font-size:clamp(30px,8.5vw,44px)}
 :root[data-style] .app[data-tab="chat"]>.dock{background:none!important}
-.app:has(textarea:focus) .trust{display:none}
+.app[data-h~="kb"] .trust{display:none}
 @media (max-height:520px){:root[data-style="sky"] .app[data-tab="chat"] .hello p{display:none}}
 
 /* language list: the search bar no longer lets rows show through; chosen row is clear in every phase */
 :root[data-style="sky"] .search-w{position:sticky;top:0;z-index:3;background:var(--glass)!important;}
 :root[data-style="sky"] .langs{overflow:visible;margin-top:10px}
-:root[data-style="sky"] .lang.on{background:rgba(255,255,255,.92)!important;--ink:#1d1d1f;--mut:#5b6472;color:#1d1d1f}
+:root[data-style="sky"] .lang.on{background:rgba(255,255,255,.92)!important;--ink: #1d1d1f; --ink-rgb: 29 29 31; --ink-a: 1;--mut: #5b6472; --mut-rgb: 91 100 114; --mut-a: 1;color:#1d1d1f}
 :root[data-style="sky"] .lang.on .l-dot{background:#111;border-color:#111;color:#fff}
 
 /* more motion */
@@ -160,7 +160,7 @@ body.screen-open .app{visibility:hidden}
 .hk-wide.dark{color:#fff!important}
 :root[data-style="sky"][data-sky="night"] .hk-card .hk-wide.dark{background:#fff;color:#111!important}
 .hk-prof .hk-logo{font:600 44px/1 var(--sans);letter-spacing:-.03em}
-:root[data-style="sky"][data-sky="night"]{--hk-card:#17264A;--hk-tile:#22345E;--hk-hover:inset 0 0 0 999px rgba(255,255,255,.07);--hk-press:inset 0 0 0 999px rgba(255,255,255,.14)}
+:root[data-style="sky"][data-sky="night"]{--hk-card: #17264A; --hk-card-rgb: 23 38 74; --hk-card-a: 1;--hk-tile: #22345E; --hk-tile-rgb: 34 52 94; --hk-tile-a: 1;--hk-hover:inset 0 0 0 999px rgba(255,255,255,.07);--hk-press:inset 0 0 0 999px rgba(255,255,255,.14)}
 :root[data-style="sky"][data-sky="night"] .hk-wide.dark:hover{background:#e6e6eb}
 
 /* home: airy, the sky shows through */
@@ -183,11 +183,11 @@ body.screen-open .app{visibility:hidden}
 /* sky: painted clouds, grain, slow drift */
 :root[data-style="sky"] body::before{background:radial-gradient(58% 17% at 22% 16%,rgba(255,255,255,.5),transparent 72%),radial-gradient(52% 14% at 82% 30%,rgba(255,255,255,.4),transparent 72%),radial-gradient(68% 16% at 28% 55%,rgba(255,255,255,.36),transparent 74%),radial-gradient(56% 15% at 86% 78%,rgba(255,255,255,.34),transparent 72%),radial-gradient(46% 12% at 14% 90%,rgba(255,255,255,.3),transparent 72%)!important;animation:hkdrift 38s ease-in-out infinite alternate;will-change:transform}
 :root[data-style="sky"][data-sky="night"] body::before{opacity:.28}
-:root[data-style="sky"] body::after{display:none!important;content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.16;mix-blend-mode:soft-light;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+:root[data-style="sky"] body::after{display:none!important;content:"";position:fixed;top:0;right:0;bottom:0;left:0;z-index:-1;pointer-events:none;opacity:.16;mix-blend-mode:soft-light;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
 
 /* chat composer: small and floating at rest, wide when you type */
 :root[data-style] .app[data-tab="chat"]>.dock{padding:6px 34px max(28px,env(safe-area-inset-bottom));transition:padding .4s var(--hk-ease)}
-:root[data-style] .app[data-tab="chat"]:has(textarea:focus)>.dock{padding:6px 12px max(10px,env(safe-area-inset-bottom))}
+:root[data-style] .app[data-tab="chat"][data-h~="kb"]>.dock{padding:6px 12px max(10px,env(safe-area-inset-bottom))}
 .app[data-tab="chat"] .composer{transition:box-shadow .35s var(--hk-ease),transform .35s var(--hk-ease),background .3s}
 .app[data-tab="chat"] .composer:not(:focus-within){transform:none}
 .composer textarea{order:1}.attach-wrap{order:2}#micBtn{order:3}.composer .send{order:4}
@@ -203,7 +203,7 @@ html,body{overflow-x:hidden;overscroll-behavior-x:none}
 .hk-pane{overflow-x:hidden}.hk-rail{touch-action:pan-x pan-y}
 /* corner button: plus / magnifier / X morph */
 .hk-round{position:relative}
-.hk-round .hk-i{position:absolute;inset:0;display:grid;place-items:center;opacity:0;transform:rotate(-90deg) scale(.3);transition:opacity .25s,transform .45s var(--hk-spring);pointer-events:none}
+.hk-round .hk-i{position:absolute;top:0;right:0;bottom:0;left:0;display:grid;place-items:center;opacity:0;transform:rotate(-90deg) scale(.3);transition:opacity .25s,transform .45s var(--hk-spring);pointer-events:none}
 .hk-round[data-m="plus"] .hk-i.plus,.hk-round[data-m="search"] .hk-i.search,.hk-round[data-m="x"] .hk-i.x{opacity:1;transform:none}
 .hk-round[data-m="x"] .hk-i.search,.hk-round[data-m="x"] .hk-i.plus{transform:rotate(90deg) scale(.3)}
 /* search panel */
@@ -227,9 +227,9 @@ html,body{overflow-x:hidden;overscroll-behavior-x:none}
 .composer textarea::placeholder{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .composer textarea{min-width:0}
 .composer .send,#micBtn{transition:opacity .22s,transform .38s var(--hk-spring),width .32s var(--hk-ease),margin .3s,padding .3s;overflow:hidden}
-.composer:has(textarea:placeholder-shown) .send{opacity:0;transform:scale(.3) rotate(-70deg);width:0!important;min-width:0;margin:0;padding:0;border:0;pointer-events:none}
-.composer:not(:has(textarea:placeholder-shown)) #micBtn{opacity:0;transform:scale(.3) rotate(70deg);width:0!important;min-width:0;margin:0;padding:0;pointer-events:none}
-.composer-wrap:has(#rec:not([hidden])) .composer .send{opacity:1;transform:none;width:auto!important;pointer-events:auto}
+.composer[data-h~="empty"] .send{opacity:0;transform:scale(.3) rotate(-70deg);width:0!important;min-width:0;margin:0;padding:0;border:0;pointer-events:none}
+.composer:not([data-h~="empty"]) #micBtn{opacity:0;transform:scale(.3) rotate(70deg);width:0!important;min-width:0;margin:0;padding:0;pointer-events:none}
+.composer-wrap[data-h~="recW"] .composer .send{opacity:1;transform:none;width:auto!important;pointer-events:auto}
 :root[data-style] .app[data-tab="chat"]>.dock{transition:padding .5s var(--hk-spring)}
 .app[data-tab="chat"] .composer{transition:box-shadow .4s var(--hk-ease),transform .5s var(--hk-spring),background .3s}
 .app[data-tab="chat"] .composer:focus-within{transform:translateY(-3px) scale(1.01);animation:hkring .8s ease-out}
@@ -246,8 +246,10 @@ html,body{overflow-x:hidden;overscroll-behavior-x:none}
 .hk-rail{scroll-padding-left:34px;scroll-padding-right:44px}
 .app[data-search] main.chat{opacity:0!important;pointer-events:none;transition:opacity .2s}.app main.chat{transition:opacity .25s}
 /* fields: no black outline, tidy multi-line box */
-input:focus,input:focus-visible,select:focus,select:focus-visible,textarea:focus,textarea:focus-visible,.field-i:focus,.field-i:focus-visible{outline:none!important}
-textarea.field-i,:root[data-style] textarea.field-i{border-radius:20px!important;padding:14px 18px;min-height:96px;line-height:1.5;display:block;width:100%;box-sizing:border-box;resize:none;overflow:auto;-webkit-appearance:none;appearance:none}
+input:focus, select:focus, textarea:focus, .field-i:focus {outline:none!important}
+input:focus-visible, select:focus-visible, textarea:focus-visible, .field-i:focus-visible {outline:none!important}
+html.no-fv input:focus, html.no-fv select:focus, html.no-fv textarea:focus, html.no-fv .field-i:focus {outline:none!important}
+textarea.field-i,:root[data-style] textarea.field-i{border-radius:20px!important;padding:14px 18px;min-height:96px;line-height:1.5;display:block;width:100%;box-sizing:border-box;resize:none;overflow:auto;-webkit-appearance:none;-webkit-appearance:none;appearance:none}
 .search-w input,.search-w input:focus{outline:none;box-shadow:none}
 html body #screen textarea.field-i,html body textarea.field-i{border-radius:20px!important}
 
@@ -267,11 +269,16 @@ html body #screen textarea.field-i,html body textarea.field-i{border-radius:20px
 .app[data-search]>.hk-pane,.app[data-search]>.chat,.app[data-search]>.dock{display:none!important}
 
 /* ---- no white ring on fields, chat boxes or selects when you tap them ---- */
-input:focus,input:focus-visible,textarea:focus,textarea:focus-visible,select:focus,select:focus-visible,
-.field-i:focus,.field-i:focus-visible,.search-w:focus-within,.composer:focus-within,.dd-btn:focus,.dd-btn:focus-visible,.dd-q:focus{outline:none!important}
-.composer:focus-within,.search-w:focus-within,.field-i:focus,.field-i:focus-visible,.dd-btn:focus-visible{border-color:var(--line)!important}
+input:focus, textarea:focus, select:focus, .field-i:focus, .search-w:focus-within, .composer:focus-within, .dd-btn:focus, .dd-q:focus {outline:none!important}
+input:focus-visible, textarea:focus-visible, select:focus-visible, .field-i:focus-visible, .dd-btn:focus-visible {outline:none!important}
+html.no-fv input:focus, html.no-fv textarea:focus, html.no-fv select:focus, html.no-fv .field-i:focus, html.no-fv .dd-btn:focus {outline:none!important}
+.composer:focus-within, .search-w:focus-within, .field-i:focus {border-color:var(--line)!important}
+.field-i:focus-visible, .dd-btn:focus-visible {border-color:var(--line)!important}
+html.no-fv .field-i:focus, html.no-fv .dd-btn:focus {border-color:var(--line)!important}
 :root[data-style="sky"] .composer,:root[data-style="sky"] .composer:focus-within,:root[data-style="sky"] .search-w:focus-within,:root[data-style="sky"] .field-i:focus{border-color:rgba(255,255,255,.14)!important;box-shadow:var(--shadow)!important}
-.field-i:focus,.field-i:focus-visible,.dd-btn:focus-visible,.dd-q:focus{box-shadow:none!important}
+.field-i:focus, .dd-q:focus {box-shadow:none!important}
+.field-i:focus-visible, .dd-btn:focus-visible {box-shadow:none!important}
+html.no-fv .field-i:focus, html.no-fv .dd-btn:focus {box-shadow:none!important}
 
 /* ---- reminders: open and close with motion ---- */
 @keyframes rmOpen{from{opacity:0;transform:translateY(-8px);clip-path:inset(0 0 100% 0)}to{opacity:1;transform:none;clip-path:inset(0 0 0 0)}}
@@ -342,10 +349,10 @@ input:focus,input:focus-visible,textarea:focus,textarea:focus-visible,select:foc
 :root[data-sky="night"] .act-a.in,:root[data-theme="dark"] .act-a.in{color:#6fe0a6}
 
 /* ===== final layer: one composer pill with three equal round buttons, and the voice bar inside it ===== */
-:root{--cmp-send:#1F1E1D;--cmp-send-ink:#FFFFFF;--cmp-rec:#D2452C}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--cmp-send:#ECECEA;--cmp-send-ink:#1F1E1D}}
-:root[data-theme="dark"]{--cmp-send:#ECECEA;--cmp-send-ink:#1F1E1D}
-:root[data-style="sky"][data-sky="night"]{--cmp-send:#FFFFFF;--cmp-send-ink:#111111}
+:root{--cmp-send: #1F1E1D; --cmp-send-rgb: 31 30 29; --cmp-send-a: 1;--cmp-send-ink: #FFFFFF; --cmp-send-ink-rgb: 255 255 255; --cmp-send-ink-a: 1;--cmp-rec: #D2452C; --cmp-rec-rgb: 210 69 44; --cmp-rec-a: 1}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--cmp-send: #ECECEA; --cmp-send-rgb: 236 236 234; --cmp-send-a: 1;--cmp-send-ink: #1F1E1D; --cmp-send-ink-rgb: 31 30 29; --cmp-send-ink-a: 1}}
+:root[data-theme="dark"]{--cmp-send: #ECECEA; --cmp-send-rgb: 236 236 234; --cmp-send-a: 1;--cmp-send-ink: #1F1E1D; --cmp-send-ink-rgb: 31 30 29; --cmp-send-ink-a: 1}
+:root[data-style="sky"][data-sky="night"]{--cmp-send: #FFFFFF; --cmp-send-rgb: 255 255 255; --cmp-send-a: 1;--cmp-send-ink: #111111; --cmp-send-ink-rgb: 17 17 17; --cmp-send-ink-a: 1}
 :root .composer{border-radius:999px;min-height:60px;padding:9px;gap:6px;align-items:center;box-sizing:border-box}
 :root .composer textarea{align-self:center;min-height:42px;margin:0;padding:10px 10px 10px 14px;line-height:1.3;font-size:16px}
 :root .composer .icon-btn,:root .composer .send{width:42px;height:42px;min-width:42px;flex:none;border-radius:50%;padding:0;margin:0;display:grid;place-items:center;border:0;overflow:hidden;box-shadow:none}
@@ -363,13 +370,15 @@ input:focus,input:focus-visible,textarea:focus,textarea:focus-visible,select:foc
 :root .composer .rec-dot{flex:none;width:10px;height:10px;margin:0 2px 0 4px;border-radius:50%;background:var(--cmp-rec);animation:bl 1s infinite}
 :root .composer #recTime{flex:none;color:var(--ink);font-variant-numeric:tabular-nums}
 :root .composer .rec-msg{flex:1 1 auto;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--ink);opacity:1}
-:root .composer .rec-lang{flex:none} :root .composer:has(#rec:not([hidden])) textarea, :root .composer:has(#rec:not([hidden])) .attach-wrap, :root .composer:has(#rec:not([hidden])) #micBtn {display:none!important}
-:root .composer:has(#rec:not([hidden])) .send,:root .composer:has(#rec:not([hidden])) .send:not(:disabled){opacity:1!important;transform:none!important;width:42px!important;pointer-events:auto;background:var(--cmp-rec)!important;color:#fff!important}
+:root .composer .rec-lang{flex:none} :root .composer[data-h~="recC"] textarea, :root .composer[data-h~="recC"] .attach-wrap, :root .composer[data-h~="recC"] #micBtn {display:none!important}
+:root .composer[data-h~="recC"] .send,:root .composer[data-h~="recC"] .send:not(:disabled){opacity:1!important;transform:none!important;width:42px!important;pointer-events:auto;background:var(--cmp-rec)!important;color:#fff!important}
 
 /* For you rows: rounded hover and press, never a square box */
 :root .hk-list{gap:2px}
 :root .hk-row,:root .hk-row:first-child{border:0!important;border-radius:22px!important;margin:0 -10px;padding:12px 10px 12px 12px;transition:background-color .2s var(--hk-ease),transform .18s var(--hk-ease)}
-:root .hk-row:hover,:root .hk-row:focus-visible{background:rgba(31,30,29,.06)!important;box-shadow:none!important;outline:none}
+:root .hk-row:hover {background:rgba(31,30,29,.06)!important;box-shadow:none!important;outline:none}
+:root .hk-row:focus-visible {background:rgba(31,30,29,.06)!important;box-shadow:none!important;outline:none}
+html.no-fv .hk-row:focus {background:rgba(31,30,29,.06)!important;box-shadow:none!important;outline:none}
 :root .hk-row:active{background:rgba(31,30,29,.11)!important;box-shadow:none!important;transform:scale(.985)}
 :root[data-style="sky"][data-sky="night"] .hk-row:hover,:root[data-theme="dark"] .hk-row:hover{background:rgba(255,255,255,.08)!important}
 :root[data-style="sky"][data-sky="night"] .hk-row:active,:root[data-theme="dark"] .hk-row:active{background:rgba(255,255,255,.14)!important}
@@ -393,10 +402,10 @@ input:focus,input:focus-visible,textarea:focus,textarea:focus-visible,select:foc
 :root .dv-sec>.card-i p{margin:0;font-size:15px;line-height:1.5}
 :root .dv-sec .note{padding:0 6px}
 /* privacy notice: a readable card in every theme */
-:root{--pv-bg:#FFFFFF;--pv-ink:#1F1E1D;--pv-mut:#55534F;--pv-line:rgba(31,30,29,.09)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--pv-bg:#2A2A28;--pv-ink:#ECECEA;--pv-mut:#BDBBB5;--pv-line:rgba(255,255,255,.1)}}
-:root[data-theme="dark"]{--pv-bg:#2A2A28;--pv-ink:#ECECEA;--pv-mut:#BDBBB5;--pv-line:rgba(255,255,255,.1)}
-:root[data-style="sky"][data-sky="night"]{--pv-bg:#17264A;--pv-ink:#F2F5FB;--pv-mut:#C3CFE6;--pv-line:rgba(255,255,255,.12)}
+:root{--pv-bg: #FFFFFF; --pv-bg-rgb: 255 255 255; --pv-bg-a: 1;--pv-ink: #1F1E1D; --pv-ink-rgb: 31 30 29; --pv-ink-a: 1;--pv-mut: #55534F; --pv-mut-rgb: 85 83 79; --pv-mut-a: 1;--pv-line: rgba(31,30,29,.09); --pv-line-rgb: 31 30 29; --pv-line-a: 0.09}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--pv-bg: #2A2A28; --pv-bg-rgb: 42 42 40; --pv-bg-a: 1;--pv-ink: #ECECEA; --pv-ink-rgb: 236 236 234; --pv-ink-a: 1;--pv-mut: #BDBBB5; --pv-mut-rgb: 189 187 181; --pv-mut-a: 1;--pv-line: rgba(255,255,255,.1); --pv-line-rgb: 255 255 255; --pv-line-a: 0.1}}
+:root[data-theme="dark"]{--pv-bg: #2A2A28; --pv-bg-rgb: 42 42 40; --pv-bg-a: 1;--pv-ink: #ECECEA; --pv-ink-rgb: 236 236 234; --pv-ink-a: 1;--pv-mut: #BDBBB5; --pv-mut-rgb: 189 187 181; --pv-mut-a: 1;--pv-line: rgba(255,255,255,.1); --pv-line-rgb: 255 255 255; --pv-line-a: 0.1}
+:root[data-style="sky"][data-sky="night"]{--pv-bg: #17264A; --pv-bg-rgb: 23 38 74; --pv-bg-a: 1;--pv-ink: #F2F5FB; --pv-ink-rgb: 242 245 251; --pv-ink-a: 1;--pv-mut: #C3CFE6; --pv-mut-rgb: 195 207 230; --pv-mut-a: 1;--pv-line: rgba(255,255,255,.12); --pv-line-rgb: 255 255 255; --pv-line-a: 0.12}
 :root .priv{display:flex;flex-direction:column;background:var(--pv-bg);color:var(--pv-ink);border:1px solid var(--pv-line);border-radius:26px;padding:4px 20px}
 :root .priv-s{gap:14px;padding:18px 0;border-top:1px solid var(--pv-line)}
 :root .priv-s:first-child{border-top:0}
@@ -408,12 +417,12 @@ input:focus,input:focus-visible,textarea:focus,textarea:focus-visible,select:foc
 :root .gh-sl{font:600 12px/1 var(--sans);letter-spacing:.07em;text-transform:uppercase;color:var(--mut);margin-right:2px}
 :root .gh-site{display:inline-flex;align-items:center;min-height:34px;padding:0 13px;border-radius:999px;background:var(--bg);border:1px solid var(--line);color:var(--ink);font:500 14px/1 var(--sans);text-decoration:none;word-break:break-all}
 :root .gh-site:hover{background:var(--bg2)}
-:root .g-tabs{display:flex;gap:4px;padding:4px;border:0;border-radius:999px;background:color-mix(in srgb,var(--ink) 8%,transparent);box-shadow:none}
+:root .g-tabs{display:flex;gap:4px;padding:4px;border:0;border-radius:999px;background:rgb(var(--ink-rgb) / calc(8% * var(--ink-a, 1)));box-shadow:none}
 :root .g-tab{flex:1 1 0;min-width:0;justify-content:center;border:0;border-radius:999px;background:transparent;color:var(--mut);padding:10px 8px;font:600 14.5px/1.1 var(--sans);box-shadow:none;transition:background-color .2s,color .2s}
 :root .g-tab[aria-selected="true"]{background:var(--bg);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08),0 3px 10px rgba(0,0,0,.06)}
 :root .g-tab small{display:none}
 :root .g-progress{font:600 14.5px/1.2 var(--sans);color:var(--ink);padding:0 4px}
-:root .g-progress .gm{height:8px;border-radius:999px;background:color-mix(in srgb,var(--ink) 12%,transparent);border:0}
+:root .g-progress .gm{height:8px;border-radius:999px;background:rgb(var(--ink-rgb) / calc(12% * var(--ink-a, 1)));border:0}
 :root .g-progress .gm i{background:var(--ink);border-radius:999px}
 :root .g-lead{padding:14px 16px;border-radius:18px;background:var(--bg);border:1px solid var(--line);color:var(--ink);font-size:15px;line-height:1.5}
 :root .g-lead p{margin:0;color:var(--ink)}
@@ -429,5 +438,5 @@ input:focus,input:focus-visible,textarea:focus,textarea:focus-visible,select:foc
 /* section labels sit on the peach part of the sky too: a firmer shadow keeps them readable on both */
 :root[data-style="sky"] .grp-t,:root[data-style="sky"] .sb-label{opacity:1;text-shadow:0 1px 2px rgba(20,40,80,.35),0 0 14px rgba(20,40,80,.28)}
 /* pack list: the included-feature icons were a near-white disc on a near-white card; give them a visible tint */
-:root .inc-ic{background:color-mix(in srgb,var(--ink) 8%,transparent);color:var(--ink)}
+:root .inc-ic{background:rgb(var(--ink-rgb) / calc(8% * var(--ink-a, 1)));color:var(--ink)}
 :root .inc-ic svg{stroke-width:2}

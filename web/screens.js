@@ -466,7 +466,7 @@
       holder.append(note(T('Free messages renew every day. Saathi never charges without showing the price first.'), 'shield'));
     };
     draw(w0);
-    const m = await refreshMe(); if (m.wallet && stack.at(-1)?.name === 'wallet') draw(m.wallet);
+    const m = await refreshMe(); if (m.wallet && stack[stack.length - 1]?.name === 'wallet') draw(m.wallet);
   };
   SCREENS.activity = async () => {
     const col = frame(T('Transactions'), T('Everything that went in or out of your wallet.'));
@@ -661,7 +661,7 @@
       errBox(stage, T('We could not start that payment. Nothing was charged. Please try again.'));
     };
     draw(C.wallet);
-    const m = await refreshMe(); if (m.wallet && stack.at(-1)?.name === 'packs') draw(m.wallet);
+    const m = await refreshMe(); if (m.wallet && stack[stack.length - 1]?.name === 'packs') draw(m.wallet);
   };
 
   // ---- language -------------------------------------------------------------------------------

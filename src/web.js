@@ -33,6 +33,7 @@ const STATIC = {
   '/': ['index.html', 'text/html; charset=utf-8'],
   '/app': ['index.html', 'text/html; charset=utf-8'],
   '/sky.js': ['sky.js', 'text/javascript; charset=utf-8'],
+  '/compat.js': ['compat.js', 'text/javascript; charset=utf-8'],
   '/og.png': ['og.png', 'image/png'],
   '/robots.txt': ['robots.txt', 'text/plain; charset=utf-8'],
   '/app.js': ['app.js', 'text/javascript; charset=utf-8'],

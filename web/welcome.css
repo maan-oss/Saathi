@@ -6,7 +6,7 @@
 body.ob-open{overflow:hidden}
 body.ob-open .app{visibility:hidden}
 
-#onboard{position:fixed;inset:0;z-index:50;display:flex;justify-content:center;overflow:hidden;color:#fff;background:linear-gradient(180deg,var(--sk-a,#3f5f9a) 0%,var(--sk-b,#b7a0a6) 52%,var(--sk-c,#f0b98a) 100%);opacity:0;transition:opacity .4s ease}
+#onboard{position:fixed;top:0;right:0;bottom:0;left:0;z-index:50;display:flex;justify-content:center;overflow:hidden;color:#fff;background:linear-gradient(180deg,var(--sk-a,#3f5f9a) 0%,var(--sk-b,#b7a0a6) 52%,var(--sk-c,#f0b98a) 100%);opacity:0;transition:opacity .4s ease}
 #onboard[hidden]{display:none}
 #onboard.on{opacity:1}
 #onboard::before{display:none}
@@ -58,7 +58,7 @@ body.ob-open .app{visibility:hidden}
 .wl-form{display:flex;flex-direction:column;gap:14px}
 .wl-field{display:flex;flex-direction:column;gap:7px;min-width:0;margin:0}
 .wl-lbl{padding-left:4px;font-size:14px;font-weight:600;color:#1d1d1f}
-.wl-in{width:100%;height:54px;box-sizing:border-box;border:0;border-radius:18px;padding:0 18px;font:inherit;font-size:17px;color:#1d1d1f;background:#fff;outline:none;box-shadow:0 8px 22px rgba(10,30,70,.14);-webkit-appearance:none;appearance:none}
+.wl-in{width:100%;height:54px;box-sizing:border-box;border:0;border-radius:18px;padding:0 18px;font:inherit;font-size:17px;color:#1d1d1f;background:#fff;outline:none;box-shadow:0 8px 22px rgba(10,30,70,.14);-webkit-appearance:none;-webkit-appearance:none;appearance:none}
 .wl-in::placeholder{color:#8a919c}
 .wl-in:focus{box-shadow:0 8px 22px rgba(10,30,70,.14)}
 .wl-hint-small{margin:0;padding-left:4px;min-height:1.2em;font-size:13px;color:#1d1d1f;opacity:.85}
@@ -118,9 +118,15 @@ body.ob-open .app{visibility:hidden}
 
 
 /* ---- focus: no white or black ring when you tap or click a field or a button. Fields keep their own shape and colour. ---- */
-:focus,:focus-visible{outline:none!important}
-input:focus,input:focus-visible,textarea:focus,textarea:focus-visible,select:focus,select:focus-visible,.wl-in:focus,.dd-q:focus,.dd-btn:focus,.dd-btn:focus-visible,.search-w input:focus{box-shadow:none!important}
-.composer:focus-within,.search-w:focus-within,.field-i:focus,.field-i:focus-visible,.dd-q:focus,.dd-btn:focus,.dd-btn:focus-visible{border-color:color-mix(in srgb,currentColor 14%,transparent)!important}
+:focus {outline:none!important}
+:focus-visible {outline:none!important}
+html.no-fv :focus {outline:none!important}
+input:focus, textarea:focus, select:focus, .wl-in:focus, .dd-q:focus, .dd-btn:focus, .search-w input:focus {box-shadow:none!important}
+input:focus-visible, textarea:focus-visible, select:focus-visible, .dd-btn:focus-visible {box-shadow:none!important}
+html.no-fv input:focus, html.no-fv textarea:focus, html.no-fv select:focus, html.no-fv .dd-btn:focus {box-shadow:none!important}
+.composer:focus-within, .search-w:focus-within, .field-i:focus, .dd-q:focus, .dd-btn:focus {border-color:rgba(128, 128, 128, 0.14)!important}
+.field-i:focus-visible, .dd-btn:focus-visible {border-color:rgba(128, 128, 128, 0.14)!important}
+html.no-fv .field-i:focus, html.no-fv .dd-btn:focus {border-color:rgba(128, 128, 128, 0.14)!important}
 
 /* ===== Step 1, the language list: a plain white card with dark text, in every sky. No fade, no glow. ===== */
 .wl-welcome .search-w{height:50px;padding:0 16px;gap:10px;border:0;border-radius:16px;background:#fff!important;color:#5b6472;box-shadow:0 8px 22px rgba(10,30,70,.16)}

@@ -615,10 +615,10 @@
       const chev = ico('chev', 18); chev.classList.add('rm-chev');
       head.append(ic, el('b', '', T('Add a reminder')), el('span', 'sp'), chev);
       // The form is always there; the panel opens and closes in place, so nothing else on the page redraws.
-      const panel = el('div', 'rm-collapse'); const inner = el('div', 'rm-collapse-in'); panel.append(inner); panel.inert = !open;
+      const panel = el('div', 'rm-collapse'); const inner = el('div', 'rm-collapse-in'); panel.append(inner); panel.toggleAttribute('inert', !open);
       head.onclick = () => {
         const now = !c.classList.contains('open');
-        c.classList.toggle('open', now); head.setAttribute('aria-expanded', String(now)); panel.inert = !now;
+        c.classList.toggle('open', now); head.setAttribute('aria-expanded', String(now)); panel.toggleAttribute('inert', !now);
         addOpen = now;
       };
       const form = el('form', 'rm-form'); form.noValidate = true;
@@ -673,12 +673,12 @@
       if (r.alerts && r.alerts.length) right.append(el('span', 'tag', r.alerts.map((m) => (m ? T('{n} days', { n: m }) : T('On the day'))).join(' · ')));
       const chev = ico('chev', 18); chev.classList.add('rm-chev'); right.append(chev);
       head.append(ic, tx, right);
-      const panel = el('div', 'rm-collapse'); const inner = el('div', 'rm-collapse-in'); panel.append(inner); panel.inert = !open;
+      const panel = el('div', 'rm-collapse'); const inner = el('div', 'rm-collapse-in'); panel.append(inner); panel.toggleAttribute('inert', !open);
       // One reminder open at a time; opening another closes the first in place.
       head.onclick = () => {
         const now = !w.classList.contains('open');
-        for (const o of document.querySelectorAll('.rm-item.open')) if (o !== w) { o.classList.remove('open'); o.querySelector('.rm-head')?.setAttribute('aria-expanded', 'false'); const pn = o.querySelector('.rm-collapse'); if (pn) pn.inert = true; }
-        w.classList.toggle('open', now); head.setAttribute('aria-expanded', String(now)); panel.inert = !now;
+        for (const o of document.querySelectorAll('.rm-item.open')) if (o !== w) { o.classList.remove('open'); o.querySelector('.rm-head')?.setAttribute('aria-expanded', 'false'); const pn = o.querySelector('.rm-collapse'); if (pn) pn.toggleAttribute('inert', true); }
+        w.classList.toggle('open', now); head.setAttribute('aria-expanded', String(now)); panel.toggleAttribute('inert', !now);
         openId = now ? r.id : null;
       };
       const body = el('div', 'rm-body');

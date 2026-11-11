@@ -20,6 +20,7 @@
 :root[data-style] .attach-wrap .attach:hover { background: #fff; box-shadow: 0 10px 24px rgba(10, 30, 70, .22); transform: translateY(-1px); }
 :root[data-style] .attach-wrap .attach:active { transform: scale(.94); }
 :root[data-style] .attach-wrap .attach:focus-visible { outline: 2px solid #1d1d1f; outline-offset: 3px; }
+html.no-fv[data-style] .attach-wrap .attach:focus { outline: 2px solid #1d1d1f; outline-offset: 3px; }
 :root[data-style] .attach-wrap .pop { left: 0 !important; right: auto !important; bottom: calc(100% + 12px); min-width: 230px; }
 :root[data-style] .dock { padding-left: 14px; padding-right: 14px; }
 
@@ -47,7 +48,7 @@
 :root[data-style] .grp-t {
   display: inline-block; align-self: flex-start; width: auto; margin-left: 0; padding: 5px 12px; border-radius: 999px;
   background: rgba(20, 30, 60, .5); color: #fff; text-shadow: none;
-  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px); -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
 }
 :root[data-style] .app[data-empty] .composer { min-height: 68px; border-radius: 34px; }
 :root[data-style] .app[data-empty] .composer textarea { font-size: 18px; }
@@ -65,7 +66,7 @@
 :root[data-style] .scan-c.tr { top: 14px; right: 14px; }
 :root[data-style] .scan-c.bl { bottom: 14px; left: 14px; }
 :root[data-style] .scan-c.br { bottom: 14px; right: 14px; }
-:root[data-style] .scan-view { inset: 14px; }
+:root[data-style] .scan-view { top:14px;right:14px;bottom:14px;left:14px; }
 :root[data-style] .scan-view img { border-radius: 10px; }
 
 /* 4. Pages. A page slides up from the bottom on a phone and eases in on a PC. The old keyframe is turned off,
@@ -83,7 +84,7 @@
 :root[data-style] .sc-head .sc-small { order: 2; flex: 1; }
 
 /* 5. Dialogs and sheets. A tap on the dimmed background closes them. On a phone they rise from the bottom. */
-:root[data-style] .dialog-wrap { background: rgba(18, 20, 28, .42); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); transition: opacity .22s ease; }
+:root[data-style] .dialog-wrap { background: rgba(18, 20, 28, .42); -webkit-backdrop-filter: blur(4px); -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px); transition: opacity .22s ease; }
 :root[data-style] .dialog {
   animation: none; transform: translateY(14px) scale(.97); opacity: 0;
   transition: transform .34s cubic-bezier(.2, .8, .2, 1), opacity .24s ease;
@@ -105,6 +106,7 @@
 :root[data-style] .btn.danger:hover { background: #b3261e; border-color: #b3261e; color: #fff; }
 :root[data-style] .btn:active { transform: scale(.97); }
 :root[data-style] .btn:focus-visible, :root[data-style] .icon-btn:focus-visible, :root[data-style] .chip:focus-visible, :root[data-style] .bk-part:focus-visible { outline: 2px solid #1d1d1f; outline-offset: 3px; }
+html.no-fv[data-style] .btn:focus, html.no-fv[data-style] .icon-btn:focus, html.no-fv[data-style] .chip:focus, html.no-fv[data-style] .bk-part:focus { outline: 2px solid #1d1d1f; outline-offset: 3px; }
 :root[data-style] .icon-btn { transition: background .2s ease, transform .15s ease, color .2s ease; }
 :root[data-style] .icon-btn:hover { background: rgba(255, 255, 255, .9); }
 :root[data-style] .icon-btn:active { transform: scale(.92); }
@@ -122,7 +124,7 @@
 .bk-codes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 @media (min-width: 560px) { .bk-codes { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .bk-part {
-  user-select: all; -webkit-user-select: all; min-width: 0; padding: 13px 10px; border-radius: 14px; cursor: pointer;
+  -webkit-user-select:all;user-select:all; -webkit-user-select: all; min-width: 0; padding: 13px 10px; border-radius: 14px; cursor: pointer;
   border: 1px solid rgba(20, 30, 50, .14); background: rgba(255, 255, 255, .9); color: #1d1d1f;
   font: 600 15px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .03em;
   transition: background .18s ease, transform .15s ease, border-color .18s ease;
@@ -150,7 +152,7 @@
    A brightness tweak does nothing on a near-white button, so they darken or lift instead. */
 :root[data-style] .btn.pri:hover,
 :root[data-style] .btn.xl:hover {
-  background: color-mix(in srgb, var(--ac) 84%, #000) !important; border-color: color-mix(in srgb, var(--ac) 84%, #000) !important;
+  background: linear-gradient(rgba(0, 0, 0, .16), rgba(0, 0, 0, .16)), var(--ac) !important; border-color: var(--ac) !important;
   filter: none !important; transform: translateY(-1px); box-shadow: 0 10px 22px rgba(10, 30, 70, .22);
 }
 :root[data-style] .btn.pri:active,
@@ -172,24 +174,28 @@
    Each colour here is set on purpose for the two skies (sunset and night), so nothing depends on inherited
    tokens. The composer, the plus button and the attach menu share one surface colour. */
 :root[data-style] {
-  --fld: rgba(255, 255, 255, .95); --fld-ink: #1d1d1f; --fld-sh: 0 6px 18px rgba(10, 30, 70, .16);
-  --pop-bg: #ffffff; --pop-ink: #1d1d1f; --pop-line: rgba(20, 30, 60, .12); --pop-hov: #f1f3f8;
-  --send: #2f6bff; --send-hov: #2459e0; --send-ink: #ffffff;
-  --btn-hov: rgba(255, 255, 255, .97); --btn-hov-ink: #1d1d1f;
-  --dark-hov: #2c2c2e; --dark-hov-ink: #ffffff;
+  --fld: rgba(255, 255, 255, .95); --fld-rgb: 255 255 255; --fld-a: 0.95; --fld-ink: #1d1d1f; --fld-ink-rgb: 29 29 31; --fld-ink-a: 1; --fld-sh: 0 6px 18px rgba(10, 30, 70, .16);
+  --pop-bg: #ffffff; --pop-bg-rgb: 255 255 255; --pop-bg-a: 1; --pop-ink: #1d1d1f; --pop-ink-rgb: 29 29 31; --pop-ink-a: 1; --pop-line: rgba(20, 30, 60, .12); --pop-line-rgb: 20 30 60; --pop-line-a: 0.12; --pop-hov: #f1f3f8; --pop-hov-rgb: 241 243 248; --pop-hov-a: 1;
+  --send: #2f6bff; --send-rgb: 47 107 255; --send-a: 1; --send-hov: #2459e0; --send-hov-rgb: 36 89 224; --send-hov-a: 1; --send-ink: #ffffff; --send-ink-rgb: 255 255 255; --send-ink-a: 1;
+  --btn-hov: rgba(255, 255, 255, .97); --btn-hov-rgb: 255 255 255; --btn-hov-a: 0.97; --btn-hov-ink: #1d1d1f; --btn-hov-ink-rgb: 29 29 31; --btn-hov-ink-a: 1;
+  --dark-hov: #2c2c2e; --dark-hov-rgb: 44 44 46; --dark-hov-a: 1; --dark-hov-ink: #ffffff; --dark-hov-ink-rgb: 255 255 255; --dark-hov-ink-a: 1;
 }
 :root[data-style][data-sky="night"] {
-  --fld: rgba(24, 38, 74, .94); --fld-ink: #f4f6fb; --fld-sh: 0 6px 18px rgba(0, 0, 0, .3);
-  --pop-bg: #15224a; --pop-ink: #f4f6fb; --pop-line: rgba(255, 255, 255, .14); --pop-hov: rgba(255, 255, 255, .09);
-  --send: #6f8cff; --send-hov: #8aa1ff; --send-ink: #0b1433;
-  --btn-hov: rgba(255, 255, 255, .16); --btn-hov-ink: #f4f6fb;
-  --dark-hov: #e6e6eb; --dark-hov-ink: #111111;
+  --fld: rgba(24, 38, 74, .94); --fld-rgb: 24 38 74; --fld-a: 0.94; --fld-ink: #f4f6fb; --fld-ink-rgb: 244 246 251; --fld-ink-a: 1; --fld-sh: 0 6px 18px rgba(0, 0, 0, .3);
+  --pop-bg: #15224a; --pop-bg-rgb: 21 34 74; --pop-bg-a: 1; --pop-ink: #f4f6fb; --pop-ink-rgb: 244 246 251; --pop-ink-a: 1; --pop-line: rgba(255, 255, 255, .14); --pop-line-rgb: 255 255 255; --pop-line-a: 0.14; --pop-hov: rgba(255, 255, 255, .09); --pop-hov-rgb: 255 255 255; --pop-hov-a: 0.09;
+  --send: #6f8cff; --send-rgb: 111 140 255; --send-a: 1; --send-hov: #8aa1ff; --send-hov-rgb: 138 161 255; --send-hov-a: 1; --send-ink: #0b1433; --send-ink-rgb: 11 20 51; --send-ink-a: 1;
+  --btn-hov: rgba(255, 255, 255, .16); --btn-hov-rgb: 255 255 255; --btn-hov-a: 0.16; --btn-hov-ink: #f4f6fb; --btn-hov-ink-rgb: 244 246 251; --btn-hov-ink-a: 1;
+  --dark-hov: #e6e6eb; --dark-hov-rgb: 230 230 235; --dark-hov-a: 1; --dark-hov-ink: #111111; --dark-hov-ink-rgb: 17 17 17; --dark-hov-ink-a: 1;
 }
 
 /* Plus button: same surface as the field, so it reads as part of the same bar. It lifts on hover; it never vanishes. */
-:root[data-style] .attach-wrap .attach,
-:root[data-style] .attach-wrap .attach:hover,
+:root[data-style] .attach-wrap .attach, :root[data-style] .attach-wrap .attach:hover {
+  background: var(--fld) !important; color: var(--fld-ink) !important; box-shadow: var(--fld-sh) !important;
+}
 :root[data-style] .attach-wrap .attach:focus-visible {
+  background: var(--fld) !important; color: var(--fld-ink) !important; box-shadow: var(--fld-sh) !important;
+}
+html.no-fv[data-style] .attach-wrap .attach:focus {
   background: var(--fld) !important; color: var(--fld-ink) !important; box-shadow: var(--fld-sh) !important;
 }
 :root[data-style] .attach-wrap .attach:hover { transform: translateY(-1px); }
@@ -233,7 +239,7 @@
 :root[data-style] .composer .send:not(:disabled) {
   background: var(--send) !important; color: var(--send-ink) !important; border-color: transparent !important;
 }
-:root[data-style] .composer .send:hover:not(:disabled) { background: var(--send-hov) !important; box-shadow: 0 8px 20px color-mix(in srgb, var(--send) 40%, transparent) !important; transform: scale(1.05); }
+:root[data-style] .composer .send:hover:not(:disabled) { background: var(--send-hov) !important; box-shadow: 0 8px 20px rgb(var(--send-rgb) / calc(40% * var(--send-a, 1))) !important; transform: scale(1.05); }
 :root[data-style] .composer .send:disabled { background: var(--fld) !important; color: var(--fld-ink) !important; opacity: .45 !important; box-shadow: none !important; }
 
 /* Recording bar: same surface and height as the field, so starting to speak does not change the layout. */
@@ -290,7 +296,7 @@
 :root[data-style] .scan-c.tr { top: 0 !important; right: 0 !important; border-top-right-radius: 21px !important; }
 :root[data-style] .scan-c.bl { bottom: 0 !important; left: 0 !important; border-bottom-left-radius: 21px !important; }
 :root[data-style] .scan-c.br { bottom: 0 !important; right: 0 !important; border-bottom-right-radius: 21px !important; }
-:root[data-style] .scan-view { inset: 0 !important; }
+:root[data-style] .scan-view { top:0!important;right:0!important;bottom:0!important;left:0!important; }
 :root[data-style] .scan-view img { border-radius: 22px; }
 
 /* Pages: a fade and a slide up when they open. Closing runs the same motion backwards. */
@@ -310,7 +316,7 @@
 @keyframes attIn { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
 :root[data-style] .att-thumb {
   width: 100%; height: 100%; padding: 0; border: 0; border-radius: 50%; overflow: hidden; display: block;
-  background: color-mix(in srgb, var(--fld-ink) 12%, transparent); box-shadow: 0 6px 18px rgba(15, 23, 42, .18); cursor: zoom-in;
+  background: rgb(var(--fld-ink-rgb) / calc(12% * var(--fld-ink-a, 1))); box-shadow: 0 6px 18px rgba(15, 23, 42, .18); cursor: zoom-in;
 }
 :root[data-style] .att-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; border: 0; border-radius: 0; }
 /* the X: small, on the top-right of the circle. Always there on touch screens; on a mouse it shows when the pointer is over the circle */
@@ -319,7 +325,7 @@
   display: grid; place-items: center; background: var(--fld-ink); color: var(--fld); box-shadow: 0 0 0 2px var(--fld);
   cursor: pointer; transition: opacity .18s ease, transform .18s ease;
 }
-:root[data-style] .att-x::after { content: ""; position: absolute; inset: -8px; border-radius: 50%; }
+:root[data-style] .att-x::after { content: ""; position: absolute; top:-8px;right:-8px;bottom:-8px;left:-8px; border-radius: 50%; }
 :root[data-style] .att-x svg { width: 14px; height: 14px; }
 @media (hover: hover) and (pointer: fine) {
   :root[data-style] .att-x { opacity: 0; transform: scale(.8); pointer-events: none; }
@@ -327,7 +333,7 @@
 }
 
 /* the photo in the thread: no frame, no bubble behind it */
-:root[data-style] .msg.me .bubble-me:has(> .me-att) { background: none !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; }
+:root[data-style] .msg.me .bubble-me[data-h~="att"] { background: none !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; }
 :root[data-style] .me-att { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; max-width: 100%; }
 :root[data-style] .me-photo {
   display: block; padding: 0; margin: 0; border: 0; background: none; border-radius: 18px; overflow: hidden; cursor: zoom-in;
@@ -339,11 +345,11 @@
 :root[data-style] .me-att .me-cap { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; }
 
 /* the large view */
-:root[data-style] .pv { position: fixed; inset: 0; z-index: 400; opacity: 0; transition: opacity .3s ease; color: #fff; }
+:root[data-style] .pv { position: fixed; top:0;right:0;bottom:0;left:0; z-index: 400; opacity: 0; transition: opacity .3s ease; color: #fff; }
 :root[data-style] .pv.on { opacity: 1; }
 :root[data-style] .pv-bg {
-  position: absolute; inset: 0; background: rgba(8, 12, 24, .55);
-  -webkit-backdrop-filter: blur(26px) saturate(1.05); backdrop-filter: blur(26px) saturate(1.05);
+  position: absolute; top:0;right:0;bottom:0;left:0; background: rgba(8, 12, 24, .55);
+  -webkit-backdrop-filter: blur(26px) saturate(1.05); -webkit-backdrop-filter:blur(26px) saturate(1.05);backdrop-filter:blur(26px) saturate(1.05);
 }
 :root[data-style] .pv-top {
   position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: center; gap: 10px; min-width: 0;
@@ -364,7 +370,7 @@
 :root[data-style] .pv-img {
   position: fixed; left: 0; top: 0; width: auto; height: auto; max-width: none; max-height: none;
   object-fit: contain; border-radius: 16px; box-shadow: 0 30px 80px rgba(0, 0, 0, .45);
-  user-select: none; -webkit-user-drag: none;
+  -webkit-user-select:none;user-select:none; -webkit-user-drag: none;
 }
 :root[data-style] .pv-bar {
   position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;
@@ -465,7 +471,13 @@
 
 
 /* ---- White buttons stay white on hover, with dark text. Only the dark buttons turn dark. ---- */
-:root[data-style] .btn.pri:hover, :root[data-style] .btn.xl:hover, :root[data-style] .btn.pri:focus-visible, :root[data-style] .btn.xl:focus-visible {
+:root[data-style] .btn.pri:hover, :root[data-style] .btn.xl:hover {
+  background: #f2f2f5 !important; color: #1d1d1f !important; opacity: 1 !important; filter: none !important;
+}
+:root[data-style] .btn.pri:focus-visible, :root[data-style] .btn.xl:focus-visible {
+  background: #f2f2f5 !important; color: #1d1d1f !important; opacity: 1 !important; filter: none !important;
+}
+html.no-fv[data-style] .btn.pri:focus, html.no-fv[data-style] .btn.xl:focus {
   background: #f2f2f5 !important; color: #1d1d1f !important; opacity: 1 !important; filter: none !important;
 }
 
