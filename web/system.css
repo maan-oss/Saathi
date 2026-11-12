@@ -761,3 +761,69 @@ html.no-fv[data-style] input:focus, html.no-fv[data-style] textarea:focus, html.
 :root[data-style] .scan-stage .scan-c.tr { top: 14px !important; right: 14px !important; border-top-right-radius: 21px !important; }
 :root[data-style] .scan-stage .scan-c.bl { bottom: 14px !important; left: 14px !important; border-bottom-left-radius: 21px !important; }
 :root[data-style] .scan-stage .scan-c.br { bottom: 14px !important; right: 14px !important; border-bottom-right-radius: 21px !important; }
+
+/* 13. Layout, labels and focus. One 16px gutter on phones. On desktop the header lines up with the page column (720px, or 820px for wide screens). */
+:root[data-style] { --focus-ring: rgba(64, 112, 196, .55); }
+:root[data-style] #screen { --sc-inset: max(16px, calc((100% - 720px) / 2 + 16px)); }
+:root[data-style] #screen:has(.sc-col.wide-col) { --sc-inset: max(16px, calc((100% - 820px) / 2 + 16px)); }
+:root[data-style] #screen .sc-col { max-width: 720px !important; }
+:root[data-style] #screen .sc-col.wide-col { max-width: 820px !important; }
+:root[data-style] #screen .sc-head { padding-left: var(--sc-inset) !important; padding-right: var(--sc-inset) !important; }
+:root[data-style] #screen .sc-big { padding: 2px 0 4px; }
+
+/* Section labels: one plain style on every screen (no chip), in the ink colour so they read on the sky, flush with the cards. */
+:root[data-style] .grp-t {
+  display: inline-block; align-self: flex-start; width: auto; margin: 0; padding: 0 !important; border: 0 !important; border-radius: 0;
+  background: none !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+  color: var(--ink) !important; opacity: .78 !important; text-shadow: none !important;
+  font: 600 12.5px/1 var(--sans) !important; letter-spacing: .08em !important; text-transform: uppercase !important;
+}
+
+/* Hover tints belong to mouse users. On touch, a tap leaves no sticky tint behind. */
+@media (hover: none) {
+  :root[data-style] .hk-row:hover, :root[data-style] button.row-i:hover,
+  :root[data-style] .hk-card.hk-flush > .hk-row:hover, :root[data-style] .hk-card.hk-flush > .hk-svc:hover { background: transparent !important; box-shadow: none !important; }
+}
+
+/* Focus: a soft brand ring for keyboard users only. Mouse and tap focus shows nothing, so no black box on headings or after Escape. */
+:root[data-style] :focus:not(:focus-visible) { outline: none !important; }
+:root[data-style] :focus-visible { outline: 2px solid var(--focus-ring) !important; outline-offset: 2px !important; box-shadow: none !important; }
+
+/* Bottom fade: a blur that fades out at the edge. It adds no colour, so the last rows keep their own tint. */
+:root .hk-fadebar { background: none !important; height: 72px; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-mask-image: linear-gradient(to top, #000 30%, transparent); mask-image: linear-gradient(to top, #000 30%, transparent); }
+
+/* Reminders: the empty hint under the date no longer adds a gap, and the selected quick-start chip is flat like the rest. */
+:root[data-style] .rm-form .fld-h:empty { display: none; }
+:root[data-style] .rm-presets .gchip, :root[data-style] .rm-presets .gchip:hover, :root[data-style] .rm-presets .gchip:active { box-shadow: none !important; }
+
+/* Onboarding: the same 16px gutter as the app, and one search pill (the input inside it has no box of its own). */
+:root[data-style] .wl { padding-left: 16px; padding-right: 16px; }
+:root[data-style] .wl-stage { margin: 0 -16px; padding: 0 16px; }
+:root[data-style] #onboard .search-w .search { border: 0 !important; background: transparent !important; box-shadow: none !important; outline: none !important; }
+
+/* 14. Loading. One loader: three dots in the ink colour, so they show in both themes. One placeholder: a card row with an icon and two lines, shimmering in both themes. */
+:root[data-style] { --skel-card: rgba(255, 255, 255, .55); --skel-base: rgba(31, 30, 29, .1); --skel-hi: rgba(255, 255, 255, .8); }
+:root[data-style][data-sky="night"], :root[data-style][data-theme="dark"] { --skel-card: rgba(255, 255, 255, .07); --skel-base: rgba(255, 255, 255, .14); --skel-hi: rgba(255, 255, 255, .14); }
+:root[data-style] .spin i, :root[data-style] .spin::before, :root[data-style] .spin::after { background: var(--ink) !important; }
+:root[data-style] .hub-skel {
+  position: relative; height: 72px; margin: 0 0 10px; border: 0; border-radius: 22px; overflow: hidden; box-shadow: none;
+  background:
+    radial-gradient(circle at 38px 50%, var(--skel-base) 0 17px, transparent 18px),
+    linear-gradient(var(--skel-base), var(--skel-base)) 70px 25px / 46% 12px no-repeat,
+    linear-gradient(var(--skel-base), var(--skel-base)) 70px 45px / 30% 10px no-repeat,
+    var(--skel-card);
+  animation: hubIn .45s cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(var(--i, 0) * 90ms);
+}
+:root[data-style] .hub-skel::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(100deg, transparent 30%, var(--skel-hi) 50%, transparent 70%) 0 0 / 220% 100% no-repeat;
+  animation: skShim 1.3s linear infinite;
+}
+@keyframes skShim { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+@media (prefers-reduced-motion: reduce) { :root[data-style] .hub-skel::after { animation: none; display: none; } }
+
+/* 15. Focus and tap targets. The soft ring wins over the older black or white focus rules. Headings and text fields never show a ring (a heading is focused only so a screen reader reads it). Text links get a 36px tap height. */
+:root[data-style] :focus-visible:focus-visible:not(input):not(textarea):not(.composer):not(h1) { outline: 2px solid var(--focus-ring) !important; outline-offset: 2px !important; box-shadow: none !important; }
+:root[data-style] h1:focus, :root[data-style] h1:focus-visible:focus-visible { outline: none !important; box-shadow: none !important; }
+:root[data-style] .link-btn { min-height: 36px; display: inline-flex; align-items: center; padding-top: 6px !important; padding-bottom: 6px !important; }
+:root[data-style] #onboard .search::placeholder { color: #6b7280 !important; opacity: 1 !important; }
