@@ -834,3 +834,6 @@ html.no-fv[data-style] input:focus, html.no-fv[data-style] textarea:focus, html.
 :root[data-style][data-sky="night"] .wl-next:disabled { background: rgba(255, 255, 255, .2); color: rgba(255, 255, 255, .6); }
 :root[data-style] .wl-tick { width: 72px; height: 72px; margin: 0 0 4px; }
 :root[data-style] .wl-done { margin-top: 18px; }
+
+/* 17. Backup and restore. Section headers start on the card edge, so the icon chip lines up with the cards below it. */
+:root[data-style] .bk-hero { padding-left: 0; padding-right: 0; }
