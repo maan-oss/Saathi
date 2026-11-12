@@ -1062,7 +1062,24 @@
         const first = about.name.trim().split(/\s+/)[0] || '';
         const h = el('h1', '', first ? T('You are all set, {name}.', { name: first }) : T('You are all set.')); h.tabIndex = -1;
         const p = el('p', 'wl-sub', T('Ask in your own words, or pick a service from Home. Your details are saved encrypted.'));
-        page.append(el('p', 'wl-eye', T('Step {n} of {total}', { n: 5, total: OB_TOTAL })), h, p, tickHost.firstElementChild);
+        // What was saved, in the same rows as step 4, so the finish reads as a summary and not an empty page.
+        const n = ageOf(about.dob);
+        const facts = [n !== null ? T('Age: {n}', { n }) : '', about.state].filter(Boolean).join(' · ');
+        const ul = el('ul', 'wl-points wl-done');
+        // Only strings the app already ships in every language, so the finish reads the same everywhere.
+        const rows = [
+          ['user', T('Your details'), facts],
+          ['lock', T('Locker'), T('No sign-up. Your locker is encrypted and hidden until you unlock it. You always finish on the official website.')],
+          ['ext', T('Official sites'), T('Type or paste these into the official website yourself. Saathi never logs in for you, and never sees your OTP.')],
+        ];
+        rows.forEach(([icon, title, text], i) => {
+          const li = el('li'); li.style.setProperty('--i', i);
+          const badge = el('span', 'wl-ic'); badge.append(ico(icon, 22));
+          const d = el('div'); d.append(el('b', '', title), el('p', '', text));
+          li.append(badge, d);
+          ul.append(li);
+        });
+        page.append(tickHost.firstElementChild, el('p', 'wl-eye', T('Step {n} of {total}', { n: 5, total: OB_TOTAL })), h, p, ul);
         return page;
       },
     ];

@@ -827,3 +827,10 @@ html.no-fv[data-style] input:focus, html.no-fv[data-style] textarea:focus, html.
 :root[data-style] h1:focus, :root[data-style] h1:focus-visible:focus-visible { outline: none !important; box-shadow: none !important; }
 :root[data-style] .link-btn { min-height: 36px; display: inline-flex; align-items: center; padding-top: 6px !important; padding-bottom: 6px !important; }
 :root[data-style] #onboard .search::placeholder { color: #6b7280 !important; opacity: 1 !important; }
+
+/* 16. Onboarding. Labels and hints sit on the field edge. A disabled Continue is a pale pill, not a muddy one. The all-set mark is 72px. */
+:root[data-style] .wl-lbl, :root[data-style] .wl-hint-small { padding-left: 0; }
+:root[data-style] .wl-next:disabled { opacity: 1; background: rgba(255, 255, 255, .6); color: rgba(29, 29, 31, .55); box-shadow: none; }
+:root[data-style][data-sky="night"] .wl-next:disabled { background: rgba(255, 255, 255, .2); color: rgba(255, 255, 255, .6); }
+:root[data-style] .wl-tick { width: 72px; height: 72px; margin: 0 0 4px; }
+:root[data-style] .wl-done { margin-top: 18px; }
