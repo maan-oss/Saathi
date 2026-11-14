@@ -499,7 +499,7 @@
         else { inp = el('input', 'field-i'); inp.type = 'text'; inp.value = f.value; inp.autocomplete = 'off'; inp.spellcheck = false; if (f.type === 'phone' || f.type === 'pin') inp.inputMode = 'numeric'; if (f.type === 'email') inp.inputMode = 'email'; if (f.type === 'date') inp.placeholder = 'DD/MM/YYYY'; }
         inputs[f.key] = inp;
         const wrap = el('div', 'fld dt-f'); const lab = el('div', 'fld-row'); lab.append(el('span', 'fld-l', fieldLabel(f)));
-        const cp = btn('link-btn', T('Copy'), null); cp.onclick = () => { const t = liveText(f); if (t) C.copyText(t, cp); else toast(T('Nothing to copy yet.')); }; lab.append(cp);
+        const cp = btn('copy dt-copy', T('Copy'), null); cp.setAttribute('aria-label', T('Copy') + ' ' + fieldLabel(f)); cp.onclick = () => { const t = liveText(f); if (t) C.copyText(t, cp); else toast(T('Nothing to copy yet.')); }; lab.append(cp);
         wrap.append(lab, inp); wrap.dataset.key = f.key; return wrap;
       };
       for (const [title, icon, keys] of SECTIONS()) {
@@ -564,9 +564,11 @@
       toast(T('Calendar file saved'));
     } catch { toast(T('Could not make the calendar file.')); }
   }
-  const switchRow = (label, checked) => {
-    const w = el('label', 'rm-sw'); const i = el('input'); i.type = 'checkbox'; i.checked = checked; const tr = el('span', 'rm-sw-tr'); tr.append(el('i'));
-    w.append(i, tr, el('span', 'rm-sw-l', label)); w.input = i; return w;
+  // A chip with a tick for choices that stack (the alerts). 'switch' is a real on/off setting: label left, switch right.
+  const switchRow = (label, checked, variant) => {
+    const w = el('label', 'rm-sw' + (variant === 'switch' ? ' rm-sw-switch' : '')); const i = el('input'); i.type = 'checkbox'; i.checked = checked; const tr = el('span', 'rm-sw-tr'); tr.append(el('i'));
+    if (variant === 'switch') w.append(el('span', 'rm-sw-l', label), i, tr); else w.append(i, tr, el('span', 'rm-sw-l', label));
+    w.input = i; return w;
   };
 
   S.reminders = async () => {
@@ -625,7 +627,7 @@
       const label = textInput(T('What is it? (for example, Licence renewal)')); label.maxLength = 40; label.setAttribute('aria-label', T('Reminder name'));
       const due = el('input', 'field-i'); due.type = 'date'; due.min = todayIso(); due.setAttribute('aria-label', T('Date'));
       const nt = textInput(T('Note (optional)')); nt.maxLength = 120; nt.setAttribute('aria-label', T('Note'));
-      const yr = switchRow(T('Repeat every year'), false);
+      const yr = switchRow(T('Repeat every year'), false, 'switch');
       const alerts = alertPicker([30, 7, 0]);
       const chips = el('div', 'chipbox rm-presets');
       const hint = el('small', 'fld-h', '');
@@ -685,7 +687,7 @@
       const label = textInput('', r.label); label.maxLength = 40;
       const due = el('input', 'field-i'); due.type = 'date'; due.value = r.due;
       const nt = textInput(T('Note (optional)'), r.note || ''); nt.maxLength = 120;
-      const yr = switchRow(T('Repeat every year'), Boolean(r.repeat));
+      const yr = switchRow(T('Repeat every year'), Boolean(r.repeat), 'switch');
       const pick = alertPicker(r.alerts || [30, 7, 0]);
       const er = errBox();
       const two = el('div', 'two'); two.append(field(T('Name'), label), field(T('Date'), due));

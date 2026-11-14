@@ -837,3 +837,18 @@ html.no-fv[data-style] input:focus, html.no-fv[data-style] textarea:focus, html.
 
 /* 17. Backup and restore. Section headers start on the card edge, so the icon chip lines up with the cards below it. */
 :root[data-style] .bk-hero { padding-left: 0; padding-right: 0; }
+
+/* 18. My details. Copy is the same pill as the rest of the app. The visible pill is 32px; the tap area is 44px and does not grow the row. */
+:root[data-style] .dt-copy { position: relative; min-width: 0; min-height: 32px; padding: 0 12px; font-size: 13px; line-height: 1; }
+:root[data-style] .dt-copy::after { content: ""; position: absolute; inset: -6px -8px; }
+
+/* 19. Repeat every year is a real on/off switch: label left, a 51x31 switch right, on the same pill as the fields. The pill itself does not change colour; only the switch does. */
+:root[data-style] .rm-sw.rm-sw-switch { display: flex; width: 100%; box-sizing: border-box; justify-content: space-between; gap: 16px; min-height: 52px; padding: 8px 10px 8px 18px; }
+:root[data-style] .rm-sw-switch .rm-sw-l { flex: 1; min-width: 0; white-space: normal; }
+:root[data-style] .rm-sw-switch .rm-sw-tr { position: relative; width: 51px; height: 31px; border-radius: 999px; box-shadow: none; background: rgba(120, 120, 128, .34); opacity: 1; display: block; transition: background-color .25s ease; }
+:root[data-style] .rm-sw-switch .rm-sw-tr i { position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; margin: 0; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 2px 5px rgba(0, 0, 0, .22), 0 0 1px rgba(0, 0, 0, .12); transform: none !important; transition: transform .28s cubic-bezier(.3, 1.25, .5, 1); }
+:root[data-style] .rm-sw-switch[data-h~="on"] { background: var(--fld) !important; color: var(--fld-ink) !important; }
+:root[data-style] .rm-sw-switch[data-h~="on"] .rm-sw-tr { background: var(--tg-on) !important; }
+:root[data-style] .rm-sw-switch[data-h~="on"] .rm-sw-tr i { transform: translateX(20px) !important; }
+:root[data-style][data-sky="night"] .rm-sw-switch[data-h~="on"] .rm-sw-tr i { background: var(--tg-on-ink); }
+:root[data-style] .rm-sw-switch input:focus-visible ~ .rm-sw-tr { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
