@@ -276,6 +276,17 @@
       setTimeout(() => { if (!sheet.classList.contains('on')) sheet.hidden = true; }, 240);
     }
 
+    // Every date field shows day first, as Indian users write it (DD/MM/YYYY). The browser picks a date's order from the field's lang.
+    const dayFirst = (node) => {
+      if (node.nodeType !== 1) return;
+      const dates = node.matches && node.matches('input[type="date"]') ? [node] : [];
+      if (node.querySelectorAll) dates.push(...node.querySelectorAll('input[type="date"]'));
+      for (const d of dates) if (!d.lang) d.lang = 'en-IN';
+    };
+    dayFirst(document.body);
+    new MutationObserver((muts) => { for (const m of muts) for (const n of m.addedNodes) dayFirst(n); })
+      .observe(document.body, { childList: true, subtree: true });
+
     // A tap on a date field opens the calendar instead of the system picker (the system picker stays as a fallback in the browser).
     document.addEventListener('mousedown', (e) => {
       const t = e.target;
@@ -287,6 +298,7 @@
     // Keyboard users reach the field with Tab: opening the calendar there too.
     document.addEventListener('focusin', (e) => {
       const t = e.target;
+      if (t instanceof HTMLInputElement && t.type === 'date' && !t.lang) t.lang = 'en-IN';
       if (!(t instanceof HTMLInputElement) || t.type !== 'date' || t.disabled || t.readOnly) return;
       if (sheet && !sheet.hidden) return;
       open(t);

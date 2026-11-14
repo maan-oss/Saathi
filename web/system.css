@@ -852,3 +852,8 @@ html.no-fv[data-style] input:focus, html.no-fv[data-style] textarea:focus, html.
 :root[data-style] .rm-sw-switch[data-h~="on"] .rm-sw-tr i { transform: translateX(20px) !important; }
 :root[data-style][data-sky="night"] .rm-sw-switch[data-h~="on"] .rm-sw-tr i { background: var(--tg-on-ink); }
 :root[data-style] .rm-sw-switch input:focus-visible ~ .rm-sw-tr { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+/* 20. Search. The whole pill is the tap target (it is a label for the field), at least 44px tall. The clear button keeps its look and gets a 44px hit area. */
+:root[data-style] .hk-sfield { min-height: 44px; }
+:root[data-style] .hk-sclear { position: relative; }
+:root[data-style] .hk-sclear::after { content: ""; position: absolute; inset: -6px; }
